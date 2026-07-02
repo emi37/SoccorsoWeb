@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Form di soccorso - Invia la richiesta</title>
+</head>
+<body>
+    <h2>Richiesta di soccorso immediato</h2>
+    <p>Compila i campi qui sotto:</p>
+
+    <form action="CreaRichiestaServlet" method="POST">
+        
+        <label for="nome">Il tuo nome:</label><br>
+        <input type="text" id="nome" name="nome_segnalante" required><br><br>
+
+        <label for="email">La tua e mail:</label><br>
+        <input type="email" id="email" name="email_segnalante" required><br><br>
+
+        <label for="posizione">Dove ti trovi, indirizzo:</label><br>
+        <input type="text" id="posizione" name="posizione" required><br><br>
+
+        <label for="descrizione">Descrivi brevemente l'emergenza:</label><br>
+        <textarea id="descrizione" name="descrizione" rows="4" cols="50" required></textarea><br><br>
+
+        <button type="submit">Invia richiesta</button>
+    </form>
+</body>
+</html>
