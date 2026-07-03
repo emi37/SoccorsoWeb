@@ -1,10 +1,12 @@
-it\univaq\disim\webengineering\soccorsoweb\controller\CreaRichiestaServlet.class
 it\univaq\disim\webengineering\soccorsoweb\util\DBManager.class
+it\univaq\disim\webengineering\soccorsoweb\controller\DashboardOperatoreServlet.class
 it\univaq\disim\webengineering\soccorsoweb\resources\JakartaEE11Resource.class
-it\univaq\disim\webengineering\soccorsoweb\controller\ConcludiMissioneServlet.class
 it\univaq\disim\webengineering\soccorsoweb\controller\LoginServlet.class
 it\univaq\disim\webengineering\soccorsoweb\JakartaRestConfiguration.class
-it\univaq\disim\webengineering\soccorsoweb\controller\DashboardServlet.class
-it\univaq\disim\webengineering\soccorsoweb\util\TestDB.class
 it\univaq\disim\webengineering\soccorsoweb\controller\ConvalidaServlet.class
 it\univaq\disim\webengineering\soccorsoweb\controller\GestioneRichiestaServletDallAdmin.class
+it\univaq\disim\webengineering\soccorsoweb\controller\CreaRichiestaServlet.class
+it\univaq\disim\webengineering\soccorsoweb\controller\ConcludiMissioneServlet.class
+it\univaq\disim\webengineering\soccorsoweb\controller\DashboardServlet.class
+it\univaq\disim\webengineering\soccorsoweb\util\TestDB.class
+it\univaq\disim\webengineering\soccorsoweb\controller\LogoutServlet.class

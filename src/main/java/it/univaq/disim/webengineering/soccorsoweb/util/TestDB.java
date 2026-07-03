@@ -25,6 +25,16 @@ public class TestDB {
                 System.out.println("2. Password dell'Admin rigenerata e aggiornata nel DB!");
             }
             
+            // AGGIORNAMENTO NATIVO ANCHE PER GLI OPERATORI
+            String passOperatoreInChiaro = "operatore";
+            String hashOperatore = BCrypt.hashpw(passOperatoreInChiaro, BCrypt.gensalt());
+            String sqlUpdateOp = "UPDATE utente SET password = ? WHERE ruolo = 'OPERATORE'";
+            try (PreparedStatement stmtUpdateOp = conn.prepareStatement(sqlUpdateOp)) {
+                stmtUpdateOp.setString(1, hashOperatore);
+                int righeOp = stmtUpdateOp.executeUpdate();
+                System.out.println("2b. Password rigenerata per " + righeOp + " Operatori nel DB!");
+            }
+            
             // VERIFICA RIFLESSIVA: Andiamo a rileggere il dato e controlliamo se ora passa il test
             String sqlSelect = "SELECT email, password FROM utente WHERE ruolo = 'ADMIN'";
             try (PreparedStatement stmtSelect = conn.prepareStatement(sqlSelect);
@@ -44,6 +54,26 @@ public class TestDB {
                     }
                 }
             }
+
+            // VERIFICA AGGIUNTIVA PER UN OPERATORE DEL GRUPPO
+            String sqlSelectOp = "SELECT email, password FROM utente WHERE ruolo = 'OPERATORE' LIMIT 1";
+            try (PreparedStatement stmtSelectOp = conn.prepareStatement(sqlSelectOp);
+                 ResultSet rsOp = stmtSelectOp.executeQuery()) {
+                
+                if (rsOp.next()) {
+                    String emailOp = rsOp.getString("email");
+                    String hashOp = rsOp.getString("password");
+                    
+                    System.out.println("3b. Verifica Operatore Campione: " + emailOp);
+                    
+                    if (BCrypt.checkpw(passOperatoreInChiaro, hashOp)) {
+                        System.out.println("4b. TEST OPERATORI SUPERATO: password riconosciuta dal server!");
+                    } else {
+                        System.out.println("4b. TEST OPERATORI FALLITO: errore hash.");
+                    }
+                }
+            }
+
         } catch (Exception e) {
             System.err.println("ERRORE DURANTE IL TEST:");
             e.printStackTrace();

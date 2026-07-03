@@ -63,9 +63,13 @@ String sql = "SELECT id_utente, nome, password, ruolo FROM utente WHERE email = 
 
         // 5. Reindirizzamento o errore
         if (loginEffettuato) {
-            response.sendRedirect(request.getContextPath() + "/DashboardServlet");
+            if ("ADMIN".equals(ruoloUtente)) {
+                response.sendRedirect(request.getContextPath() + "/DashboardServlet");
+            } else if ("OPERATORE".equals(ruoloUtente)) {
+                response.sendRedirect(request.getContextPath() + "/DashboardOperatoreServlet");
+            }
             return;
-        } else {
+        } else  {
             response.setContentType("text/html;charset=UTF-8");
             try (PrintWriter out = response.getWriter()) {
                 out.println("<!DOCTYPE html>");
