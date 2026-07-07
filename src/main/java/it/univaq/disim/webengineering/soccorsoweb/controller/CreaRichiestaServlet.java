@@ -11,6 +11,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.sql.ResultSet;
 
 @WebServlet(name = "CreaRichiestaServlet", urlPatterns = {"/CreaRichiestaServlet"})
 public class CreaRichiestaServlet extends HttpServlet {
@@ -54,6 +55,40 @@ public class CreaRichiestaServlet extends HttpServlet {
         // salva la richiesta nel db, con stato di default 'IN_ATTESA'
         boolean salvato = false;
         try (Connection conn = DBManager.getConnection()) {
+
+ // Controllo anti-spam via email:
+// la stessa email non può inviare più richieste entro 10 minuti
+            String sqlSpamEmail = """
+    SELECT COUNT(*)
+    FROM richiesta_soccorso
+    WHERE email_segnalante = ?
+      AND timestamp_creazione >= NOW() - INTERVAL 10 MINUTE
+""";
+
+            try (PreparedStatement spam_statement = conn.prepareStatement(sqlSpamEmail)) {
+                spam_statement.setString(1, email);
+
+                try (ResultSet spam_risultato = spam_statement.executeQuery()) {
+                    if (spam_risultato.next() && spam_risultato.getInt(1) > 0) {
+                        response.setContentType("text/html;charset=UTF-8");
+
+                        try (PrintWriter out = response.getWriter()) {
+                            out.println("<!DOCTYPE html>");
+                            out.println("<html lang='it'>");
+                            out.println("<head><meta charset='UTF-8'><title>Richiesta bloccata</title></head>");
+                            out.println("<body style='font-family: Arial; text-align: center; padding-top: 50px;'>");
+                            out.println("<h1 style='color: red;'>Richiesta bloccata</h1>");
+                            out.println("<p>Hai già inviato una richiesta con questa email negli ultimi 10 minuti.</p>");
+                            out.println("<p>Attendi qualche minuto prima di inviarne un'altra.</p>");
+                            out.println("<br><a href='index.html'>Torna al form</a>");
+                            out.println("</body>");
+                            out.println("</html>");
+                        }
+
+                        return;
+                    }
+                }
+            }
             String sql = "INSERT INTO richiesta_soccorso (descrizione, posizione, nome_segnalante, email_segnalante, ip_origine, token_convalida, stato) "
                     + "VALUES (?, ?, ?, ?, ?, ?, 'IN_ATTESA')";
 
