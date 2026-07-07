@@ -95,11 +95,15 @@ public class DashboardServlet extends HttpServlet {
                         ciSonoInCorso = true;
                         int idM = rs2.getInt("id_missione");
                         out.println("<tr>");
+                        
                         out.println("<td>" + idM + "</td>");
                         out.println("<td>" + rs2.getInt("id_richiesta") + "</td>");
                         out.println("<td>" + rs2.getString("obiettivo") + "</td>");
                         out.println("<td><span style='color: red; font-weight: bold;'>IN CORSO</span></td>");
-                        out.println("<td><a href='ConcludiMissioneServlet?id_missione=" + idM + "' style='background-color: #28a745; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-weight: bold;'>Termina Intervento</a></td>");
+                        out.println("<td style='text-align: center; width: 160px;'>");
+                        out.println("<a href='DettaglioMissioneServlet?id_missione=" + idM + "' style='display: block; text-align: center; background-color: #17a2b8; color: white; padding: 6px 0; text-decoration: none; border-radius: 4px; font-weight: bold; margin-bottom: 6px; width: 140px; margin-left: auto; margin-right: auto;'>Diario di Bordo</a>");
+                        out.println("<a href='ConcludiMissioneServlet?id_missione=" + idM + "' style='display: block; text-align: center; background-color: #28a745; color: white; padding: 6px 0; text-decoration: none; border-radius: 4px; font-weight: bold; width: 140px; margin-left: auto; margin-right: auto;'>Termina Intervento</a>");
+                        out.println("</td>");
                         out.println("</tr>");
                     }
                     if (!ciSonoInCorso) {
