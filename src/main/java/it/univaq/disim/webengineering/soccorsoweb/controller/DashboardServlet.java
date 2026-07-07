@@ -42,6 +42,14 @@ public class DashboardServlet extends HttpServlet {
             out.println("<a href='LogoutServlet' style='color: red; font-weight: bold; text-decoration: none;'>Esci</a>");
             out.println("</div>");
             out.println("<p>Benvenuto! </p>");
+            
+          //   sezione pulsanti per la gestione delle risorse logistiche
+            out.println("<div style='margin-bottom: 25px; padding: 15px; background-color: #f8f9fa; border-radius: 6px; border: 1px solid #dee2e6;'>");
+            out.println("<span style='font-weight: bold; color: #495057; margin-right: 15px;'>Gestione logistica:</span>");
+            out.println("<a href='GestioneMezzi' style='background-color: #6c757d; color: white; padding: 8px 14px; text-decoration: none; border-radius: 4px; font-weight: bold; margin-right: 10px; font-size: 14px;'>Gestisci mezzi</a>");
+            out.println("<a href='GestioneMateriali' style='background-color: #6c757d; color: white; padding: 8px 14px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 14px;'>Gestisci materiali</a>");
+            out.println("</div>");
+
             out.println("<hr><br>");
 
             try (Connection conn = DBManager.getConnection()) {
