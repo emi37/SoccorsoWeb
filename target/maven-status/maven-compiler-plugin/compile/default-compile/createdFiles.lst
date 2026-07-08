@@ -6,6 +6,7 @@ it\univaq\disim\webengineering\soccorsoweb\JakartaRestConfiguration.class
 it\univaq\disim\webengineering\soccorsoweb\controller\AggiungiMezzoServlet.class
 it\univaq\disim\webengineering\soccorsoweb\controller\ConvalidaServlet.class
 it\univaq\disim\webengineering\soccorsoweb\controller\GestioneRichiestaServletDallAdmin.class
+it\univaq\disim\webengineering\soccorsoweb\controller\StoricoMissioniServlet.class
 it\univaq\disim\webengineering\soccorsoweb\controller\CreaRichiestaServlet.class
 it\univaq\disim\webengineering\soccorsoweb\controller\GestioneMaterialiServlet.class
 it\univaq\disim\webengineering\soccorsoweb\controller\AggiungiMaterialeServlet.class

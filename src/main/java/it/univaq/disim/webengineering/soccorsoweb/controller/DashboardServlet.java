@@ -43,11 +43,12 @@ public class DashboardServlet extends HttpServlet {
             out.println("</div>");
             out.println("<p>Benvenuto! </p>");
             
-            // sezione pulsanti per la gestione delle risorse logistiche
+            // SEZIONE PULSANTI AGGIORNATA:  inserito il collegamento allo storico degli interventi
             out.println("<div style='margin-bottom: 25px; padding: 15px; background-color: #f8f9fa; border-radius: 6px; border: 1px solid #dee2e6;'>");
             out.println("<span style='font-weight: bold; color: #495057; margin-right: 15px;'>Gestione logistica:</span>");
             out.println("<a href='GestioneMezzi' style='background-color: #6c757d; color: white; padding: 8px 14px; text-decoration: none; border-radius: 4px; font-weight: bold; margin-right: 10px; font-size: 14px;'>Gestisci mezzi</a>");
-            out.println("<a href='GestioneMateriali' style='background-color: #6c757d; color: white; padding: 8px 14px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 14px;'>Gestisci materiali</a>");
+            out.println("<a href='GestioneMateriali' style='background-color: #6c757d; color: white; padding: 8px 14px; text-decoration: none; border-radius: 4px; font-weight: bold; margin-right: 10px; font-size: 14px;'>Gestisci materiali</a>");
+            out.println("<a href='StoricoMissioni' style='background-color: #17a2b8; color: white; padding: 8px 14px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 14px;'>Vedi lo storico delle missioni</a>");
             out.println("</div>");
 
             out.println("<hr><br>");
@@ -59,8 +60,6 @@ public class DashboardServlet extends HttpServlet {
                 out.println("<table border='1' cellpadding='10' cellspacing='0' style='width:100%; border-collapse: collapse; text-align: left; margin-bottom: 40px;'>");
                 out.println("<tr style='background-color: #e9ecef;'><th>ID</th><th>Segnalante</th><th>Posizione</th><th>Descrizione Emergenza</th><th>Azione</th></tr>");
                 
-                String sqlAttive = "SELECT id_richiesta, nome_segnalante, Urban, posizione, descrizione FROM richiesta_soccorso WHERE stato = 'ATTIVA' ORDER BY id_richiesta DESC";
-                // Modifica cautelativa: usiamo il tuo schema originale se non dovesse esserci Urban
                 String sqlAttiveSafe = "SELECT id_richiesta, nome_segnalante, posizione, descrizione FROM richiesta_soccorso WHERE stato = 'ATTIVA' ORDER BY id_richiesta DESC";
                 
                 try (PreparedStatement stmt1 = conn.prepareStatement(sqlAttiveSafe);
@@ -76,7 +75,6 @@ public class DashboardServlet extends HttpServlet {
                         out.println("<td>" + rs1.getString("posizione") + "</td>");
                         out.println("<td>" + rs1.getString("descrizione") + "</td>");
                         
-                        // INNESTO: Assegna Risorse affiancato al nuovo pulsante rosso per Annullare/Ignorare
                         out.println("<td>");
                         out.println("<a href='GestioneRichiestaServletDallAdmin?id=" + id + "' style='background-color: #007bff; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-weight: bold; margin-right: 8px; display: inline-block;'>Assegna Risorse</a>");
                         out.println("<a href='IgnoraRichiesta?id=" + id + "' style='background-color: #dc3545; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;' onclick=\"return confirm('Sei sicuro di voler ignorare e archiviare questa richiesta?');\">Ignora</a>");
@@ -91,7 +89,7 @@ public class DashboardServlet extends HttpServlet {
                 out.println("</table>");
 
                 // mostra le missioni in corso
-                out.println("<h3>Interventi attivi </h3>");   // e missioni sul Campo
+                out.println("<h3>Interventi attivi </h3>");
                 out.println("<table border='1' cellpadding='10' cellspacing='0' style='width:100%; border-collapse: collapse; text-align: left;'>");
                 out.println("<tr style='background-color: #f8d7da;'><th>ID Missione</th><th>ID Richiesta</th><th>Dettagli Operazione</th><th>Stato Corrente</th><th>Azione</th></tr>");
                 
