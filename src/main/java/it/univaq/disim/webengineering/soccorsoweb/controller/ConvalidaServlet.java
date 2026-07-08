@@ -19,25 +19,28 @@ public class ConvalidaServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        //1. prendiamo il token generato, che si nell indirizzo della pagina
-        
+        // 1. prendiamo il token generato, che si trova nell'indirizzo della pagina
         String token = request.getParameter("token");
-        
         
         boolean validazioneRiuscita = false;
 
-        // Se il token c'è e non è vuoto, lo cerco allora nel DB
+        // Se il token c'è e non è vuoto, lo cerco nel DB
         if (token != null && !token.trim().isEmpty()) {
             
             try (Connection conn = DBManager.getConnection()) {
-                // 2. ora cerco la richiesta col token esatto che ho estratto dall indirizzo 
-                // Se la troviamo, la mettiamo 'ATTIVA' e cancelliamo il token (NULL) per sicurezxa.
-                String sql = "UPDATE richiesta_soccorso SET stato = 'ATTIVA', token_convalida = NULL "
-                + "WHERE token_convalida = ? AND stato = 'IN_ATTESA'";
+                // 2. INNESTO TEMPORALE: cerco la richiesta col token esatto,
+                // ma eseguo l'UPDATE solo se siamo dentro la finestra dei 10 minuti dalla creazione
+                String sql = """
+                    UPDATE richiesta_soccorso 
+                    SET stato = 'ATTIVA', token_convalida = NULL 
+                    WHERE token_convalida = ? 
+                      AND stato = 'IN_ATTESA'
+                      AND timestamp_creazione >= NOW() - INTERVAL 10 MINUTE
+                """;
                 
                 try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                     stmt.setString(1, token);
-                                        int righeModificate = stmt.executeUpdate();
+                    int righeModificate = stmt.executeUpdate();
                     
                     if (righeModificate > 0) {
                         validazioneRiuscita = true; 
@@ -47,22 +50,24 @@ public class ConvalidaServlet extends HttpServlet {
                 e.printStackTrace();
             }
         }
-        // 3.risult. a schermo
+        
+        // 3. Risultato a schermo
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
             out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head><title>Esito della convalida:</title></head>");
+            out.println("<html lang='it'>");
+            out.println("<head><meta charset='UTF-8'><title>Esito della convalida:</title></head>");
             out.println("<body style='font-family: Arial; text-align: center; padding-top: 50px;'>");
             
             if (validazioneRiuscita) {
-                out.println("<h1 style='color: green;'>La sua richiesta è stata convalidata con successo ed è ora <b>ATTIVA</b> </h1>");
-                out.println("<p>Stiamo preparando i soccorsi, saremo da voi il prima possibile</p>");
+                out.println("<h1 style='color: green;'>La sua richiesta è stata convalidata con successo ed è ora <b>ATTIVA</b></h1>");
+                out.println("<p>Stiamo preparando i soccorsi, saremo da voi il prima possibile.</p>");
             } else {
-                out.println("<h1 style='color: red;'>Errore nella convalida, riprovare la richiesta<a href='index.html'> qui </a></h1>");
-                out.println("<p>Il link di convalida non è valido: probabilmente è scaduto, riprova.</p>");
+                out.println("<h1 style='color: red;'>Errore nella convalida</h1>");
+                out.println("<p>Il link di convalida non è valido: potrebbe essere errato oppure <b>scaduto (valido solo per 10 minuti)</b>.</p>");
+                out.println("<p>Per favore, effettui una nuova richiesta <a href='index.html'>qui</a>.</p>");
             }
-            out.println("<br><a href='index.html'>Torna al form iniziale </a>");
+            out.println("<br><a href='index.html'>Torna al form iniziale</a>");
             out.println("</body>");
             out.println("</html>");
         }
