@@ -48,6 +48,7 @@ public class ConcludiMissioneServlet extends HttpServlet {
                             out.println("<p><b>Dettaglio operazione:</b> " + rs.getString("obiettivo") + "</p>");
                             out.println("<hr>");
                             
+                            // Corretto il path del form d'invio per evitare 404
                             out.println("<form action='" + request.getContextPath() + "/ConcludiMissioneServlet' method='POST'>");
                             out.println("<input type='hidden' name='id_missione' value='" + idMissione + "'>");
                             out.println("<input type='hidden' name='id_richiesta' value='" + rs.getInt("id_richiesta") + "'>");
@@ -56,13 +57,12 @@ public class ConcludiMissioneServlet extends HttpServlet {
                             out.println("<input type='number' id='voto' name='voto_successo' min='0' max='5' value='5' required><br><br>");
                             
                             out.println("<label for='commenti'><b>Relazione finale della squadra:</b></label><br>");
-
-                            out.println("<textarea id='commenti' name='commenti' rows='5' style='width:100%;' required placeholder='Scrivi qui come si e concluso il soccorso sul posto...'></textarea><br><br>");
+                            out.println("<textarea id='commenti' name='commenti' rows='5' style='width:100%;' required placeholder='Scrivi qui come si è concluso il soccorso sul posto...'></textarea><br><br>");
                             
                             out.println("<button type='submit' style='background-color: #28a745; color: white; padding: 12px 24px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; width: 100%;'>REGISTRA CHIUSURA E LIBERA RISORSE</button>");
                             out.println("</form>");
                         } else {
-                            out.println("<p style='color: red;'>Missione non trovata o gia' conlusa .</p>");
+                            out.println("<p style='color: red;'>Missione non trovata o già conclusa.</p>");
                         }
                     }
                 }
@@ -79,6 +79,12 @@ public class ConcludiMissioneServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
+        HttpSession session = request.getSession(false);
+        if (session == null || !"ADMIN".equals(session.getAttribute("ruolo"))) {
+            response.sendRedirect(request.getContextPath() + "/login.html");
+            return;
+        }
+
         String idMissione = request.getParameter("id_missione");
         String idRichiesta = request.getParameter("id_richiesta");
         String livelloSuccesso = request.getParameter("voto_successo");
@@ -90,7 +96,7 @@ public class ConcludiMissioneServlet extends HttpServlet {
             conn.setAutoCommit(false);
             
             try {
-                // 1. Aggiorniamo la tabella missione: impostiamo lo stato missione "chiusa", e, inseriamo voto, note e la data di fine dell"intreevento
+                // 1. Aggiorniamo la tabella missione portando lo stato a CHIUSA
                 String sqlMissione = "UPDATE missione SET stato = 'CHIUSA', livello_successo = ?, commenti = ?, timestamp_fine = CURRENT_TIMESTAMP WHERE id_missione = ?";
                 try (PreparedStatement stmtM = conn.prepareStatement(sqlMissione)) {
                     stmtM.setInt(1, Integer.parseInt(livelloSuccesso));
@@ -99,7 +105,7 @@ public class ConcludiMissioneServlet extends HttpServlet {
                     stmtM.executeUpdate();
                 }
                 
-                // 2. Aggiorniamo anche la richiesta originaria portando lo stato a CHIUSA una volta finita
+                // 2. Aggiorniamo anche la richiesta originaria portando lo stato a CHIUSA
                 String sqlRichiesta = "UPDATE richiesta_soccorso SET stato = 'CHIUSA' WHERE id_richiesta = ?";
                 try (PreparedStatement stmtR = conn.prepareStatement(sqlRichiesta)) {
                     stmtR.setString(1, idRichiesta);
@@ -126,7 +132,7 @@ public class ConcludiMissioneServlet extends HttpServlet {
             out.println("<html><body>");
             if (terminata) {
                 out.println("<script>");
-                out.println("alert('Intervento concluso. I mezzi e glioperatori sono di nuovo disponibili! ');");
+                out.println("alert('Intervento concluso. I mezzi e gli operatori sono di nuovo disponibili!');");
                 out.println("window.location.href='" + request.getContextPath() + "/DashboardServlet';");
                 out.println("</script>");
             } else {
