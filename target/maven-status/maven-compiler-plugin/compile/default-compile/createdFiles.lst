@@ -10,7 +10,9 @@ it\univaq\disim\webengineering\soccorsoweb\controller\CreaRichiestaServlet.class
 it\univaq\disim\webengineering\soccorsoweb\controller\GestioneMaterialiServlet.class
 it\univaq\disim\webengineering\soccorsoweb\controller\AggiungiMaterialeServlet.class
 it\univaq\disim\webengineering\soccorsoweb\controller\ConcludiMissioneServlet.class
+it\univaq\disim\webengineering\soccorsoweb\controller\IgnoraRichiestaServlet.class
 it\univaq\disim\webengineering\soccorsoweb\controller\GestioneMezziServlet.class
 it\univaq\disim\webengineering\soccorsoweb\controller\DashboardServlet.class
+it\univaq\disim\webengineering\soccorsoweb\controller\DettaglioMissioneServlet.class
 it\univaq\disim\webengineering\soccorsoweb\util\TestDB.class
 it\univaq\disim\webengineering\soccorsoweb\controller\LogoutServlet.class

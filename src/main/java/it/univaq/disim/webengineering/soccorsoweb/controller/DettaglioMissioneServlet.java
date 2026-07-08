@@ -20,7 +20,7 @@ public class DettaglioMissioneServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        // Controllo di sicurezza: Solo l'ADMIN può visualizzare e aggiornare il diario di bordo
+        // Controllo di sicurezza: Solo l'ADMIN può visualizzare e aggiornare il diario della missione, cioe' i dettagli della missione 
         HttpSession session = request.getSession(false);
         if (session == null || !"ADMIN".equals(session.getAttribute("ruolo"))) {
             response.sendRedirect(request.getContextPath() + "/login.html");
@@ -34,11 +34,11 @@ public class DettaglioMissioneServlet extends HttpServlet {
         try (PrintWriter out = response.getWriter()) {
             out.println("<!DOCTYPE html>");
             out.println("<html>");
-            out.println("<head><title>Diario di Bordo - Missione #" + idMissione + "</title></head>");
+            out.println("<head><title>Dettagli - Missione #" + idMissione + "</title></head>");
             out.println("<body style='font-family: Arial; padding: 20px; background-color: #f4f6f9;'>");
             out.println("<div style='max-width: 800px; margin: auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 0 15px rgba(0,0,0,0.05);'>");
             
-            out.println("<h2>DIARIO DI BORDO - Missione #" + idMissione + "</h2>");
+            out.println("<h2>Dettagli - Missione #" + idMissione + "</h2>");
             out.println("<a href='DashboardServlet' style='text-decoration: none; color: #007bff;'>&larr; Torna alla Dashboard</a>");
             out.println("<hr><br>");
 
@@ -105,7 +105,7 @@ public class DettaglioMissioneServlet extends HttpServlet {
 
             } catch (Exception e) {
                 e.printStackTrace();
-                out.println("<p style='color: red;'>Errore nel caricamento del diario di bordo.</p>");
+                out.println("<p style='color: red;'>Errore nel caricamento del diario della missione.</p>");
             }
 
             out.println("</div></body></html>");

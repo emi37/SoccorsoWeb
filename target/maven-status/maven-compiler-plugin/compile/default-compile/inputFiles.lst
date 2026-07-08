@@ -5,9 +5,11 @@ C:\Users\Filippo\Documents\WebEngWorkspace\SoccorsoWeb\src\main\java\it\univaq\d
 C:\Users\Filippo\Documents\WebEngWorkspace\SoccorsoWeb\src\main\java\it\univaq\disim\webengineering\soccorsoweb\controller\CreaRichiestaServlet.java
 C:\Users\Filippo\Documents\WebEngWorkspace\SoccorsoWeb\src\main\java\it\univaq\disim\webengineering\soccorsoweb\controller\DashboardOperatoreServlet.java
 C:\Users\Filippo\Documents\WebEngWorkspace\SoccorsoWeb\src\main\java\it\univaq\disim\webengineering\soccorsoweb\controller\DashboardServlet.java
+C:\Users\Filippo\Documents\WebEngWorkspace\SoccorsoWeb\src\main\java\it\univaq\disim\webengineering\soccorsoweb\controller\DettaglioMissioneServlet.java
 C:\Users\Filippo\Documents\WebEngWorkspace\SoccorsoWeb\src\main\java\it\univaq\disim\webengineering\soccorsoweb\controller\GestioneMaterialiServlet.java
 C:\Users\Filippo\Documents\WebEngWorkspace\SoccorsoWeb\src\main\java\it\univaq\disim\webengineering\soccorsoweb\controller\GestioneMezziServlet.java
 C:\Users\Filippo\Documents\WebEngWorkspace\SoccorsoWeb\src\main\java\it\univaq\disim\webengineering\soccorsoweb\controller\GestioneRichiestaServletDallAdmin.java
+C:\Users\Filippo\Documents\WebEngWorkspace\SoccorsoWeb\src\main\java\it\univaq\disim\webengineering\soccorsoweb\controller\IgnoraRichiestaServlet.java
 C:\Users\Filippo\Documents\WebEngWorkspace\SoccorsoWeb\src\main\java\it\univaq\disim\webengineering\soccorsoweb\controller\LoginServlet.java
 C:\Users\Filippo\Documents\WebEngWorkspace\SoccorsoWeb\src\main\java\it\univaq\disim\webengineering\soccorsoweb\controller\LogoutServlet.java
 C:\Users\Filippo\Documents\WebEngWorkspace\SoccorsoWeb\src\main\java\it\univaq\disim\webengineering\soccorsoweb\JakartaRestConfiguration.java

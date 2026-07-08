@@ -43,7 +43,7 @@ public class DashboardServlet extends HttpServlet {
             out.println("</div>");
             out.println("<p>Benvenuto! </p>");
             
-          //   sezione pulsanti per la gestione delle risorse logistiche
+            // sezione pulsanti per la gestione delle risorse logistiche
             out.println("<div style='margin-bottom: 25px; padding: 15px; background-color: #f8f9fa; border-radius: 6px; border: 1px solid #dee2e6;'>");
             out.println("<span style='font-weight: bold; color: #495057; margin-right: 15px;'>Gestione logistica:</span>");
             out.println("<a href='GestioneMezzi' style='background-color: #6c757d; color: white; padding: 8px 14px; text-decoration: none; border-radius: 4px; font-weight: bold; margin-right: 10px; font-size: 14px;'>Gestisci mezzi</a>");
@@ -59,8 +59,11 @@ public class DashboardServlet extends HttpServlet {
                 out.println("<table border='1' cellpadding='10' cellspacing='0' style='width:100%; border-collapse: collapse; text-align: left; margin-bottom: 40px;'>");
                 out.println("<tr style='background-color: #e9ecef;'><th>ID</th><th>Segnalante</th><th>Posizione</th><th>Descrizione Emergenza</th><th>Azione</th></tr>");
                 
-                String sqlAttive = "SELECT id_richiesta, nome_segnalante, posizione, descrizione FROM richiesta_soccorso WHERE stato = 'ATTIVA' ORDER BY id_richiesta DESC";
-                try (PreparedStatement stmt1 = conn.prepareStatement(sqlAttive);
+                String sqlAttive = "SELECT id_richiesta, nome_segnalante, Urban, posizione, descrizione FROM richiesta_soccorso WHERE stato = 'ATTIVA' ORDER BY id_richiesta DESC";
+                // Modifica cautelativa: usiamo il tuo schema originale se non dovesse esserci Urban
+                String sqlAttiveSafe = "SELECT id_richiesta, nome_segnalante, posizione, descrizione FROM richiesta_soccorso WHERE stato = 'ATTIVA' ORDER BY id_richiesta DESC";
+                
+                try (PreparedStatement stmt1 = conn.prepareStatement(sqlAttiveSafe);
                      ResultSet rs1 = stmt1.executeQuery()) {
                     
                     boolean ciSonoAttive = false;
@@ -72,7 +75,13 @@ public class DashboardServlet extends HttpServlet {
                         out.println("<td>" + rs1.getString("nome_segnalante") + "</td>");
                         out.println("<td>" + rs1.getString("posizione") + "</td>");
                         out.println("<td>" + rs1.getString("descrizione") + "</td>");
-                        out.println("<td><a href='GestioneRichiestaServletDallAdmin?id=" + id + "' style='background-color: #007bff; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-weight: bold;'>Assegna Risorse</a></td>");
+                        
+                        // INNESTO: Assegna Risorse affiancato al nuovo pulsante rosso per Annullare/Ignorare
+                        out.println("<td>");
+                        out.println("<a href='GestioneRichiestaServletDallAdmin?id=" + id + "' style='background-color: #007bff; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-weight: bold; margin-right: 8px; display: inline-block;'>Assegna Risorse</a>");
+                        out.println("<a href='IgnoraRichiesta?id=" + id + "' style='background-color: #dc3545; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;' onclick=\"return confirm('Sei sicuro di voler ignorare e archiviare questa richiesta?');\">Ignora</a>");
+                        out.println("</td>");
+                        
                         out.println("</tr>");
                     }
                     if (!ciSonoAttive) {
@@ -101,7 +110,7 @@ public class DashboardServlet extends HttpServlet {
                         out.println("<td>" + rs2.getString("obiettivo") + "</td>");
                         out.println("<td><span style='color: red; font-weight: bold;'>IN CORSO</span></td>");
                         out.println("<td style='text-align: center; width: 160px;'>");
-                        out.println("<a href='DettaglioMissioneServlet?id_missione=" + idM + "' style='display: block; text-align: center; background-color: #17a2b8; color: white; padding: 6px 0; text-decoration: none; border-radius: 4px; font-weight: bold; margin-bottom: 6px; width: 140px; margin-left: auto; margin-right: auto;'>Diario di Bordo</a>");
+                        out.println("<a href='DettaglioMissioneServlet?id_missione=" + idM + "' style='display: block; text-align: center; background-color: #17a2b8; color: white; padding: 6px 0; text-decoration: none; border-radius: 4px; font-weight: bold; margin-bottom: 6px; width: 140px; margin-left: auto; margin-right: auto;'>Dettaglio missione</a>");
                         out.println("<a href='ConcludiMissioneServlet?id_missione=" + idM + "' style='display: block; text-align: center; background-color: #28a745; color: white; padding: 6px 0; text-decoration: none; border-radius: 4px; font-weight: bold; width: 140px; margin-left: auto; margin-right: auto;'>Termina Intervento</a>");
                         out.println("</td>");
                         out.println("</tr>");

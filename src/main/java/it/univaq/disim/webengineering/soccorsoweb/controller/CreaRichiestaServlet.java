@@ -20,7 +20,7 @@ public class CreaRichiestaServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        //  raccoglie i dati del form HTML
+        // Raccoglie i dati del form HTML
         String nome = request.getParameter("nome_segnalante");
         String email = request.getParameter("email_segnalante");
         String posizione = request.getParameter("posizione");
@@ -28,11 +28,9 @@ public class CreaRichiestaServlet extends HttpServlet {
         String captcha = request.getParameter("captcha");
         String ipOrigine = request.getRemoteAddr();
 
-// Controllo captcha semplice: 3 + 4 = 7
+        // Controllo captcha semplice: 3 + 4 = 7
         if (captcha == null || !captcha.trim().equals("7")) {
-            // Imposta il tipo di risposta HTTP come pagina HTML con codifica UTF-8.
             response.setContentType("text/html;charset=UTF-8");
-// Crea una risposta HTML da mostrare all'utente.
             try (PrintWriter out = response.getWriter()) {
                 out.println("<!DOCTYPE html>");
                 out.println("<html lang='it'>");
@@ -44,26 +42,24 @@ public class CreaRichiestaServlet extends HttpServlet {
                 out.println("</body>");
                 out.println("</html>");
             }
-            // Interrompe l'esecuzione della servlet.
-            // Se il captcha è sbagliato, la richiesta NON viene salvata nel database.
             return;
         }
-// Se il captcha è corretto, viene generata una stringa casuale.
-// Questo token servirà per creare il link di convalida della richiesta.
+
+        // Se il captcha è corretto, viene generata una stringa casuale per il link di convalida
         String tokenConvalida = UUID.randomUUID().toString();
 
-        // salva la richiesta nel db, con stato di default 'IN_ATTESA'
+        // Salva la richiesta nel db, con stato di default 'IN_ATTESA'
         boolean salvato = false;
         try (Connection conn = DBManager.getConnection()) {
 
- // Controllo anti-spam via email:
-// la stessa email non può inviare più richieste entro 10 minuti
+            // CONTROLLO ANTISPAM POTENZIATO:
+            // Blocca se inviata negli ultimi 10 minuti OPPURE se esiste già una richiesta ATTIVA o IN_CORSO con questa email
             String sqlSpamEmail = """
-    SELECT COUNT(*)
-    FROM richiesta_soccorso
-    WHERE email_segnalante = ?
-      AND timestamp_creazione >= NOW() - INTERVAL 10 MINUTE
-""";
+                SELECT COUNT(*)
+                FROM richiesta_soccorso
+                WHERE email_segnalante = ?
+                  AND (timestamp_creazione >= NOW() - INTERVAL 10 MINUTE OR stato IN ('ATTIVA', 'IN_CORSO'))
+            """;
 
             try (PreparedStatement spam_statement = conn.prepareStatement(sqlSpamEmail)) {
                 spam_statement.setString(1, email);
@@ -78,17 +74,18 @@ public class CreaRichiestaServlet extends HttpServlet {
                             out.println("<head><meta charset='UTF-8'><title>Richiesta bloccata</title></head>");
                             out.println("<body style='font-family: Arial; text-align: center; padding-top: 50px;'>");
                             out.println("<h1 style='color: red;'>Richiesta bloccata</h1>");
-                            out.println("<p>Hai già inviato una richiesta con questa email negli ultimi 10 minuti.</p>");
-                            out.println("<p>Attendi qualche minuto prima di inviarne un'altra.</p>");
+                            out.println("<p>Impossibile inviare la richiesta. Hai già una segnalazione attiva in corso sul campo oppure hai provato a inviare un duplicato negli ultimi 10 minuti.</p>");
+                            out.println("<p>Il nostro team sta già verificando o gestendo la tua situazione.</p>");
                             out.println("<br><a href='index.html'>Torna al form</a>");
                             out.println("</body>");
                             out.println("</html>");
                         }
-
-                        return;
+                        return; // Interrompe il salvataggio
                     }
                 }
             }
+
+            // Inserimento della nuova richiesta se supera lo scudo antispam
             String sql = "INSERT INTO richiesta_soccorso (descrizione, posizione, nome_segnalante, email_segnalante, ip_origine, token_convalida, stato) "
                     + "VALUES (?, ?, ?, ?, ?, ?, 'IN_ATTESA')";
 
@@ -109,6 +106,7 @@ public class CreaRichiestaServlet extends HttpServlet {
             e.printStackTrace();
         }
 
+        // Output grafico della finta email di convalida
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
             out.println("<!DOCTYPE html>");
@@ -126,7 +124,7 @@ public class CreaRichiestaServlet extends HttpServlet {
                 String linkConvalida = request.getContextPath() + "/ConvalidaServlet?token=" + tokenConvalida;
 
                 out.println("<br><a href='" + linkConvalida + "' style='background-color: #28a745; color: white; padding: 12px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;'>CONVALIDA RICHIESTA</a><br><br>");
-
+                out.println("</div>");
             } else {
                 out.println("<h2 style='color: red;'>Errore : impossibile salvare la richiesta nel database, riprovare.</h2>");
             }
