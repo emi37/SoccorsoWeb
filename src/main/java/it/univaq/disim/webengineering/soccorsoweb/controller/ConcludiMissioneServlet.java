@@ -21,7 +21,8 @@ public class ConcludiMissioneServlet extends HttpServlet {
             throws ServletException, IOException {
         
         HttpSession session = request.getSession(false);
-        if (session == null || !"ADMIN".equals(session.getAttribute("ruolo"))) {
+        if (session == null || !"ADMIN".equals(session.getAttribute("ruolo")))
+        {
             response.sendRedirect(request.getContextPath() + "/login.html");
             return;
         }
@@ -29,21 +30,23 @@ public class ConcludiMissioneServlet extends HttpServlet {
         String idMissione = request.getParameter("id_missione");
         response.setContentType("text/html;charset=UTF-8");
         
-        try (PrintWriter out = response.getWriter()) {
+        try (PrintWriter out = response.getWriter())
+        {
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
             out.println("  <meta charset='UTF-8'>");
-            // Aggiunto il viewport fondamentale per dispositivi mobili
+            // Aggiunto il viewport per dispositivi mobili
             out.println("  <meta name='viewport' content='width=device-width, initial-scale=1.0'>");
             out.println("  <title>Chiusura Intervento</title>");
             out.println("</head>");
             out.println("<body style='font-family: Arial, sans-serif; padding: 15px; background-color: #f8f9fa; margin: 0;'>");
             
-            // Modificato il container per essere fluido (width: 100% e box-sizing)
+            // Modificato il container
             out.println("<div style='max-width: 600px; width: 100%; margin: 40px auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); box-sizing: border-box;'>");
             
-            try (Connection conn = DBManager.getConnection()) {
+            try (Connection conn = DBManager.getConnection())
+            {
                 String sql = "SELECT id_missione, id_richiesta, obiettivo FROM missione WHERE id_missione = ? AND stato = 'IN_CORSO'";
                 try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                     stmt.setString(1, idMissione);
@@ -100,12 +103,17 @@ public class ConcludiMissioneServlet extends HttpServlet {
         String livelloSuccesso = request.getParameter("voto_successo");
         String commenti = request.getParameter("commenti");
         
+        // Recupero ID utente
+        int idAdminLoggato = (int) session.getAttribute("id_utente");
+        
         boolean terminata = false;
 
         try (Connection conn = DBManager.getConnection()) {
+            // Disabilitiamo l'autocommit
             conn.setAutoCommit(false);
             
             try {
+                // Aggiorno lo stato della missione
                 String sqlMissione = "UPDATE missione SET stato = 'CHIUSA', livello_successo = ?, commenti = ?, timestamp_fine = CURRENT_TIMESTAMP WHERE id_missione = ?";
                 try (PreparedStatement stmtM = conn.prepareStatement(sqlMissione)) {
                     stmtM.setInt(1, Integer.parseInt(livelloSuccesso));
@@ -114,16 +122,29 @@ public class ConcludiMissioneServlet extends HttpServlet {
                     stmtM.executeUpdate();
                 }
                 
+                // Aggiorno lo stato della richiesta
                 String sqlRichiesta = "UPDATE richiesta_soccorso SET stato = 'CHIUSA' WHERE id_richiesta = ?";
                 try (PreparedStatement stmtR = conn.prepareStatement(sqlRichiesta)) {
                     stmtR.setString(1, idRichiesta);
                     stmtR.executeUpdate();
                 }
                 
+                // Inseriamo il report finale nella timeline
+                String sqlTimeline = "INSERT INTO aggiornamento_missione (id_missione, id_admin, testo_descrittivo) VALUES (?, ?, ?)";
+                try (PreparedStatement stmtT = conn.prepareStatement(sqlTimeline)) {
+                    stmtT.setInt(1, Integer.parseInt(idMissione));
+                    stmtT.setInt(2, idAdminLoggato);
+                    // Aggiungiamo un'etichetta testuale per farlo risaltare
+                    stmtT.setString(3, "CHIUSURA MISSIONE. Rapporto finale: " + commenti);
+                    stmtT.executeUpdate();
+                }
+                
+                // Se tutte le query vanno a buon fine, salviamo
                 conn.commit();
                 terminata = true;
                 
             } catch (Exception ex) {
+                // Se fallisce qualcosa, annulliamo tutto
                 conn.rollback();
                 ex.printStackTrace();
             } finally {
@@ -140,8 +161,9 @@ public class ConcludiMissioneServlet extends HttpServlet {
             out.println("<html><body>");
             if (terminata) {
                 out.println("<script>");
-                out.println("alert('Intervento concluso. I mezzi e gli operatori sono di nuovo disponibili!');");
-                out.println("window.location.href='" + request.getContextPath() + "/DashboardServlet';");
+                out.println("alert('Intervento concluso con successo. Report registrato nel diario!');");
+                // Modifica per rimandare l'utente al Dettaglio così vede subito il risultato del suo lavoro!
+                out.println("window.location.href='" + request.getContextPath() + "/DettaglioMissioneServlet?id_missione=" + idMissione + "';");
                 out.println("</script>");
             } else {
                 out.println("<h2>Errore durante l'archiviazione del report.</h2>");
