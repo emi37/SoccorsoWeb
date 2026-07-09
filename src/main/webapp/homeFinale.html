@@ -2,31 +2,34 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SoccorsoWeb - Richieste di soccorso</title>
+    <style>
+        /* Regola d'oro per evitare che padding e bordi sforino le larghezze dei div */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+    </style>
 </head>
-<body style="font-family: Arial, sans-serif; padding: 20px; background-color: #f4f6f9; margin: 0;">
+<body style="font-family: Arial, sans-serif; padding: 15px; background-color: #f4f6f9; margin: 0;">
 
-    <div style="display: flex; justify-content: flex-end; max-width: 1000px; margin: 10px auto; padding: 10px 0;">
-    <a href="login.html" style="background-color: #007bff; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 14px; transition: background-color 0.2s;">Area riservata</a>
-</div>
+    <div style="display: flex; justify-content: flex-end; max-width: 1000px; width: 100%; margin: 10px auto; padding: 5px 0;">
+        <a href="login.html" style="background-color: #007bff; color: white; padding: 10px 18px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 14px; text-align: center;">Area riservata</a>
+    </div>
 
-    <div style="max-width: 700px; margin: 50px auto; background: white; padding: 40px; border-radius: 8px; box-shadow: 0 0 15px rgba(0,0,0,0.05); text-align: center;">
+    <div style="max-width: 700px; width: 100%; margin: 30px auto; background: white; padding: 40px 20px; border-radius: 8px; box-shadow: 0 0 15px rgba(0,0,0,0.05); text-align: center;">
         
-        <h1 style="color: #333; margin-top: 0; font-size: 32px;">Portale per le richieste di soccorso</h1>
-            <p style="color: #666; font-size: 16px; line-height: 1.6; margin-bottom: 35px;">
-            Benvenuto sul sistema per fare richiesta rapida di soccorsi stradali ed emergenze sul territorio. 
+        <h1 style="color: #333; margin-top: 0; font-size: 28px; line-height: 1.2;">Portale per le richieste di soccorso</h1>
+        
+        <p style="color: #666; font-size: 16px; line-height: 1.6; margin-bottom: 35px; padding: 0 10px;">
+            Benvenuto sul sistema per fare richiesta rapida di soccorsi stradali ed emergenze sul territorio. <br>
             Se ti trovi in una situazione di pericolo o hai bisogno di assistenza medica immediata, fai la tua richiesta qui sotto.
-               </p> <!--..... -->
+        </p>
 
-<!-- Bottone centrale VERDE che collega alla pagina di richiesta soccorso cioe la form per le richieste -->
-<div style="margin-bottom: 15px;">
-    <a href="index.html" style="display: inline-block; background-color: #28a745; color: white; padding: 16px 32px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 18px; box-shadow: 0 4px 6px rgba(40, 167, 69, 0.2); transition: background-color 0.2s;">Richiedi soccorso immediato</a>
-</div>
+        <div style="margin-bottom: 15px; padding: 0 10px;">
+            <a href="index.html" style="display: inline-block; width: 100%; max-width: 380px; background-color: #28a745; color: white; padding: 16px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 18px; box-shadow: 0 4px 6px rgba(40, 167, 69, 0.2); text-align: center;">Richiedi soccorso immediato</a>
+        </div>
         
-     <!--   <p style="color: #888; font-size: 13px; margin-top: 20px;">
-            Il servizio è attivo 24 ore su 24 in coordinamento con le squadre di emergenza sul campo.
-        </p>       -->
-
     </div>
 
 </body>

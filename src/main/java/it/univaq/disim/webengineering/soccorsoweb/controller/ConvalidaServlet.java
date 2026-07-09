@@ -14,7 +14,6 @@ import jakarta.servlet.http.HttpServletResponse;
 @WebServlet(name = "ConvalidaServlet", urlPatterns = {"/ConvalidaServlet"})
 public class ConvalidaServlet extends HttpServlet {
 
-    // Usiamo doGet perché cliccare un link in una mail è sempre una richiesta GET
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -28,11 +27,12 @@ public class ConvalidaServlet extends HttpServlet {
         if (token != null && !token.trim().isEmpty()) {
             
             try (Connection conn = DBManager.getConnection()) {
-                // 2. INNESTO TEMPORALE: cerco la richiesta col token esatto,
-                // ma eseguo l'UPDATE solo se siamo dentro la finestra dei 10 minuti dalla creazione
+                // 2. INNESTO TEMPORALE + AGGIORNAMENTO TIMESTAMP_CONVALIDA (Punto 2 smarcato!)
                 String sql = """
                     UPDATE richiesta_soccorso 
-                    SET stato = 'ATTIVA', token_convalida = NULL 
+                    SET stato = 'ATTIVA', 
+                        token_convalida = NULL,
+                        timestamp_convalida = CURRENT_TIMESTAMP 
                     WHERE token_convalida = ? 
                       AND stato = 'IN_ATTESA'
                       AND timestamp_creazione >= NOW() - INTERVAL 10 MINUTE
@@ -51,23 +51,35 @@ public class ConvalidaServlet extends HttpServlet {
             }
         }
         
-        // 3. Risultato a schermo
+        // 3. Risultato a schermo (Sistemato con layout fluido e reattivo per mobile)
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
             out.println("<!DOCTYPE html>");
             out.println("<html lang='it'>");
-            out.println("<head><meta charset='UTF-8'><title>Esito della convalida:</title></head>");
-            out.println("<body style='font-family: Arial; text-align: center; padding-top: 50px;'>");
+            out.println("<head>");
+            out.println("  <meta charset='UTF-8'>");
+            // Inserito viewport per la visualizzazione corretta su smartphone
+            out.println("  <meta name='viewport' content='width=device-width, initial-scale=1.0'>");
+            out.println("  <title>Esito della convalida</title>");
+            out.println("</head>");
+            out.println("<body style='font-family: Arial, sans-serif; text-align: center; background-color: #f4f6f9; padding: 20px; margin: 0;'>");
+            
+            // Box contenitore fluido responsivo
+            out.println("  <div style='max-width: 600px; width: 100%; margin: 60px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 15px rgba(0,0,0,0.05); box-sizing: border-box;'>");
             
             if (validazioneRiuscita) {
-                out.println("<h1 style='color: green;'>La sua richiesta è stata convalidata con successo ed è ora <b>ATTIVA</b></h1>");
-                out.println("<p>Stiamo preparando i soccorsi, saremo da voi il prima possibile.</p>");
+                out.println("<h1 style='color: #28a745; margin-top: 0;'>La sua richiesta è stata convalidata con successo!</h1>");
+                out.println("<p style='font-size: 18px; color: #333;'>Stato attuale: <b style='background-color: #d4edda; color: #155724; padding: 4px 8px; border-radius: 4px;'>ATTIVA</b></p>");
+                out.println("<p style='color: #666; line-height: 1.5;'>Stiamo preparando i soccorsi, la centrale operativa ha preso in carico la segnalazione.</p>");
             } else {
-                out.println("<h1 style='color: red;'>Errore nella convalida</h1>");
-                out.println("<p>Il link di convalida non è valido: potrebbe essere errato oppure <b>scaduto (valido solo per 10 minuti)</b>.</p>");
-                out.println("<p>Per favore, effettui una nuova richiesta <a href='index.html'>qui</a>.</p>");
+                out.println("<h1 style='color: #dc3545; margin-top: 0;'>Errore nella convalida</h1>");
+                out.println("<p style='color: #666; line-height: 1.5;'>Il link di convalida non è valido: potrebbe essere già stato utilizzato oppure è <b>scaduto (valido solo per 10 minuti)</b>.</p>");
+                out.println("<p style='color: #666;'>Per favore, effettui una nuova richiesta.</p>");
             }
-            out.println("<br><a href='index.html'>Torna al form iniziale</a>");
+            
+            out.println("<hr style='border: 0; border-top: 1px solid #dee2e6; margin: 25px 0;'>");
+            out.println("<a href='index.html' style='display: inline-block; background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-weight: bold; transition: background 0.2s;'>Torna al form iniziale</a>");
+            out.println("</div>");
             out.println("</body>");
             out.println("</html>");
         }

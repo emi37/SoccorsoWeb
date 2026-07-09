@@ -6,7 +6,6 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Statement;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -39,16 +38,24 @@ public class DashboardOperatoreServlet extends HttpServlet {
         try (PrintWriter out = response.getWriter()) {
             out.println("<!DOCTYPE html>");
             out.println("<html lang='it'>");
-            out.println("<head><meta charset='UTF-8'><title>Area riservata per gli operatori</title></head>");
-            out.println("<body style='font-family: Arial; padding: 20px; background-color: #e9ecef;'>");
-            out.println("<div style='max-width: 900px; margin: auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 0 15px rgba(0,0,0,0.1);'>");
+            out.println("<head>");
+            out.println("  <meta charset='UTF-8'>");
+            // Viewport responsive per i dispositivi mobili
+            out.println("  <meta name='viewport' content='width=device-width, initial-scale=1.0'>");
+            out.println("  <title>Area riservata per gli operatori</title>");
+            out.println("</head>");
+            out.println("<body style='font-family: Arial, sans-serif; padding: 15px; background-color: #e9ecef; margin: 0;'>");
             
-            out.println("<div style='display: flex; justify-content: space-between; align-items: center;'>");
-            out.println("<h2>Pannello operatore: " + nomeOperatore + "</h2>");
-            out.println("<a href='" + request.getContextPath() + "/LogoutServlet' style='color: red; font-weight: bold; text-decoration: none;'>Esci</a>");
+            // Box contenitore centrale fluido
+            out.println("<div style='max-width: 900px; width: 100%; margin: 20px auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 0 15px rgba(0,0,0,0.1); box-sizing: border-box;'>");
+            
+            // Intestazione con Flexbox responsive
+            out.println("<div style='display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;'>");
+            out.println("  <h2 style='margin: 0; color: #333;'>Pannello operatore: " + nomeOperatore + "</h2>");
+            out.println("  <a href='" + request.getContextPath() + "/LogoutServlet' style='color: red; font-weight: bold; text-decoration: none; font-size: 16px;'>Esci</a>");
             out.println("</div>");
-            out.println("<p>Qui puoi monitorare lo stato delle missioni alle quali sei stato assegnato e aggiornare il tuo profilo professionale.</p>");
-            out.println("<hr><br>");
+            out.println("<p style='color: #666; line-height: 1.5;'>Qui puoi monitorare lo stato delle missioni alle quali sei stato assegnato e aggiornare il tuo profilo professionale.</p>");
+            out.println("<hr style='border: 0; border-top: 1px solid #dee2e6; margin: 20px 0;'>");
 
             try (Connection conn = DBManager.getConnection()) {
                 
@@ -80,12 +87,19 @@ public class DashboardOperatoreServlet extends HttpServlet {
                     }
                 }
 
-                // Tabella elenco missioni allineata a m.livello_successo e assegnazione_operatori_missione
-                out.println("<h3>Elenco delle tue missioni:</h3>");
-                out.println("<table border='1' cellpadding='10' cellspacing='0' style='width:100%; border-collapse: collapse; text-align: left;'>");
-                out.println("<tr style='background-color: #f8f9fa;'><th>Id missione</th><th>Obiettivo</th><th>Posizione</th><th>Stato</th><th>Esito (0-5)</th></tr>");
+                out.println("<h3 style='color: #333; margin-top: 20px;'>Elenco delle tue missioni:</h3>");
                 
-                // Query corretta: estratto m.livello_successo invece di m.voto
+                // Div responsive che isola lo scorrimento della tabella su mobile
+                out.println("<div style='width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid #dee2e6; border-radius: 4px; margin-top: 10px;'>");
+                out.println("  <table style='width: 100%; border-collapse: collapse; text-align: left; min-width: 650px;'>");
+                out.println("    <tr style='background-color: #f8f9fa; border-bottom: 2px solid #dee2e6;'>");
+                out.println("      <th style='padding: 12px;'>Id missione</th>");
+                out.println("      <th style='padding: 12px;'>Obiettivo</th>");
+                out.println("      <th style='padding: 12px;'>Posizione</th>");
+                out.println("      <th style='padding: 12px;'>Stato</th>");
+                out.println("      <th style='padding: 12px;'>Esito (0-5)</th>");
+                out.println("    </tr>");
+                
                 String sql = "SELECT m.id_missione, m.obiettivo, m.posizione, m.stato, m.livello_successo "
                            + "FROM missione m "
                            + "JOIN assegnazione_operatori_missione aom ON m.id_missione = aom.id_missione "
@@ -103,52 +117,53 @@ public class DashboardOperatoreServlet extends HttpServlet {
                             String stileStato = "";
                             
                             if ("IN_CORSO".equals(stato)) {
-                                stileStato = "background-color: #f8d7da; color: #721c24; font-weight: bold; padding: 4px 8px; border-radius: 4px;";
+                                stileStato = "background-color: #f8d7da; color: #721c24; font-weight: bold; padding: 4px 8px; border-radius: 4px; font-size: 13px;";
                             } else {
-                                stileStato = "background-color: #d4edda; color: #155724; padding: 4px 8px; border-radius: 4px;";
+                                stileStato = "background-color: #d4edda; color: #155724; padding: 4px 8px; border-radius: 4px; font-size: 13px;";
                             }
                             
-                            // Lettura corretta del campo livello_successo dal recordset
                             int livelloSuccesso = rs.getInt("livello_successo");
                             String visualizzaVoto = rs.wasNull() ? "-" : livelloSuccesso + " / 5";
                             
-                            out.println("<tr>");
-                            out.println("<td><b>#" + rs.getInt("id_missione") + "</b></td>");
-                            out.println("<td>" + rs.getString("obiettivo") + "</td>");
-                            out.println("<td>" + rs.getString("posizione") + "</td>");
-                            out.println("<td><span style='" + stileStato + "'>" + stato.toLowerCase() + "</span></td>");
-                            out.println("<td>" + visualizzaVoto + "</td>");
+                            out.println("<tr style='border-bottom: 1px solid #dee2e6;'>");
+                            out.println("  <td style='padding: 12px;'><b>#" + rs.getInt("id_missione") + "</b></td>");
+                            out.println("  <td style='padding: 12px; max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'>" + rs.getString("objective") + "</td>");
+                            out.println("  <td style='padding: 12px;'>" + rs.getString("posizione") + "</td>");
+                            out.println("  <td style='padding: 12px;'><span style='" + stileStato + "'>" + stato.toLowerCase() + "</span></td>");
+                            out.println("  <td style='padding: 12px; font-weight: bold;'>" + visualizzaVoto + "</td>");
+                            out.println("  <td style='padding: 12px; font-weight: bold;'>" + visualizzaVoto + "</td>");
                             out.println("</tr>");
                         }
                         
                         if (!haMissioni) {
-                            out.println("<tr><td colspan='5' style='text-align: center; color: gray;'>Non sei ancora stato assegnato a nessuna missione.</td></tr>");
+                            out.println("<tr><td colspan='5' style='text-align: center; color: gray; padding: 20px;'>Non sei ancora stato assegnato a nessuna missione.</td></tr>");
                         }
                     }
                 }
-                out.println("</table>");
+                out.println("  </table>");
+                out.println("</div>");
                 
             } catch (Exception e) {
                 e.printStackTrace();
                 out.println("<p style='color: red;'>Errore durante il recupero dei dati delle missioni: <b>" + e.getMessage() + "</b></p>");
             }
             
-            // Form di modifica profilo
-            out.println("<br><hr><br>");
-            out.println("<h3>Aggiorna profilo e competenze</h3>");
-            out.println("<form action='" + request.getContextPath() + "/DashboardOperatoreServlet' method='POST' style='background: #f8f9fa; padding: 20px; border-radius: 6px; border: 1px solid #dee2e6;'>");
+            // Form di modifica profilo strutturato in modalità fluida
+            out.println("<br><hr style='border: 0; border-top: 1px solid #dee2e6; margin: 25px 0;'><br>");
+            out.println("<h3 style='color: #333;'>Aggiorna profilo e competenze</h3>");
+            out.println("<form action='" + request.getContextPath() + "/DashboardOperatoreServlet' method='POST' style='background: #f8f9fa; padding: 20px; border-radius: 6px; border: 1px solid #dee2e6; box-sizing: border-box;'>");
             
-            out.println("<div style='margin-bottom: 15px;'>");
-            out.println("<label for='patenti'><b>Patenti di guida possedute (es. b, c, d):</b></label><br>");
-            out.println("<input type='text' id='patenti' name='patenti' value='" + patentiCorrenti + "' placeholder='Es. b, c' style='width: 100%; padding: 8px; margin-top: 5px; border-radius: 4px; border: 1px solid #ccc;'>");
+            out.println("<div style='margin-bottom: 18px;'>");
+            out.println("  <label for='patenti' style='font-weight: bold; color: #495057;'>Patenti di guida possedute (es. b, c, d):</label><br>");
+            out.println("  <input type='text' id='patenti' name='patenti' value='" + patentiCorrenti + "' placeholder='Es. b, c' style='width: 100%; padding: 10px; margin-top: 6px; border-radius: 4px; border: 1px solid #ced4da; box-sizing: border-box; font-size: 14px;'>");
             out.println("</div>");
             
-            out.println("<div style='margin-bottom: 15px;'>");
-            out.println("<label for='abilita'><b>Abilità extra e specializzazioni:</b></label><br>");
-            out.println("<input type='text' id='abilita' name='abilita' value='" + abilitaCorrenti + "' placeholder='Es. primo soccorso, soccorso fluviale' style='width: 100%; padding: 8px; margin-top: 5px; border-radius: 4px; border: 1px solid #ccc;'>");
+            out.println("<div style='margin-bottom: 22px;'>");
+            out.println("  <label for='abilita' style='font-weight: bold; color: #495057;'>Abilità extra e specializzazioni:</label><br>");
+            out.println("  <input type='text' id='abilita' name='abilita' value='" + abilitaCorrenti + "' placeholder='Es. primo soccorso, soccorso fluviale' style='width: 100%; padding: 10px; margin-top: 6px; border-radius: 4px; border: 1px solid #ced4da; box-sizing: border-box; font-size: 14px;'>");
             out.println("</div>");
             
-            out.println("<button type='submit' style='background-color: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;'>Salva modifiche scheda</button>");
+            out.println("<button type='submit' style='background-color: #28a745; color: white; padding: 12px 24px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 15px; width: 100%; max-width: 250px; box-sizing: border-box;'>Salva modifiche scheda</button>");
             out.println("</form>");
             
             out.println("</div></body></html>");
@@ -184,13 +199,11 @@ public class DashboardOperatoreServlet extends HttpServlet {
                     for (String t : tokens) {
                         String tokenPuto = t.trim().toUpperCase();
                         if (!tokenPuto.isEmpty()) {
-                            // Inserisce o ignora il codice della patente
                             String insPat = "INSERT IGNORE INTO patente (codice) VALUES (?)";
                             try (PreparedStatement stInsPat = conn.prepareStatement(insPat)) {
                                 stInsPat.setString(1, tokenPuto);
                                 stInsPat.executeUpdate();
                             }
-                            // Associa la patente all'utente
                             String insUserPat = "INSERT INTO utente_patente (id_utente, id_patente) "
                                               + "VALUES (?, (SELECT id_patente FROM patente WHERE codice = ?))";
                             try (PreparedStatement stInsUserPat = conn.prepareStatement(insUserPat)) {
@@ -214,13 +227,11 @@ public class DashboardOperatoreServlet extends HttpServlet {
                     for (String t : tokens) {
                         String tokenPuto = t.trim().toLowerCase();
                         if (!tokenPuto.isEmpty()) {
-                            // Inserisce o ignora il nome dell'abilità
                             String insAb = "INSERT IGNORE INTO abilita (nome) VALUES (?)";
                             try (PreparedStatement stInsAb = conn.prepareStatement(insAb)) {
                                 stInsAb.setString(1, tokenPuto);
                                 stInsAb.executeUpdate();
                             }
-                            // Associa l'abilità all'utente
                             String insUserAb = "INSERT INTO utente_abilita (id_utente, id_abilita) "
                                              + "VALUES (?, (SELECT id_abilita FROM abilita WHERE nome = ?))";
                             try (PreparedStatement stInsUserAb = conn.prepareStatement(insUserAb)) {
@@ -236,6 +247,8 @@ public class DashboardOperatoreServlet extends HttpServlet {
             } catch (Exception ex) {
                 conn.rollback();
                 throw ex;
+            } finally {
+                conn.setAutoCommit(true);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -248,6 +261,7 @@ public class DashboardOperatoreServlet extends HttpServlet {
             out.println("<script>");
             out.println("alert('Profilo aggiornato con successo!');");
             out.println("window.location.href='" + request.getContextPath() + "/DashboardOperatoreServlet';");
+            out.println("<script>");
             out.println("</script>");
             out.println("</body></html>");
         }

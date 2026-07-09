@@ -32,7 +32,7 @@ public class IgnoraRichiestaServlet extends HttpServlet {
             try {
                 int idRichiesta = Integer.parseInt(idParam);
                 
-                // 3. Query per marcare la richiesta come 'IGNORATA' (o stato logico analogo nel tuo DB)
+                // 3. Query per marcare la richiesta come 'IGNORATA'
                 String query = "UPDATE richiesta_soccorso SET stato = 'IGNORATA' WHERE id_richiesta = ?";
                 
                 try (Connection conn = DBManager.getConnection();
@@ -51,5 +51,3 @@ public class IgnoraRichiestaServlet extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/DashboardServlet");
     }
 }
-
-

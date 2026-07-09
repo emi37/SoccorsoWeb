@@ -32,9 +32,16 @@ public class ConcludiMissioneServlet extends HttpServlet {
         try (PrintWriter out = response.getWriter()) {
             out.println("<!DOCTYPE html>");
             out.println("<html>");
-            out.println("<head><title>Chiusura Intervento</title></head>");
-            out.println("<body style='font-family: Arial; padding: 30px; background-color: #f8f9fa;'>");
-            out.println("<div style='max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1);'>");
+            out.println("<head>");
+            out.println("  <meta charset='UTF-8'>");
+            // Aggiunto il viewport fondamentale per dispositivi mobili
+            out.println("  <meta name='viewport' content='width=device-width, initial-scale=1.0'>");
+            out.println("  <title>Chiusura Intervento</title>");
+            out.println("</head>");
+            out.println("<body style='font-family: Arial, sans-serif; padding: 15px; background-color: #f8f9fa; margin: 0;'>");
+            
+            // Modificato il container per essere fluido (width: 100% e box-sizing)
+            out.println("<div style='max-width: 600px; width: 100%; margin: 40px auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); box-sizing: border-box;'>");
             
             try (Connection conn = DBManager.getConnection()) {
                 String sql = "SELECT id_missione, id_richiesta, obiettivo FROM missione WHERE id_missione = ? AND stato = 'IN_CORSO'";
@@ -43,26 +50,29 @@ public class ConcludiMissioneServlet extends HttpServlet {
                     try (ResultSet rs = stmt.executeQuery()) {
                         
                         if (rs.next()) {
-                            out.println("<h2>Chiusura report missione #" + rs.getInt("id_missione") + "</h2>");
+                            out.println("<h2 style='margin-top: 0; color: #333;'>Chiusura report missione #" + rs.getInt("id_missione") + "</h2>");
                             out.println("<p><b>ID Richiesta collegata:</b> " + rs.getInt("id_richiesta") + "</p>");
                             out.println("<p><b>Dettaglio operazione:</b> " + rs.getString("obiettivo") + "</p>");
-                            out.println("<hr>");
+                            out.println("<hr style='border: 0; border-top: 1px solid #dee2e6; margin: 20px 0;'>");
                             
-                            // Corretto il path del form d'invio per evitare 404
                             out.println("<form action='" + request.getContextPath() + "/ConcludiMissioneServlet' method='POST'>");
                             out.println("<input type='hidden' name='id_missione' value='" + idMissione + "'>");
                             out.println("<input type='hidden' name='id_richiesta' value='" + rs.getInt("id_richiesta") + "'>");
                             
-                            out.println("<label for='voto'><b>Valutazione esito intervento (0-5):</b></label><br>");
-                            out.println("<input type='number' id='voto' name='voto_successo' min='0' max='5' value='5' required><br><br>");
+                            out.println("<div style='margin-bottom: 18px;'>");
+                            out.println("  <label for='voto' style='font-weight: bold; color: #495057;'>Valutazione esito intervento (0-5):</label><br>");
+                            out.println("  <input type='number' id='voto' name='voto_successo' min='0' max='5' value='5' required style='width: 100%; max-width: 120px; padding: 10px; margin-top: 6px; border: 1px solid #ced4da; border-radius: 4px; box-sizing: border-box;'>");
+                            out.println("</div>");
                             
-                            out.println("<label for='commenti'><b>Relazione finale della squadra:</b></label><br>");
-                            out.println("<textarea id='commenti' name='commenti' rows='5' style='width:100%;' required placeholder='Scrivi qui come si è concluso il soccorso sul posto...'></textarea><br><br>");
+                            out.println("<div style='margin-bottom: 20px;'>");
+                            out.println("  <label for='commenti' style='font-weight: bold; color: #495057;'>Relazione finale della squadra:</label><br>");
+                            out.println("  <textarea id='commenti' name='commenti' rows='5' style='width: 100%; padding: 10px; margin-top: 6px; border: 1px solid #ced4da; border-radius: 4px; box-sizing: border-box; font-family: Arial, sans-serif; resize: vertical;' required placeholder='Scrivi qui come si è concluso il soccorso sul posto...'></textarea>");
+                            out.println("</div>");
                             
-                            out.println("<button type='submit' style='background-color: #28a745; color: white; padding: 12px 24px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; width: 100%;'>REGISTRA CHIUSURA E LIBERA RISORSE</button>");
+                            out.println("<button type='submit' style='background-color: #28a745; color: white; padding: 12px 24px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; width: 100%; font-size: 16px; transition: background 0.2s;'>REGISTRA CHIUSURA E LIBERA RISORSE</button>");
                             out.println("</form>");
                         } else {
-                            out.println("<p style='color: red;'>Missione non trovata o già conclusa.</p>");
+                            out.println("<p style='color: red; font-weight: bold;'>Missione non trovata o già conclusa.</p>");
                         }
                     }
                 }
@@ -70,7 +80,7 @@ public class ConcludiMissioneServlet extends HttpServlet {
                 e.printStackTrace();
             }
             
-            out.println("<br><br><a href='" + request.getContextPath() + "/DashboardServlet'>Annulla e torna alla Dashboard</a>");
+            out.println("<br><br><a href='" + request.getContextPath() + "/DashboardServlet' style='color: #007bff; text-decoration: none; font-weight: bold;'>Annulla e torna alla Dashboard</a>");
             out.println("</div></body></html>");
         }
     }
@@ -96,7 +106,6 @@ public class ConcludiMissioneServlet extends HttpServlet {
             conn.setAutoCommit(false);
             
             try {
-                // 1. Aggiorniamo la tabella missione portando lo stato a CHIUSA
                 String sqlMissione = "UPDATE missione SET stato = 'CHIUSA', livello_successo = ?, commenti = ?, timestamp_fine = CURRENT_TIMESTAMP WHERE id_missione = ?";
                 try (PreparedStatement stmtM = conn.prepareStatement(sqlMissione)) {
                     stmtM.setInt(1, Integer.parseInt(livelloSuccesso));
@@ -105,7 +114,6 @@ public class ConcludiMissioneServlet extends HttpServlet {
                     stmtM.executeUpdate();
                 }
                 
-                // 2. Aggiorniamo anche la richiesta originaria portando lo stato a CHIUSA
                 String sqlRichiesta = "UPDATE richiesta_soccorso SET stato = 'CHIUSA' WHERE id_richiesta = ?";
                 try (PreparedStatement stmtR = conn.prepareStatement(sqlRichiesta)) {
                     stmtR.setString(1, idRichiesta);

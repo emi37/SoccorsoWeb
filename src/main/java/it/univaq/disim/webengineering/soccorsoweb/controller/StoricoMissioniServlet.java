@@ -32,19 +32,32 @@ public class StoricoMissioniServlet extends HttpServlet {
         try (PrintWriter out = response.getWriter()) {
             out.println("<!DOCTYPE html>");
             out.println("<html lang='it'>");
-            out.println("<head><meta charset='UTF-8'><title>Storico Interventi Conclusi</title></head>");
-            out.println("<body style='font-family: Arial; padding: 20px; background-color: #f4f6f9;'>");
-            out.println("<div style='max-width: 1000px; margin: auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 0 15px rgba(0,0,0,0.05);'>");
+            out.println("<head>");
+            out.println("  <meta charset='UTF-8'>");
+            out.println("  <meta name='viewport' content='width=device-width, initial-scale=1.0'>");
+            out.println("  <title>Storico Interventi Conclusi</title>");
+            out.println("</head>");
+            out.println("<body style='font-family: Arial, sans-serif; padding: 15px; background-color: #f4f6f9; margin: 0;'>");
             
-            out.println("<div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;'>");
-            out.println("<h2>Storico delle missioni concluse</h2>");
+            // Contenitore principale fluido
+            out.println("<div style='max-width: 1000px; width: 100%; margin: 20px auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 0 15px rgba(0,0,0,0.05); box-sizing: border-box;'>");
             
-            // CORREZIONE LINK: aggiunto request.getContextPath() per reindirizzare correttamente alla dashboard
-            out.println("<a href='" + request.getContextPath() + "/DashboardServlet' style='background-color: #007bff; color: white; padding: 8px 14px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 14px;'>Torna al pannello di controllo</a>");
+            // Intestazione reattiva con Flexbox wrap
+            out.println("<div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;'>");
+            out.println("  <h2 style='margin: 0; color: #333;'>Storico delle missioni concluse</h2>");
+            out.println("  <a href='" + request.getContextPath() + "/DashboardServlet' style='background-color: #007bff; color: white; padding: 8px 14px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 14px; display: inline-block;'>Torna al pannello di controllo</a>");
             out.println("</div>");
 
-            out.println("<table border='1' cellpadding='10' cellspacing='0' style='width:100%; border-collapse: collapse; text-align: left;'>");
-            out.println("<tr style='background-color: #e9ecef;'><th>ID missione</th><th>ID richiesta</th><th>Dettagli operazione</th><th>Valutazione (0-5)</th><th>Relazione finale</th></tr>");
+            // Div di scorrimento protettivo per la tabella storica
+            out.println("<div style='width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid #dee2e6; border-radius: 4px;'>");
+            out.println("  <table style='width: 100%; border-collapse: collapse; text-align: left; min-width: 800px;'>");
+            out.println("    <tr style='background-color: #e9ecef; border-bottom: 2px solid #dee2e6;'>");
+            out.println("      <th style='padding: 12px; width: 110px;'>ID missione</th>");
+            out.println("      <th style='padding: 12px; width: 110px;'>ID richiesta</th>");
+            out.println("      <th style='padding: 12px; width: 250px;'>Dettagli operazione</th>");
+            out.println("      <th style='padding: 12px; width: 140px;'>Valutazione (0-5)</th>");
+            out.println("      <th style='padding: 12px;'>Relazione finale</th>");
+            out.println("    </tr>");
 
             // 2. Query sul DB per estrarre lo storico
             try (Connection conn = DBManager.getConnection()) {
@@ -56,29 +69,33 @@ public class StoricoMissioniServlet extends HttpServlet {
                     boolean ciSonoMissioni = false;
                     while (rs.next()) {
                         ciSonoMissioni = true;
-                        out.println("<tr>");
-                        out.println("<td><b>#" + rs.getInt("id_missione") + "</b></td>");
-                        out.println("<td>" + rs.getInt("id_richiesta") + "</td>");
-                        out.println("<td>" + rs.getString("objective" != null ? "obiettivo" : "obiettivo") + "</td>");
+                        out.println("<tr style='border-bottom: 1px solid #dee2e6;'>");
+                        out.println("  <td style='padding: 12px;'><b>#" + rs.getInt("id_missione") + "</b></td>");
+                        out.println("  <td style='padding: 12px;'>#" + rs.getInt("id_richiesta") + "</td>");
+                        out.println("  <td style='padding: 12px; max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'>" + rs.getString("obiettivo") + "</td>");
                         
-                        // Formattazione del voto esteticamente caruccia 
+                        // Formattazione estetica del livello di successo
                         int voto = rs.getInt("livello_successo");
-                        out.println("<td style='font-weight: bold; color: #28a745;'>" + voto + " / 5</td>");
+                        out.println("  <td style='padding: 12px; font-weight: bold; color: #28a745;'>" + voto + " / 5</td>");
                         
-                        out.println("<td style='color: #495057; font-style: italic;'>" + rs.getString("commenti") + "</td>");
+                        String commento = rs.getString("commenti");
+                        String testoCommento = (commento == null || commento.trim().isEmpty()) ? "Nessuna relazione depositata." : commento;
+                        out.println("  <td style='padding: 12px; color: #495057; font-style: italic; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'>" + testoCommento + "</td>");
                         out.println("</tr>");
                     }
                     
                     if (!ciSonoMissioni) {
-                        out.println("<tr><td colspan='5' style='text-align: center; color: gray;'>Nessun intervento ancora archiviato nello storico.</td></tr>");
+                        out.println("    <tr><td colspan='5' style='text-align: center; color: gray; padding: 20px;'>Nessun intervento ancora archiviato nello storico.</td></tr>");
                     }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                out.println("<p style='color: red;'>Errore durante il caricamento dello storico.</p>");
+                out.println("    <tr><td colspan='5' style='text-align: center; color: red; padding: 20px;'>Errore durante il caricamento dello storico.</td></tr>");
             }
 
-            out.println("</table>");
+            out.println("  </table>");
+            out.println("</div>");
+            
             out.println("</div></body></html>");
         }
     }

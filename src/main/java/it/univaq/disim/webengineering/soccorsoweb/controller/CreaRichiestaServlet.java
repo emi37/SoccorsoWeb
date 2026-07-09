@@ -34,20 +34,31 @@ public class CreaRichiestaServlet extends HttpServlet {
 
         // Recupero dei parametri standard tramite getParameter
         String nome = request.getParameter("nome_segnalante");
-        String email = request.getParameter("email_segnalante");
+        String emailSegnalante = request.getParameter("email_segnalante"); // Rinominata per coerenza logica
         String posizione = request.getParameter("posizione");
         String descrizione = request.getParameter("descrizione");
         String captcha = request.getParameter("captcha");
         String ipOrigine = request.getRemoteAddr();
 
-        // Controllo captcha: 3 + 4 = 7
+        // Controllo captcha: 3 + 4 = 7 (Sistemato con layout fluido responsive)
         if (captcha == null || !captcha.trim().equals("7")) {
             response.setContentType("text/html;charset=UTF-8");
             try (PrintWriter out = response.getWriter()) {
-                out.println("<!DOCTYPE html><html lang='it'><head><meta charset='UTF-8'><title>Captcha errato</title></head>");
-                out.println("<body style='font-family: Arial; text-align: center; padding-top: 50px;'>");
-                out.println("<h1 style='color: red;'>Captcha errato</h1><p>La risposta al controllo anti-spam non è corretta.</p>");
-                out.println("<br><a href='index.html'>Torna al form</a></body></html>");
+                out.println("<!DOCTYPE html>");
+                out.println("<html lang='it'>");
+                out.println("<head>");
+                out.println("  <meta charset='UTF-8'>");
+                out.println("  <meta name='viewport' content='width=device-width, initial-scale=1.0'>");
+                out.println("  <title>Captcha errato</title>");
+                out.println("</head>");
+                out.println("<body style='font-family: Arial, sans-serif; text-align: center; background-color: #f4f6f9; padding: 20px; margin: 0;'>");
+                out.println("  <div style='max-width: 500px; width: 100%; margin: 60px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 15px rgba(0,0,0,0.05); box-sizing: border-box;'>");
+                out.println("    <h1 style='color: #dc3545; margin-top: 0;'>Controllo anti-spam fallito</h1>");
+                out.println("    <p style='color: #666; line-height: 1.5;'>La risposta al controllo matematico non è corretta.</p>");
+                out.println("    <hr style='border: 0; border-top: 1px solid #dee2e6; margin: 20px 0;'>");
+                out.println("    <a href='index.html' style='display: inline-block; background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-weight: bold;'>Torna al form</a>");
+                out.println("  </div>");
+                out.println("</body></html>");
             }
             return;
         }
@@ -76,7 +87,7 @@ public class CreaRichiestaServlet extends HttpServlet {
 
         try (Connection conn = DBManager.getConnection()) {
 
-            /* COMMENTATO TEMPORANEMENTE TUTTO LO SCUDO ANTISPAM PER I TEST LOCALHOST   */
+            // SCUDO ANTISPAM (Corretta la variabile emailSegnalante)
             String sqlSpamMisto = """
                 SELECT COUNT(*)
                 FROM richiesta_soccorso
@@ -85,23 +96,30 @@ public class CreaRichiestaServlet extends HttpServlet {
             """;
 
             try (PreparedStatement spam_statement = conn.prepareStatement(sqlSpamMisto)) {
-                spam_statement.setString(1, email);
+                spam_statement.setString(1, emailSegnalante);
                 spam_statement.setString(2, ipOrigine);
 
                 try (ResultSet spam_risultato = spam_statement.executeQuery()) {
                     if (spam_risultato.next() && spam_risultato.getInt(1) > 0) {
                         response.setContentType("text/html;charset=UTF-8");
                         try (PrintWriter out = response.getWriter()) {
-                            out.println("<!DOCTYPE html><html lang='it'><head><meta charset='UTF-8'><title>Richiesta bloccata</title></head>");
-                            out.println("<body style='font-family: Arial; text-align: center; padding-top: 50px;'>");
-                            out.println("<h1 style='color: red;'>Richiesta bloccata</h1><p>Hai già una segnalazione attiva o hai provato a inviare un duplicato negli ultimi 10 minuti dal tuo indirizzo IP o e-mail.</p>");
-                            out.println("<br><a href='index.html'>Torna al form</a></body></html>");
+                            out.println("<!DOCTYPE html><html lang='it'><head>");
+                            out.println("  <meta charset='UTF-8'>");
+                            out.println("  <meta name='viewport' content='width=device-width, initial-scale=1.0'>");
+                            out.println("  <title>Richiesta bloccata</title></head>");
+                            out.println("<body style='font-family: Arial, sans-serif; text-align: center; background-color: #f4f6f9; padding: 20px; margin: 0;'>");
+                            out.println("  <div style='max-width: 500px; width: 100%; margin: 60px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 15px rgba(0,0,0,0.05); box-sizing: border-box;'>");
+                            out.println("    <h1 style='color: #dc3545; margin-top: 0;'>Richiesta bloccata</h1>");
+                            out.println("    <p style='color: #666; line-height: 1.5;'>Hai già una segnalazione attiva o hai inviato un duplicato negli ultimi 10 minutes dal tuo indirizzo IP o e-mail.</p>");
+                            out.println("    <hr style='border: 0; border-top: 1px solid #dee2e6; margin: 20px 0;'>");
+                            out.println("    <a href='index.html' style='display: inline-block; background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-weight: bold;'>Torna al form</a>");
+                            out.println("  </div>");
+                            out.println("</body></html>");
                         }
                         return;
                     }
                 }
             }
-           /* */
 
             // Inserimento della richiesta includendo la colonna della foto
             String sql = "INSERT INTO richiesta_soccorso (descrizione, posizione, nome_segnalante, email_segnalante, ip_origine, token_convalida, stato, foto) "
@@ -111,7 +129,7 @@ public class CreaRichiestaServlet extends HttpServlet {
                 stmt.setString(1, descrizione);
                 stmt.setString(2, posizione);
                 stmt.setString(3, nome);
-                stmt.setString(4, email);
+                stmt.setString(4, emailSegnalante);
                 stmt.setString(5, ipOrigine);
                 stmt.setString(6, tokenConvalida);
                 stmt.setString(7, nomeFileSalvato);
@@ -125,22 +143,30 @@ public class CreaRichiestaServlet extends HttpServlet {
             e.printStackTrace();
         }
 
-        // Output simulazione email
+        // Output simulazione email (Reso fluido e moderno per mobile)
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            out.println("<!DOCTYPE html><html><head><title>Simulazione casella e-mail</title></head>");
-            out.println("<body style='font-family: Arial; padding: 40px; background-color: #f4f4f9;'>");
+            out.println("<!DOCTYPE html><html lang='it'><head>");
+            out.println("  <meta charset='UTF-8'>");
+            out.println("  <meta name='viewport' content='width=device-width, initial-scale=1.0'>");
+            out.println("  <title>Simulazione casella e-mail</title></head>");
+            out.println("<body style='font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f9; margin: 0;'>");
+            
             if (salvato) {
-                out.println("<div style='border: 2px dashed #0056b3; padding: 20px; background-color: white; max-width: 600px; margin: auto;'>");
-                out.println("<h3 style='color: #0056b3;'>📩 Abbiamo inviato un e-mail a: " + email + "</h3>");
-                out.println("<p>Ciao <b>" + nome + "</b>,</p>");
-                out.println("<p>Abbiamo ricevuto la sua richiesta di soccorso la quale <b>è ancora in attesa di convalida</b>.</p>");
-                out.println("<p>Per confermarla e renderla visibile alla centrale operativa, clicca sul pulsante qui sotto:</p>");
+                out.println("  <div style='border: 2px dashed #0056b3; padding: 25px; background-color: white; max-width: 600px; width: 100%; margin: 40px auto; border-radius: 6px; box-sizing: border-box;'>");
+                out.println("    <h3 style='color: #0056b3; margin-top: 0;'>📩 Abbiamo inviato un'e-mail a: " + emailSegnalante + "</h3>");
+                out.println("    <p style='color: #333;'>Ciao <b>" + nome + "</b>,</p>");
+                out.println("    <p style='color: #555; line-height: 1.5;'>Abbiamo ricevuto la tua richiesta di soccorso, la quale <b>è in attesa di convalida</b> per certificare l'autenticità del segnalante.</p>");
+                out.println("    <p style='color: #555;'>Per confermarla definitivamente e inoltrarla alla centrale operativa, clicca sul pulsante qui sotto:</p>");
 
                 String linkConvalida = request.getContextPath() + "/ConvalidaServlet?token=" + tokenConvalida;
-                out.println("<br><a href='" + linkConvalida + "' style='background-color: #28a745; color: white; padding: 12px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;'>CONVALIDA RICHIESTA</a></div>");
+                out.println("    <br><a href='" + linkConvalida + "' style='background-color: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block; width: 100%; text-align: center; box-sizing: border-box; font-size: 16px;'>CONVALIDA RICHIESTA</a>");
+                out.println("  </div>");
             } else {
-                out.println("<h2 style='color: red;'>Errore: impossibile salvare la richiesta nel database.</h2>");
+                out.println("  <div style='max-width: 600px; width: 100%; margin: 40px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 15px rgba(0,0,0,0.05); text-align: center; box-sizing: border-box;'>");
+                out.println("    <h2 style='color: #dc3545; margin-top: 0;'>Errore di sistema</h2>");
+                out.println("    <p style='color: #666;'>Impossibile salvare la richiesta nel database. Riprova più tardi.</p>");
+                out.println("  </div>");
             }
             out.println("</body></html>");
         }

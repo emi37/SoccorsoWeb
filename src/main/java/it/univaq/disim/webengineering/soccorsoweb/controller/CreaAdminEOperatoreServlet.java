@@ -1,6 +1,7 @@
 package it.univaq.disim.webengineering.soccorsoweb.controller;
 
 import it.univaq.disim.webengineering.soccorsoweb.util.DBManager;
+import org.mindrot.jbcrypt.BCrypt; // Importiamo la libreria per l'hashing sicuro
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
@@ -40,10 +41,13 @@ public class CreaAdminEOperatoreServlet extends HttpServlet {
         try (Connection conn = DBManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
+            // Cifratura della password con BCrypt (Punto 1 della lista sistemato!)
+            String passwordCifrata = BCrypt.hashpw(password, BCrypt.gensalt());
+            
             stmt.setString(1, nome);
             stmt.setString(2, cognome);
             stmt.setString(3, email);
-            stmt.setString(4, password); 
+            stmt.setString(4, passwordCifrata); // Salva l'hash sicuro, non il testo in chiaro
             stmt.setString(5, ruolo);
             
             int rows = stmt.executeUpdate();
@@ -54,14 +58,14 @@ public class CreaAdminEOperatoreServlet extends HttpServlet {
             e.printStackTrace();
         }
 
-        // Risposta dinamica su Chrome
+        // Risposta dinamica su Chrome (mantenuta leggera tramite script di alert)
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
             out.println("<!DOCTYPE html>");
             out.println("<html><body>");
             out.println("<script>");
             if (inserito) {
-                out.println("alert('Nuovo account " + ruolo.toLowerCase() + " registrato con successo!');");
+                out.println("alert('Nuovo account " + ruolo.toLowerCase() + " registrato con successo in sicurezza (BCrypt)!');");
             } else {
                 out.println("alert('Errore durante la registrazione. Controlla se l e-mail esiste gia.');");
             }
@@ -69,9 +73,5 @@ public class CreaAdminEOperatoreServlet extends HttpServlet {
             out.println("</script>");
             out.println("</body></html>");
         }
-        
     }
-    //ok fin ora funziona tutto 
 }
-
-
