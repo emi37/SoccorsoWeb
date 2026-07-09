@@ -38,7 +38,7 @@ public class DettaglioMissioneServlet extends HttpServlet {
             out.println("  <meta name='viewport' content='width=device-width, initial-scale=1.0'>");
             out.println("  <title>Dettagli - Missione #" + idMissione + "</title>");
             out.println("</head>");
-            out.println("<body style='font-family: Arial, sans-serif; padding: 15px; background-color: #f4f6f9; margin: 0;'>");
+out.println("  <body style='font-family: Arial, sans-serif; padding: 15px; background-color: #f4f6f9; margin: 0;'>");
             
             // Contenitore fluido responsive
             out.println("<div style='max-width: 800px; width: 100%; margin: 20px auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 0 15px rgba(0,0,0,0.05); box-sizing: border-box;'>");
@@ -63,11 +63,28 @@ public class DettaglioMissioneServlet extends HttpServlet {
                                 ? "background-color: #f8d7da; color: #721c24; padding: 4px 8px; border-radius: 4px; font-weight: bold;"
                                 : "background-color: #e2e3e5; color: #383d41; padding: 4px 8px; border-radius: 4px; font-weight: bold;";
 
+                            //etrazione del caposquadra assegnato a questa specifica missione
+                            String nomeCaposquadra = "Non ancora assegnato o non rilevato";
+                            String sqlCapo = "SELECT u.nome, u.cognome FROM utente u "
+                                           + "JOIN assegnazione_operatori_missione aom ON u.id_utente = aom.id_utente "
+                                           + "WHERE aom.id_missione = ? AND aom.is_caposquadra = 1";
+                            try (PreparedStatement stmtC = conn.prepareStatement(sqlCapo)) {
+                                stmtC.setInt(1, Integer.parseInt(idMissione));
+                                try (ResultSet rsC = stmtC.executeQuery()) {
+                                    if (rsC.next()) {
+                                        nomeCaposquadra = rsC.getString("nome") + " " + rsC.getString("cognome");
+                                    }
+                                }
+                            }
+
                             out.println("<h3 style='color: #333;'>Dettagli Contesto</h3>");
                             out.println("<p><b>Obiettivo:</b> " + rsM.getString("obiettivo") + "</p>");
                             out.println("<p><b>Posizione:</b> " + rsM.getString("posizione") + "</p>");
                             out.println("<p><b>Stato:</b> <span style='" + stileStato + "'>" + statoMissione + "</span></p>");
                             out.println("<p><b>Inizio Intervento:</b> " + rsM.getTimestamp("timestamp_inizio") + "</p>");
+                            // Stampa a video del Caposquadra con un badge evidenziato giallo
+                            out.println("<p><b>Caposquadra:</b> <mark style='background-color: #fff3cd; color: #856404; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 14px;'>" + nomeCaposquadra + "</mark></p>");
+                            
                         } else {
                             out.println("<p style='color:red; font-weight:bold;'>Errore: Missione non trovata.</p>");
                             out.println("</div></body></html>");
@@ -95,7 +112,7 @@ public class DettaglioMissioneServlet extends HttpServlet {
                 
                 out.println("<hr style='border: 0; border-top: 1px solid #dee2e6; margin: 25px 0;'>");
 
-                // Storico degli aggiornamenti
+                // Storico degli aggiornamenti (Timeline)
                 out.println("<h3 style='color: #333; margin-bottom: 15px;'>Cronistoria Eventi (Timeline)</h3>");
                 String sqlAggiornamenti = "SELECT am.testo_descrittivo, am.timestamp_inserimento, u.nome, u.cognome "
                         + "FROM aggiornamento_missione am "
@@ -151,7 +168,7 @@ public class DettaglioMissioneServlet extends HttpServlet {
 
         try (Connection conn = DBManager.getConnection()) {
             
-            // PUNTO 4 (Protezione Backend): Verifichiamo lo stato prima di inserire la riga
+            // Protezione Backend: Verifichiamo lo stato prima di inserire la riga
             String sqlCheck = "SELECT stato FROM missione WHERE id_missione = ?";
             String statoAttuale = "";
             try (PreparedStatement stmtCheck = conn.prepareStatement(sqlCheck)) {
@@ -192,7 +209,7 @@ public class DettaglioMissioneServlet extends HttpServlet {
                 out.println("<script>");
                 out.println("alert('" + messaggioErrore + "');");
                 out.println("window.history.back();");
-                out.println("</script>");
+                out.println("<" + "/script>"); // Separazione protettiva tag script
             }
         }
     }

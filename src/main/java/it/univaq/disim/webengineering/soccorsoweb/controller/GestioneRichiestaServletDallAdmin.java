@@ -35,10 +35,9 @@ public class GestioneRichiestaServletDallAdmin extends HttpServlet {
             out.println("<head>");
             out.println("  <meta charset='UTF-8'>");
             out.println("  <meta name='viewport' content='width=device-width, initial-scale=1.0'>");
-            out.println("<title>Assegnazione risorse</title></head>");
+            out.println("<title>Assegnazione risorse complete</title></head>");
             out.println("<body style='font-family: Arial, sans-serif; padding: 15px; background-color: #f8f9fa; margin: 0;'>");
             
-            // Box centrale fluido e responsive
             out.println("<div style='max-width: 600px; width: 100%; margin: 20px auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); box-sizing: border-box;'>");
             
             try (Connection conn = DBManager.getConnection()) {
@@ -58,9 +57,9 @@ public class GestioneRichiestaServletDallAdmin extends HttpServlet {
                             out.println("<form action='" + request.getContextPath() + "/GestioneRichiestaServletDallAdmin' method='POST'>");
                             out.println("<input type='hidden' name='id_richiesta' value='" + idParam + "'>");
                             
-                            // Checkbox allineati e spaziati per una selezione pulita da mobile
-                            out.println("<h4 style='color:#495057; margin-bottom:10px;'>Seleziona gli operatori liberi:</h4>");
-                            out.println("<div style='max-height: 200px; overflow-y: auto; padding: 5px; border: 1px solid #ced4da; border-radius: 4px; margin-bottom: 15px;'>");
+                            // 1. SELEZIONE OPERATORI + ASSEGNAZIONE CAPOSQUADRA (Punto 4)
+                            out.println("<h4 style='color:#495057; margin-bottom:10px;'>Seleziona gli operatori e nomina un Caposquadra:</h4>");
+                            out.println("<div style='max-height: 200px; overflow-y: auto; padding: 10px; border: 1px solid #ced4da; border-radius: 4px; margin-bottom: 15px; background-color: #fff;'>");
                             String sqlOperatori = "SELECT id_utente, nome, cognome FROM utente WHERE ruolo = 'OPERATORE' AND attivo = TRUE "
                                                 + "AND id_utente NOT IN (SELECT id_utente FROM assegnazione_operatori_missione amm JOIN missione m ON amm.id_missione = m.id_missione WHERE m.stato = 'IN_CORSO')";
                             try (PreparedStatement stmtOp = conn.prepareStatement(sqlOperatori);
@@ -70,14 +69,18 @@ public class GestioneRichiestaServletDallAdmin extends HttpServlet {
                                     haOp = true;
                                     int idOp = rsOp.getInt("id_utente");
                                     String nomeOp = rsOp.getString("nome") + " " + rsOp.getString("cognome");
-                                    out.println("<label style='display:block; margin-bottom:8px; cursor:pointer;'><input type='checkbox' name='operatori' value='" + idOp + "'> " + nomeOp + "</label>");
+                                    out.println("<div style='display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px dashed #eee; padding-bottom: 4px;'>");
+                                    out.println("  <label style='cursor:pointer;'><input type='checkbox' name='operatori' value='" + idOp + "'> " + nomeOp + "</label>");
+                                    out.println("  <label style='font-size: 12px; color: #555; cursor:pointer;'><input type='radio' name='caposquadra' value='" + idOp + "' required> Caposquadra</label>");
+                                    out.println("</div>");
                                 }
                                 if (!haOp) out.println("<p style='color:gray; margin:5px;'>Nessun operatore disponibile.</p>");
                             }
                             out.println("</div>");
 
+                            // 2. SELEZIONE MEZZI
                             out.println("<h4 style='color:#495057; margin-bottom:10px;'>Seleziona Mezzi di Soccorso Disponibili:</h4>");
-                            out.println("<div style='max-height: 200px; overflow-y: auto; padding: 5px; border: 1px solid #ced4da; border-radius: 4px; margin-bottom: 20px;'>");
+                            out.println("<div style='max-height: 180px; overflow-y: auto; padding: 10px; border: 1px solid #ced4da; border-radius: 4px; margin-bottom: 15px;'>");
                             String sqlMezzi = "SELECT id_mezzo, nome, descrizione FROM mezzo WHERE attivo = TRUE "
                                             + "AND id_mezzo NOT IN (SELECT id_mezzo FROM assegnazione_mezzi_missione amm JOIN missione m ON amm.id_missione = m.id_missione WHERE m.stato = 'IN_CORSO')";
                             try (PreparedStatement stmtMz = conn.prepareStatement(sqlMezzi);
@@ -92,8 +95,26 @@ public class GestioneRichiestaServletDallAdmin extends HttpServlet {
                                 if (!haMezzi) out.println("<p style='color:gray; margin:5px;'>Nessun mezzo disponibile.</p>");
                             }
                             out.println("</div>");
+
+                            // 3. SELEZIONE MATERIALI E ATTREZZATURE (Completamento Punto 4)
+                            out.println("<h4 style='color:#495057; margin-bottom:10px;'>Seleziona Attrezzature e Materiali di bordo:</h4>");
+                            out.println("<div style='max-height: 180px; overflow-y: auto; padding: 10px; border: 1px solid #ced4da; border-radius: 4px; margin-bottom: 25px;'>");
+                            String sqlMateriali = "SELECT id_materiale, nome, descrizione FROM materiale WHERE attivo = TRUE "
+                                                + "AND id_materiale NOT IN (SELECT id_materiale FROM assegnazione_materiale_missione amm JOIN missione m ON amm.id_missione = m.id_missione WHERE m.stato = 'IN_CORSO')";
+                            try (PreparedStatement stmtMat = conn.prepareStatement(sqlMateriali);
+                                 ResultSet rsMat = stmtMat.executeQuery()) {
+                                boolean haMat = false;
+                                while (rsMat.next()) {
+                                    haMat = true;
+                                    int idMat = rsMat.getInt("id_materiale");
+                                    String nomeMat = rsMat.getString("nome") + " - " + rsMat.getString("descrizione");
+                                    out.println("<label style='display:block; margin-bottom:8px; cursor:pointer;'><input type='checkbox' name='materiali' value='" + idMat + "'> " + nomeMat + "</label>");
+                                }
+                                if (!haMat) out.println("<p style='color:gray; margin:5px;'>Nessuna attrezzatura libera disponibile.</p>");
+                            }
+                            out.println("</div>");
                             
-                            out.println("<button type='submit' style='background-color: #007bff; color: white; padding: 12px 24px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; width: 100%; font-size:16px;'>FA PARTIRE I SOCCORSI SUL CAMPO</button>");
+                            out.println("<button type='submit' style='background-color: #28a745; color: white; padding: 14px 24px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; width: 100%; font-size:16px; box-shadow: 0 4px 6px rgba(40,167,69,0.1);'>AVVIA INTERVENTO SUL CAMPO</button>");
                             out.println("</form>");
                         } else {
                             out.println("<p style='color: red; font-weight:bold;'>Richiesta non trovata o già in gestione.</p>");
@@ -115,7 +136,9 @@ public class GestioneRichiestaServletDallAdmin extends HttpServlet {
         
         String idRichiesta = request.getParameter("id_richiesta");
         String[] operatoriScelti = request.getParameterValues("operatori");
+        String caposquadraScelto = request.getParameter("caposquadra");
         String[] mezziScelti = request.getParameterValues("mezzi");
+        String[] materialiScelti = request.getParameterValues("materiali"); // Raccolta materiali
         
         boolean avviato = false;
 
@@ -123,7 +146,7 @@ public class GestioneRichiestaServletDallAdmin extends HttpServlet {
             conn.setAutoCommit(false);
             
             try {
-                // Recupero dinamico dei dati reali della richiesta per popolare la missione (Punto 3 completato!)
+                // Recupero dinamico dei dati reali della richiesta
                 String posizioneReale = "Posizione non specificata";
                 String descrizioneReale = "Intervento di emergenza sul campo";
                 
@@ -145,7 +168,7 @@ public class GestioneRichiestaServletDallAdmin extends HttpServlet {
                     stmtUpdate.executeUpdate();
                 }
                 
-                // 2. Creiamo il record della missione usando i dati REALI estratti sopra
+                // 2. Creiamo il record della missione usando i dati REALI
                 int idMissioneGenerato = 0;
                 String sqlInsert = "INSERT INTO missione (id_richiesta, obiettivo, posizione, stato, livello_successo, commenti, timestamp_fine) VALUES (?, ?, ?, 'IN_CORSO', NULL, NULL, NULL)";
                 
@@ -162,13 +185,15 @@ public class GestioneRichiestaServletDallAdmin extends HttpServlet {
                     }
                 }
                 
-                // 3. Inseriamo le relazioni con gli operatori scelti
+                // 3. Inseriamo gli operatori e settiamo il ruolo gerarchico del Caposquadra (Punto 4 completato!)
                 if (operatoriScelti != null && idMissioneGenerato > 0) {
-                    String sqlOpMissione = "INSERT INTO assegnazione_operatori_missione (id_missione, id_utente) VALUES (?, ?)";
+                    String sqlOpMissione = "INSERT INTO assegnazione_operatori_missione (id_missione, id_utente, is_caposquadra) VALUES (?, ?, ?)";
                     try (PreparedStatement stmtOpM = conn.prepareStatement(sqlOpMissione)) {
                         for (String idOp : operatoriScelti) {
+                            int isCapo = (idOp.equals(caposquadraScelto)) ? 1 : 0;
                             stmtOpM.setInt(1, idMissioneGenerato);
                             stmtOpM.setInt(2, Integer.parseInt(idOp));
+                            stmtOpM.setInt(3, isCapo);
                             stmtOpM.executeUpdate();
                         }
                     }
@@ -182,6 +207,18 @@ public class GestioneRichiestaServletDallAdmin extends HttpServlet {
                             stmtMzm.setInt(1, idMissioneGenerato);
                             stmtMzm.setInt(2, Integer.parseInt(idMz));
                             stmtMzm.executeUpdate();
+                        }
+                    }
+                }
+
+                // 5. Inseriamo le relazioni con i materiali selezionati (Punto 4 completato!)
+                if (materialiScelti != null && idMissioneGenerato > 0) {
+                    String sqlMatMissione = "INSERT INTO assegnazione_materiale_missione (id_missione, id_materiale) VALUES (?, ?)";
+                    try (PreparedStatement stmtMatM = conn.prepareStatement(sqlMatMissione)) {
+                        for (String idMat : materialiScelti) {
+                            stmtMatM.setInt(1, idMissioneGenerato);
+                            stmtMatM.setInt(2, Integer.parseInt(idMat));
+                            stmtMatM.executeUpdate();
                         }
                     }
                 }
@@ -202,18 +239,15 @@ public class GestioneRichiestaServletDallAdmin extends HttpServlet {
 
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            out.println("<!DOCTYPE html>");
-            out.println("<html><body>");
             out.println("<script>");
             if (avviato) {
-                out.println("alert('Squadre inviate con successo. La missione è ora attiva con dati reali sul campo!');");
+                out.println("alert('Missione avviata con successo in totale sicurezza: Caposquadra e Materiali assegnati correttamente.');");
                 out.println("window.location.href='" + request.getContextPath() + "/DashboardServlet';");
             } else {
-                out.println("alert('Errore durante l'avvio della missione.');");
+                out.println("alert('Errore bloccante durante l\\'avvio dell\\'intervento.');");
                 out.println("window.history.back();");
             }
             out.println("</script>");
-            out.println("</body></html>");
         }
     }
 }
