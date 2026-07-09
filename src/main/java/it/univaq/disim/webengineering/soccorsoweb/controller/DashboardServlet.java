@@ -43,7 +43,7 @@ public class DashboardServlet extends HttpServlet {
             out.println("</div>");
             out.println("<p>Benvenuto! </p>");
             
-            // SEZIONE PULSANTI AGGIORNATA:  inserito il collegamento allo storico degli interventi
+            // SEZIONE PULSANTI AGGIORNATA: inserito il collegamento allo storico degli interventi
             out.println("<div style='margin-bottom: 25px; padding: 15px; background-color: #f8f9fa; border-radius: 6px; border: 1px solid #dee2e6;'>");
             out.println("<span style='font-weight: bold; color: #495057; margin-right: 15px;'>Gestione logistica:</span>");
             out.println("<a href='GestioneMezzi' style='background-color: #6c757d; color: white; padding: 8px 14px; text-decoration: none; border-radius: 4px; font-weight: bold; margin-right: 10px; font-size: 14px;'>Gestisci mezzi</a>");
@@ -123,6 +123,44 @@ public class DashboardServlet extends HttpServlet {
                 e.printStackTrace();
                 out.println("<p style='color: red;'>Errore durante la lettura dei dati operativi.</p>");
             }
+            
+            //  FORM NUOVO PER: la registrazione di un nuovo amministratore/operatore
+            out.println("<br><hr><br>");
+            out.println("<h3>Registrazione nuovo personale (Amministratori / Operatori)</h3>");
+            out.println("<form action='" + request.getContextPath() + "/CreaAdminEOperatoreServlet' method='POST' style='background: #f8f9fa; padding: 20px; border-radius: 6px; border: 1px solid #dee2e6;'>");
+
+            out.println("<div style='display: flex; gap: 15px; margin-bottom: 15px;'>");
+            out.println("  <div style='flex: 1;'>");
+            out.println("    <label for='nome_u'><b>Nome:</b></label><br>");
+            out.println("    <input type='text' id='nome_u' name='nome' required style='width: 100%; padding: 8px; margin-top: 5px; border-radius: 4px; border: 1px solid #ccc;'>");
+            out.println("  </div>");
+            out.println("  <div style='flex: 1;'>");
+            out.println("    <label for='cognome_u'><b>Cognome:</b></label><br>");
+            out.println("    <input type='text' id='cognome_u' name='cognome' required style='width: 100%; padding: 8px; margin-top: 5px; border-radius: 4px; border: 1px solid #ccc;'>");
+            out.println("  </div>");
+            out.println("</div>");
+
+            out.println("<div style='display: flex; gap: 15px; margin-bottom: 15px;'>");
+            out.println("  <div style='flex: 1;'>");
+            out.println("    <label for='email_u'><b>E-mail:</b></label><br>");
+            out.println("    <input type='email' id='email_u' name='email' required style='width: 100%; padding: 8px; margin-top: 5px; border-radius: 4px; border: 1px solid #ccc;'>");
+            out.println("  </div>");
+            out.println("  <div style='flex: 1;'>");
+            out.println("    <label for='pass_u'><b>Password:</b></label><br>");
+            out.println("    <input type='password' id='pass_u' name='password' required style='width: 100%; padding: 8px; margin-top: 5px; border-radius: 4px; border: 1px solid #ccc;'>");
+            out.println("  </div>");
+            out.println("</div>");
+
+            out.println("<div style='margin-bottom: 20px;'>");
+            out.println("  <label for='ruolo_u'><b>Ruolo assegnato:</b></label><br>");
+            out.println("  <select id='ruolo_u' name='ruolo' style='width: 100%; padding: 8px; margin-top: 5px; border-radius: 4px; border: 1px solid #ccc; background: white;'>");
+            out.println("    <option value='OPERATORE'>Operatore sul campo</option>");
+            out.println("    <option value='ADMIN'>Amministratore di sistema</option>");
+            out.println("  </select>");
+            out.println("</div>");
+
+            out.println("<button type='submit' style='background-color: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;'>Registra account personale</button>");
+            out.println("</form>");
             
             out.println("</div></body></html>");
         }

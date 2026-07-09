@@ -16,4 +16,5 @@ it\univaq\disim\webengineering\soccorsoweb\controller\GestioneMezziServlet.class
 it\univaq\disim\webengineering\soccorsoweb\controller\DashboardServlet.class
 it\univaq\disim\webengineering\soccorsoweb\controller\DettaglioMissioneServlet.class
 it\univaq\disim\webengineering\soccorsoweb\util\TestDB.class
+it\univaq\disim\webengineering\soccorsoweb\controller\CreaAdminEOperatoreServlet.class
 it\univaq\disim\webengineering\soccorsoweb\controller\LogoutServlet.class
