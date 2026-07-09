@@ -1,0 +1,16 @@
+# Maven / NetBeans build
+target/
+
+# NetBeans private files
+nbproject/private/
+
+# File compilati Java
+*.class
+*.war
+
+# File di sistema
+.DS_Store
+Thumbs.db
+
+# Log
+*.log
