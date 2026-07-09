@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import it.univaq.disim.webengineering.soccorsoweb.util.GestioneEmail;
 
 @WebServlet(name = "DettaglioMissioneServlet", urlPatterns = {"/DettaglioMissioneServlet"})
 public class DettaglioMissioneServlet extends HttpServlet {
@@ -19,7 +20,7 @@ public class DettaglioMissioneServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         // Controllo di sicurezza: Solo l'ADMIN può accedere
         HttpSession session = request.getSession(false);
         if (session == null || !"ADMIN".equals(session.getAttribute("ruolo"))) {
@@ -38,11 +39,11 @@ public class DettaglioMissioneServlet extends HttpServlet {
             out.println("  <meta name='viewport' content='width=device-width, initial-scale=1.0'>");
             out.println("  <title>Dettagli - Missione #" + idMissione + "</title>");
             out.println("</head>");
-out.println("  <body style='font-family: Arial, sans-serif; padding: 15px; background-color: #f4f6f9; margin: 0;'>");
-            
+            out.println("  <body style='font-family: Arial, sans-serif; padding: 15px; background-color: #f4f6f9; margin: 0;'>");
+
             // Contenitore fluido responsive
             out.println("<div style='max-width: 800px; width: 100%; margin: 20px auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 0 15px rgba(0,0,0,0.05); box-sizing: border-box;'>");
-            
+
             out.println("<h2 style='margin-top: 0; color: #333;'>Dettagli - Missione #" + idMissione + "</h2>");
             out.println("<a href='DashboardServlet' style='text-decoration: none; color: #007bff; font-weight: bold;'>&larr; Torna alla Dashboard</a>");
             out.println("<hr style='border: 0; border-top: 1px solid #dee2e6; margin: 20px 0;'>");
@@ -50,7 +51,7 @@ out.println("  <body style='font-family: Arial, sans-serif; padding: 15px; backg
             String statoMissione = "";
 
             try (Connection conn = DBManager.getConnection()) {
-                
+
                 // Recupero informazioni principali della Missione
                 String sqlMissione = "SELECT obiettivo, posizione, stato, timestamp_inizio FROM missione WHERE id_missione = ?";
                 try (PreparedStatement stmtM = conn.prepareStatement(sqlMissione)) {
@@ -58,16 +59,16 @@ out.println("  <body style='font-family: Arial, sans-serif; padding: 15px; backg
                     try (ResultSet rsM = stmtM.executeQuery()) {
                         if (rsM.next()) {
                             statoMissione = rsM.getString("stato");
-                            
-                            String stileStato = "IN_CORSO".equals(statoMissione) 
-                                ? "background-color: #f8d7da; color: #721c24; padding: 4px 8px; border-radius: 4px; font-weight: bold;"
-                                : "background-color: #e2e3e5; color: #383d41; padding: 4px 8px; border-radius: 4px; font-weight: bold;";
+
+                            String stileStato = "IN_CORSO".equals(statoMissione)
+                                    ? "background-color: #f8d7da; color: #721c24; padding: 4px 8px; border-radius: 4px; font-weight: bold;"
+                                    : "background-color: #e2e3e5; color: #383d41; padding: 4px 8px; border-radius: 4px; font-weight: bold;";
 
                             //etrazione del caposquadra assegnato a questa specifica missione
                             String nomeCaposquadra = "Non ancora assegnato o non rilevato";
                             String sqlCapo = "SELECT u.nome, u.cognome FROM utente u "
-                                           + "JOIN assegnazione_operatori_missione aom ON u.id_utente = aom.id_utente "
-                                           + "WHERE aom.id_missione = ? AND aom.is_caposquadra = 1";
+                                    + "JOIN assegnazione_operatori_missione aom ON u.id_utente = aom.id_utente "
+                                    + "WHERE aom.id_missione = ? AND aom.is_caposquadra = 1";
                             try (PreparedStatement stmtC = conn.prepareStatement(sqlCapo)) {
                                 stmtC.setInt(1, Integer.parseInt(idMissione));
                                 try (ResultSet rsC = stmtC.executeQuery()) {
@@ -84,7 +85,7 @@ out.println("  <body style='font-family: Arial, sans-serif; padding: 15px; backg
                             out.println("<p><b>Inizio Intervento:</b> " + rsM.getTimestamp("timestamp_inizio") + "</p>");
                             // Stampa a video del Caposquadra con un badge evidenziato giallo
                             out.println("<p><b>Caposquadra:</b> <mark style='background-color: #fff3cd; color: #856404; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 14px;'>" + nomeCaposquadra + "</mark></p>");
-                            
+
                         } else {
                             out.println("<p style='color:red; font-weight:bold;'>Errore: Missione non trovata.</p>");
                             out.println("</div></body></html>");
@@ -92,7 +93,7 @@ out.println("  <body style='font-family: Arial, sans-serif; padding: 15px; backg
                         }
                     }
                 }
-                
+
                 out.println("<hr style='border: 0; border-top: 1px solid #dee2e6; margin: 25px 0;'>");
 
                 // PUNTO 4: Mostra il form di inserimento SOLO se la missione è attiva ('IN_CORSO')
@@ -109,7 +110,7 @@ out.println("  <body style='font-family: Arial, sans-serif; padding: 15px; backg
                     out.println("🔒 Missione conclusa ed archiviata. Non è possibile aggiungere ulteriori aggiornamenti.");
                     out.println("</div>");
                 }
-                
+
                 out.println("<hr style='border: 0; border-top: 1px solid #dee2e6; margin: 25px 0;'>");
 
                 // Storico degli aggiornamenti (Timeline)
@@ -119,12 +120,12 @@ out.println("  <body style='font-family: Arial, sans-serif; padding: 15px; backg
                         + "JOIN utente u ON am.id_admin = u.id_utente "
                         + "WHERE am.id_missione = ? "
                         + "ORDER BY am.timestamp_inserimento DESC";
-                
+
                 try (PreparedStatement stmtA = conn.prepareStatement(sqlAggiornamenti)) {
                     stmtA.setInt(1, Integer.parseInt(idMissione));
                     try (ResultSet rsA = stmtA.executeQuery()) {
                         boolean ciSonoEventi = false;
-                        
+
                         while (rsA.next()) {
                             ciSonoEventi = true;
                             out.println("<div style='background-color: #f8f9fa; padding: 15px; margin-bottom: 15px; border-left: 5px solid #17a2b8; border-radius: 4px; box-sizing: border-box;'>");
@@ -132,7 +133,7 @@ out.println("  <body style='font-family: Arial, sans-serif; padding: 15px; backg
                             out.println("  <p style='margin-top: 8px; font-size: 15px; color: #212529; line-height: 1.4; white-space: pre-wrap;'>" + rsA.getString("testo_descrittivo") + "</p>");
                             out.println("</div>");
                         }
-                        
+
                         if (!ciSonoEventi) {
                             out.println("<p style='color: gray; font-style: italic;'>Nessun aggiornamento ancora registrato per questa missione.</p>");
                         }
@@ -151,7 +152,7 @@ out.println("  <body style='font-family: Arial, sans-serif; padding: 15px; backg
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         // Controllo Sessione
         HttpSession session = request.getSession(false);
         if (session == null || !"ADMIN".equals(session.getAttribute("ruolo"))) {
@@ -167,7 +168,7 @@ out.println("  <body style='font-family: Arial, sans-serif; padding: 15px; backg
         String messaggioErrore = "Errore durante il salvataggio della nota.";
 
         try (Connection conn = DBManager.getConnection()) {
-            
+
             // Protezione Backend: Verifichiamo lo stato prima di inserire la riga
             String sqlCheck = "SELECT stato FROM missione WHERE id_missione = ?";
             String statoAttuale = "";
@@ -179,23 +180,33 @@ out.println("  <body style='font-family: Arial, sans-serif; padding: 15px; backg
                     }
                 }
             }
-
+// Controlliamo che la missione sia ancora in corso.
+// Se la missione è CHIUSA, non possiamo aggiungere nuovi aggiornamenti.
             if ("IN_CORSO".equals(statoAttuale)) {
                 String sqlInsert = "INSERT INTO aggiornamento_missione (id_missione, id_admin, testo_descrittivo) VALUES (?, ?, ?)";
                 try (PreparedStatement stmt = conn.prepareStatement(sqlInsert)) {
                     stmt.setInt(1, Integer.parseInt(idMissione));
                     stmt.setInt(2, idAdminLoggato);
                     stmt.setString(3, testoDescrittivo);
-                    
+
                     int righe = stmt.executeUpdate();
                     if (righe > 0) {
                         inserito = true;
+// Notifica email simulata agli operatori assegnati alla missione
+
+                        GestioneEmail.notificaOperatoriAssegnati(
+                                conn,
+                                Integer.parseInt(idMissione),
+                                "Nuovo aggiornamento missione #" + idMissione,
+                                "È stato inserito un nuovo aggiornamento per la missione #"
+                                + idMissione + ":\n\n" + testoDescrittivo
+                        );
                     }
                 }
             } else {
                 messaggioErrore = "Impossibile inserire note: la missione risulta già completata o chiusa.";
             }
-            
+
         } catch (Exception e) {
             e.printStackTrace();
         }
