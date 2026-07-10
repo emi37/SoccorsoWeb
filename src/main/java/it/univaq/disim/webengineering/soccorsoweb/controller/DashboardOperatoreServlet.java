@@ -40,11 +40,10 @@ public class DashboardOperatoreServlet extends HttpServlet {
             out.println("<html lang='it'>");
             out.println("<head>");
             out.println("  <meta charset='UTF-8'>");
-            // Viewport responsive per i dispositivi mobili
             out.println("  <meta name='viewport' content='width=device-width, initial-scale=1.0'>");
             out.println("  <title>Area riservata per gli operatori</title>");
             out.println("</head>");
-            out.println("<body style='font-family: Arial, sans-serif; padding: 15px; background-color: #e9ecef; margin: 0;'>");
+            out.println("  <body style='font-family: Arial, sans-serif; padding: 15px; background-color: #e9ecef; margin: 0;'>");                       
             
             // Box contenitore centrale fluido
             out.println("<div style='max-width: 900px; width: 100%; margin: 20px auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 0 15px rgba(0,0,0,0.1); box-sizing: border-box;'>");
@@ -127,10 +126,9 @@ public class DashboardOperatoreServlet extends HttpServlet {
                             
                             out.println("<tr style='border-bottom: 1px solid #dee2e6;'>");
                             out.println("  <td style='padding: 12px;'><b>#" + rs.getInt("id_missione") + "</b></td>");
-                            out.println("  <td style='padding: 12px; max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'>" + rs.getString("objective") + "</td>");
+                            out.println("  <td style='padding: 12px; max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'>" + rs.getString("obiettivo") + "</td>");
                             out.println("  <td style='padding: 12px;'>" + rs.getString("posizione") + "</td>");
                             out.println("  <td style='padding: 12px;'><span style='" + stileStato + "'>" + stato.toLowerCase() + "</span></td>");
-                            out.println("  <td style='padding: 12px; font-weight: bold;'>" + visualizzaVoto + "</td>");
                             out.println("  <td style='padding: 12px; font-weight: bold;'>" + visualizzaVoto + "</td>");
                             out.println("</tr>");
                         }
@@ -141,6 +139,43 @@ public class DashboardOperatoreServlet extends HttpServlet {
                     }
                 }
                 out.println("  </table>");
+                out.println("</div>");
+                
+                // SEZIONE RIEPILOGO CON MENU A TENDINA COMPLETI
+                out.println("<br><hr style='border: 0; border-top: 1px solid #dee2e6; margin: 25px 0;'>");
+                out.println("<h3 style='color: #333;'>Riepilogo Competenze Attive</h3>");
+                out.println("<div style='background-color: #f1f3f5; padding: 20px; border-left: 5px solid #28a745; border-radius: 4px; box-sizing: border-box; display: flex; flex-direction: column; gap: 15px;'>");
+                
+                // Menu a Tendina per TUTTE le Patenti Possedute
+                out.println("  <div>");
+                out.println("    <label style='font-weight: bold; color: #212529; display: block; margin-bottom: 6px;'>🪪 Visualizza tutte le tue patenti registrate:</label>");
+                out.println("    <select style='width: 100%; max-width: 400px; padding: 8px; border-radius: 4px; border: 1px solid #ced4da; background-color: white; font-weight: bold; font-family: monospace;'>");
+                if (!patentiCorrenti.isEmpty()) {
+                    String[] elencoPatenti = patentiCorrenti.split(",");
+                    for (String pat : elencoPatenti) {
+                        out.println("      <option>" + pat.trim() + "</option>");
+                    }
+                } else {
+                    out.println("      <option>Nessuna patente presente a sistema</option>");
+                }
+                out.println("    </select>");
+                out.println("  </div>");
+
+                // Menu a Tendina per TUTTE le Abilità Possedute
+                out.println("  <div>");
+                out.println("    <label style='font-weight: bold; color: #212529; display: block; margin-bottom: 6px;'>💪 Visualizza tutte le tue specializzazioni:</label>");
+                out.println("    <select style='width: 100%; max-width: 400px; padding: 8px; border-radius: 4px; border: 1px solid #ced4da; background-color: white; font-style: italic;'>");
+                if (!abilitaCorrenti.isEmpty()) {
+                    String[] elencoAbilita = abilitaCorrenti.split(",");
+                    for (String ab : elencoAbilita) {
+                        out.println("      <option>" + ab.trim() + "</option>");
+                    }
+                } else {
+                    out.println("      <option>Nessuna specializzazione presente a sistema</option>");
+                }
+                out.println("    </select>");
+                out.println("  </div>");
+                
                 out.println("</div>");
                 
             } catch (Exception e) {
@@ -154,13 +189,13 @@ public class DashboardOperatoreServlet extends HttpServlet {
             out.println("<form action='" + request.getContextPath() + "/DashboardOperatoreServlet' method='POST' style='background: #f8f9fa; padding: 20px; border-radius: 6px; border: 1px solid #dee2e6; box-sizing: border-box;'>");
             
             out.println("<div style='margin-bottom: 18px;'>");
-            out.println("  <label for='patenti' style='font-weight: bold; color: #495057;'>Patenti di guida possedute (es. b, c, d):</label><br>");
-            out.println("  <input type='text' id='patenti' name='patenti' value='" + patentiCorrenti + "' placeholder='Es. b, c' style='width: 100%; padding: 10px; margin-top: 6px; border-radius: 4px; border: 1px solid #ced4da; box-sizing: border-box; font-size: 14px;'>");
+            out.println("  <label for='patenti' style='font-weight: bold; color: #495057;'>Aggiungi una nuova Patente di guida:</label><br>");
+            out.println("  <input type='text' id='patenti' name='patenti' value='' placeholder='Es. B, C, V5 (Scrivi una patente per volta o separate da virgola)' style='width: 100%; padding: 10px; margin-top: 6px; border-radius: 4px; border: 1px solid #ced4da; box-sizing: border-box; font-size: 14px;'>");
             out.println("</div>");
             
             out.println("<div style='margin-bottom: 22px;'>");
-            out.println("  <label for='abilita' style='font-weight: bold; color: #495057;'>Abilità extra e specializzazioni:</label><br>");
-            out.println("  <input type='text' id='abilita' name='abilita' value='" + abilitaCorrenti + "' placeholder='Es. primo soccorso, soccorso fluviale' style='width: 100%; padding: 10px; margin-top: 6px; border-radius: 4px; border: 1px solid #ced4da; box-sizing: border-box; font-size: 14px;'>");
+            out.println("  <label for='abilita' style='font-weight: bold; color: #495057;'>Aggiungi una nuova Specializzazione / Abilità:</label><br>");
+            out.println("  <input type='text' id='abilita' name='abilita' value='' placeholder='Es. primo soccorso, antincendio' style='width: 100%; padding: 10px; margin-top: 6px; border-radius: 4px; border: 1px solid #ced4da; box-sizing: border-box; font-size: 14px;'>");
             out.println("</div>");
             
             out.println("<button type='submit' style='background-color: #28a745; color: white; padding: 12px 24px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 15px; width: 100%; max-width: 250px; box-sizing: border-box;'>Salva modifiche scheda</button>");
@@ -187,24 +222,23 @@ public class DashboardOperatoreServlet extends HttpServlet {
         try (Connection conn = DBManager.getConnection()) {
             conn.setAutoCommit(false);
             try {
-                // 1. Sincronizzazione Patenti
-                String delPat = "DELETE FROM utente_patente WHERE id_utente = ?";
-                try (PreparedStatement stDelPat = conn.prepareStatement(delPat)) {
-                    stDelPat.setInt(1, idOperatore);
-                    stDelPat.executeUpdate();
-                }
+                // MODIFICA CRITICA: Rimossa la DELETE totale distruttiva
                 
+                // 1. Sincronizzazione Patenti (Solo Inserimento Accumulativo)
                 if (patentiRaw != null && !patentiRaw.trim().isEmpty()) {
                     String[] tokens = patentiRaw.split(",");
                     for (String t : tokens) {
                         String tokenPuto = t.trim().toUpperCase();
                         if (!tokenPuto.isEmpty()) {
+                            // Garantisce la presenza della patente nel catalogo generale
                             String insPat = "INSERT IGNORE INTO patente (codice) VALUES (?)";
                             try (PreparedStatement stInsPat = conn.prepareStatement(insPat)) {
                                 stInsPat.setString(1, tokenPuto);
                                 stInsPat.executeUpdate();
                             }
-                            String insUserPat = "INSERT INTO utente_patente (id_utente, id_patente) "
+                            
+                            // Associa la patente all'operatore specifico solo se non già presente (Evita eccezioni PK)
+                            String insUserPat = "INSERT IGNORE INTO utente_patente (id_utente, id_patente) "
                                               + "VALUES (?, (SELECT id_patente FROM patente WHERE codice = ?))";
                             try (PreparedStatement stInsUserPat = conn.prepareStatement(insUserPat)) {
                                 stInsUserPat.setInt(1, idOperatore);
@@ -215,24 +249,21 @@ public class DashboardOperatoreServlet extends HttpServlet {
                     }
                 }
 
-                // 2. Sincronizzazione Abilità
-                String delAb = "DELETE FROM utente_abilita WHERE id_utente = ?";
-                try (PreparedStatement stDelAb = conn.prepareStatement(delAb)) {
-                    stDelAb.setInt(1, idOperatore);
-                    stDelAb.executeUpdate();
-                }
-                
+                // 2. Sincronizzazione Abilità (Solo Inserimento Accumulativo)
                 if (abilitaRaw != null && !abilitaRaw.trim().isEmpty()) {
                     String[] tokens = abilitaRaw.split(",");
                     for (String t : tokens) {
                         String tokenPuto = t.trim().toLowerCase();
                         if (!tokenPuto.isEmpty()) {
+                            // Garantisce la presenza dell'abilità nel catalogo generale
                             String insAb = "INSERT IGNORE INTO abilita (nome) VALUES (?)";
                             try (PreparedStatement stInsAb = conn.prepareStatement(insAb)) {
                                 stInsAb.setString(1, tokenPuto);
                                 stInsAb.executeUpdate();
                             }
-                            String insUserAb = "INSERT INTO utente_abilita (id_utente, id_abilita) "
+                            
+                            // Associa l'abilità all'operatore specifico solo se non già presente
+                            String insUserAb = "INSERT IGNORE INTO utente_abilita (id_utente, id_abilita) "
                                              + "VALUES (?, (SELECT id_abilita FROM abilita WHERE nome = ?))";
                             try (PreparedStatement stInsUserAb = conn.prepareStatement(insUserAb)) {
                                 stInsUserAb.setInt(1, idOperatore);
@@ -261,7 +292,6 @@ public class DashboardOperatoreServlet extends HttpServlet {
             out.println("<script>");
             out.println("alert('Profilo aggiornato con successo!');");
             out.println("window.location.href='" + request.getContextPath() + "/DashboardOperatoreServlet';");
-            out.println("<script>");
             out.println("</script>");
             out.println("</body></html>");
         }

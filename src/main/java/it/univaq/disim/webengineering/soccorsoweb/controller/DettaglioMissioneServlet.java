@@ -6,6 +6,8 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -64,7 +66,7 @@ public class DettaglioMissioneServlet extends HttpServlet {
                                     ? "background-color: #f8d7da; color: #721c24; padding: 4px 8px; border-radius: 4px; font-weight: bold;"
                                     : "background-color: #e2e3e5; color: #383d41; padding: 4px 8px; border-radius: 4px; font-weight: bold;";
 
-                            //etrazione del caposquadra assegnato a questa specifica missione
+                            // Estrazione del caposquadra assegnato a questa specifica missione
                             String nomeCaposquadra = "Non ancora assegnato o non rilevato";
                             String sqlCapo = "SELECT u.nome, u.cognome FROM utente u "
                                     + "JOIN assegnazione_operatori_missione aom ON u.id_utente = aom.id_utente "
@@ -78,13 +80,64 @@ public class DettaglioMissioneServlet extends HttpServlet {
                                 }
                             }
 
+                            // INNESTO PUNTO 7: Estrazione dinamica dei mezzi sul posto
+                            List<String> mezziAssegnati = new ArrayList<>();
+                            String sqlMezzi = "SELECT m.nome, m.descrizione FROM mezzo m "
+                                            + "JOIN assegnazione_mezzi_missione amm ON m.id_mezzo = amm.id_mezzo "
+                                            + "WHERE amm.id_missione = ?";
+                            try (PreparedStatement stmtMz = conn.prepareStatement(sqlMezzi)) {
+                                stmtMz.setInt(1, Integer.parseInt(idMissione));
+                                try (ResultSet rsMz = stmtMz.executeQuery()) {
+                                    while (rsMz.next()) {
+                                        mezziAssegnati.add(rsMz.getString("nome") + " (" + rsMz.getString("descrizione") + ")");
+                                    }
+                                }
+                            }
+
+                            // INNESTO PUNTO 7: Estrazione dinamica dei materiali caricati a bordo
+                            List<String> materialiAssegnati = new ArrayList<>();
+                            String sqlMateriali = "SELECT mat.nome, mat.descrizione FROM materiale mat "
+                                                + "JOIN assegnazione_materiale_missione ama ON mat.id_materiale = ama.id_materiale "
+                                                + "WHERE ama.id_missione = ?";
+                            try (PreparedStatement stmtMat = conn.prepareStatement(sqlMateriali)) {
+                                stmtMat.setInt(1, Integer.parseInt(idMissione));
+                                try (ResultSet rsMat = stmtMat.executeQuery()) {
+                                    while (rsMat.next()) {
+                                        materialiAssegnati.add(rsMat.getString("nome") + " - " + rsMat.getString("descrizione"));
+                                    }
+                                }
+                            }
+
                             out.println("<h3 style='color: #333;'>Dettagli Contesto</h3>");
                             out.println("<p><b>Obiettivo:</b> " + rsM.getString("obiettivo") + "</p>");
                             out.println("<p><b>Posizione:</b> " + rsM.getString("posizione") + "</p>");
                             out.println("<p><b>Stato:</b> <span style='" + stileStato + "'>" + statoMissione + "</span></p>");
                             out.println("<p><b>Inizio Intervento:</b> " + rsM.getTimestamp("timestamp_inizio") + "</p>");
-                            // Stampa a video del Caposquadra con un badge evidenziato giallo
-                            out.println("<p><b>Caposquadra:</b> <mark style='background-color: #fff3cd; color: #856404; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 14px;'>" + nomeCaposquadra + "</mark></p>");
+                            out.println("<p><b>Caposquadra:</b> <mark style='background-color: #fff3cd; color: #856404; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 14px;'> " + nomeCaposquadra + "</mark></p>");
+
+                            // Stampa a video degli elenchi puntati dei mezzi (Sblocco Punto 7)
+                            out.println("<p><b>Automezzi sul posto:</b></p>");
+                            if (!mezziAssegnati.isEmpty()) {
+                                out.println("<ul style='margin-top: -5px; padding-left: 20px; color: #495057;'>");
+                                for (String m : mezziAssegnati) {
+                                    out.println("<li>" + m + "</li>");
+                                }
+                                out.println("</ul>");
+                            } else {
+                                out.println("<p style='color: gray; font-style: italic; margin-top: -5px; padding-left: 5px;'>Nessun automezzo associato.</p>");
+                            }
+
+                            // Stampa a video degli elenchi puntati dei materiali (Sblocco Punto 7)
+                            out.println("<p><b>Attrezzature caricate a bordo:</b></p>");
+                            if (!materialiAssegnati.isEmpty()) {
+                                out.println("<ul style='margin-top: -5px; padding-left: 20px; color: #495057;'>");
+                                for (String mat : materialiAssegnati) {
+                                    out.println("<li>" + mat + "</li>");
+                                }
+                                out.println("</ul>");
+                            } else {
+                                out.println("<p style='color: gray; font-style: italic; margin-top: -5px; padding-left: 5px;'>Nessun materiale o kit di bordo registrato per questo intervento.</p>");
+                            }
 
                         } else {
                             out.println("<p style='color:red; font-weight:bold;'>Errore: Missione non trovata.</p>");
@@ -180,8 +233,8 @@ public class DettaglioMissioneServlet extends HttpServlet {
                     }
                 }
             }
-// Controlliamo che la missione sia ancora in corso.
-// Se la missione è CHIUSA, non possiamo aggiungere nuovi aggiornamenti.
+
+            // Controlliamo che la missione sia ancora in corso.
             if ("IN_CORSO".equals(statoAttuale)) {
                 String sqlInsert = "INSERT INTO aggiornamento_missione (id_missione, id_admin, testo_descrittivo) VALUES (?, ?, ?)";
                 try (PreparedStatement stmt = conn.prepareStatement(sqlInsert)) {
@@ -192,8 +245,8 @@ public class DettaglioMissioneServlet extends HttpServlet {
                     int righe = stmt.executeUpdate();
                     if (righe > 0) {
                         inserito = true;
-// Notifica email simulata agli operatori assegnati alla missione
-
+                        
+                        // Manteniamo intatta la notifica email simulata del tuo compagno!
                         GestioneEmail.notificaOperatoriAssegnati(
                                 conn,
                                 Integer.parseInt(idMissione),
@@ -220,7 +273,7 @@ public class DettaglioMissioneServlet extends HttpServlet {
                 out.println("<script>");
                 out.println("alert('" + messaggioErrore + "');");
                 out.println("window.history.back();");
-                out.println("<" + "/script>"); // Separazione protettiva tag script
+                out.println("</script>");
             }
         }
     }

@@ -34,7 +34,7 @@ public class CreaRichiestaServlet extends HttpServlet {
 
         // Recupero dei parametri standard tramite getParameter
         String nome = request.getParameter("nome_segnalante");
-        String emailSegnalante = request.getParameter("email_segnalante"); // Rinominata per coerenza logica
+        String emailSegnalante = request.getParameter("email_segnalante"); 
         String posizione = request.getParameter("posizione");
         String descrizione = request.getParameter("descrizione");
         String captcha = request.getParameter("captcha");
@@ -87,7 +87,9 @@ public class CreaRichiestaServlet extends HttpServlet {
 
         try (Connection conn = DBManager.getConnection()) {
 
-            // SCUDO ANTISPAM (Corretta la variabile emailSegnalante)
+            /* ==========================================
+               CONTROLLO IP E ANTISPAM COMMENTATO
+               ==========================================
             String sqlSpamMisto = """
                 SELECT COUNT(*)
                 FROM richiesta_soccorso
@@ -120,8 +122,9 @@ public class CreaRichiestaServlet extends HttpServlet {
                     }
                 }
             }
+            ========================================== */
 
-            // Inserimento della richiesta includendo la colonna della foto
+            // Inserimento diretto della richiesta nel database
             String sql = "INSERT INTO richiesta_soccorso (descrizione, posizione, nome_segnalante, email_segnalante, ip_origine, token_convalida, stato, foto) "
                     + "VALUES (?, ?, ?, ?, ?, ?, 'IN_ATTESA', ?)";
 
