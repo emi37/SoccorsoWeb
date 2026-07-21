@@ -59,7 +59,7 @@ public class CreaAdminEOperatoreServlet extends HttpServlet {
             e.printStackTrace();
         }
 
-        // Risposta dinamica su Chrome (mantenuta leggera tramite script di alert)
+        // Risposta dinamica su Chrome
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
             out.println("<!DOCTYPE html>");
@@ -70,6 +70,7 @@ public class CreaAdminEOperatoreServlet extends HttpServlet {
             } else {
                 out.println("alert('Errore durante la registrazione. Controlla se l e-mail esiste gia.');");
             }
+            //Se qualcosa va storto, l’errore viene stampato nella console di Tomcat/NetBeans.
             out.println("window.location.href='" + request.getContextPath() + "/DashboardServlet';");
             out.println("</script>");
             out.println("</body></html>");

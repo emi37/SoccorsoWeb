@@ -28,10 +28,10 @@ public class AggiungiMaterialeServlet extends HttpServlet {
             response.sendRedirect("login.html");
             return;
         }
-
+// Leggo i parametri inviati dal form HTML
         String nome = request.getParameter("nome");
         String descrizione = request.getParameter("descrizione");
-
+// Controllo che il nome non sia nullo o vuoto
         if (nome != null && !nome.trim().isEmpty()) {
             String query = "INSERT INTO materiale (nome, descrizione, attivo) VALUES (?, ?, 1)";
             
@@ -42,12 +42,14 @@ public class AggiungiMaterialeServlet extends HttpServlet {
                     
                     ps.setString(1, nome);
                     ps.setString(2, descrizione);
+                    // Eseguo l'inserimento nel database
                     ps.executeUpdate();
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
+         // Dopo l'operazione torno alla gestione materiali
         response.sendRedirect(request.getContextPath() + "/GestioneMateriali");
     }
 }

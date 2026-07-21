@@ -10,7 +10,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-
+// Mappa la servlet all'URL /AggiungiMezzo
 @WebServlet("/AggiungiMezzo")
 public class AggiungiMezzoServlet extends HttpServlet {
 
