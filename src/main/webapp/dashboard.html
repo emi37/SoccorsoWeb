@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="it">
+    <head>
+        <meta charset="UTF-8">
+        <title>Dashboard Amministratore - SoccorsoWeb</title>
+
+        <link rel="stylesheet" href="css/style.css">
+    </head>
+    <body>
+        <header class="topbar"> <!-- Intestazione della pagina, titolo, topbar applico uno stile CSS al blocco-->
+            <div>
+                <h1>Dashboard Amministratore</h1>
+                <p class="subtitle">Gestione richieste, missioni e risorse di SoccorsoWeb</p>
+            </div>
+
+            <nav class="topbar-actions"> <!-- sezione di navigazione menu-->
+                <a href="gestione-mezzi.html" class="btn">Gestione mezzi</a>
+                <a href="gestione-materiali.html" class="btn">Gestione materiali</a>
+                <a href="storico-missioni.html" class="btn">Storico missioni</a>
+                <a href="LogoutServlet" class="btn btn-danger">Logout</a>
+            </nav>
+        </header>
+
+        <main class="container">  <!--contenuto principale di un documento-->
+            <!-- sezione logica della pagina-->
+            <section class="card">
+                <!-- contenitore per l'intestazione della selezione-->
+                <div class="section-header">
+                    <div>
+                        <h2>Richieste attive</h2>
+                        <p>Richieste confermate e pronte per essere trasformate in missioni.</p>
+                    </div>
+                </div>
+                <!-- contenitore della tabella-->
+                <div class="table-wrapper">
+                    <table>
+
+                        <thead> <!-- intestazione tabella-->
+
+                            <tr> <!--riga tabella-->
+
+                                <th>ID</th> <!-- cella di intestanzione per id della richiesta-->
+                                <th>Segnalante</th>
+                                <th>Email</th>
+                                <th>Posizione</th>
+                                <th>Descrizione</th>
+                                <th>Azioni</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="tabellaRichieste">
+                            <tr> <!-- apre riga provvisoria-->
+                                <td colspan="6">Caricamento richieste...</td> <!-- cella provissoria che occupa 6 colonne-->
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section> <!-- chiude sezione richieste attive-->
+
+            <section class="card"> <!--sezione missioni in corso-->
+                <div class="section-header">
+                    <div>
+                        <h2>Missioni in corso</h2>
+                        <p>Missioni già create e non ancora concluse.</p>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID missione</th>
+                                <th>ID richiesta</th>
+                                <th>Obiettivo</th>
+                                <th>Posizione</th>
+                                <th>Data inizio</th>
+                                <th>Azioni</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="tabellaMissioni">
+                            <tr>
+                                <td colspan="6">Caricamento missioni...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Azioni rapide</h2>
+
+                <div class="quick-actions">
+                    <a href="gestione-mezzi.html" class="action-card">
+                        <strong>Mezzi</strong>
+                        <span>Aggiungi, consulta o rimuovi mezzi disponibili.</span> <!--contenitore inline-->
+                    </a>
+
+                    <a href="gestione-materiali.html" class="action-card">
+                        <strong>Materiali</strong>
+                        <span>Gestisci materiali e risorse operative.</span>
+                    </a>
+
+                    <a href="storico-missioni.html" class="action-card">
+                        <strong>Storico</strong>
+                        <span>Consulta le missioni concluse.</span>
+                    </a>
+                </div>
+            </section>
+
+            <p id="messaggio" class="message"></p> <!--viene usato per mostrare messaggi dinamini-->
+
+        </main>
+
+    </body>
+</html>
