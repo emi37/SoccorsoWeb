@@ -206,3 +206,146 @@ h2.section-title {
 textarea.form-control {
     resize: vertical;
 }
+
+.topbar {
+    background-color: #ffffff;
+    padding: 20px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.topbar h1 {
+    margin: 0;
+    font-size: 28px;
+    color: #333333;
+}
+
+.subtitle {
+    color: #666666;
+    font-size: 14px;
+    margin: 5px 0 0 0;
+}
+
+.topbar-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.card {
+    background-color: #ffffff;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+    margin-bottom: 24px;
+}
+
+.card h2 {
+    margin-top: 0;
+    color: #333333;
+    font-size: 24px;
+}
+
+.card p {
+    color: #666666;
+    font-size: 14px;
+    margin-bottom: 15px;
+}
+
+.section-header {
+    margin-bottom: 15px;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #dee2e6;
+    font-size: 14px;
+}
+
+th {
+    font-weight: bold;
+    color: #495057;
+    background-color: #f8f9fa;
+}
+
+.quick-actions {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-top: 15px;
+}
+
+.action-card {
+    flex: 1;
+    min-width: 200px;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    padding: 15px;
+    border-radius: 6px;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.action-card strong {
+    color: #007bff;
+    font-size: 16px;
+}
+
+.action-card span {
+    color: #666666;
+    font-size: 13px;
+}
+
+.message {
+    text-align: center;
+    color: #666666;
+    margin-top: 20px;
+}
+
+.btn {
+    display: inline-block;
+    background-color: #007bff;
+    color: #ffffff;
+    padding: 8px 14px;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 14px;
+    text-align: center;
+    border: none;
+    cursor: pointer;
+}
+
+.btn:hover {
+    opacity: 0.9;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+}
