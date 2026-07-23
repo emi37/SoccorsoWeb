@@ -8,7 +8,7 @@ body {
     color: #333333;
     margin: 0;
     padding: 15px;
-    line-height: 1.6;
+    line-height: 1.5;
 }
 
 .flex-end-container {
@@ -276,19 +276,30 @@ table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 th, td {
     padding: 12px;
     text-align: left;
     border-bottom: 1px solid #dee2e6;
+    border: 1px solid #cccccc;
     font-size: 14px;
 }
 
 th {
     font-weight: bold;
-    color: #495057;
-    background-color: #f8f9fa;
+    color: #333333;
+    background-color: #e9ecef;
+}
+
+ul {
+    margin-top: 8px;
+    margin-bottom: 16px;
+}
+
+li {
+    margin-bottom: 6px;
 }
 
 .quick-actions {
@@ -348,4 +359,59 @@ th {
 
 .btn-danger {
     background-color: #dc3545;
+}
+
+/* Tablet */
+@media only screen and (min-width: 768px) and (max-width: 959px) {
+    .container, main {
+        width: 95%;
+    }
+
+    .card, section {
+        padding: 15px;
+    }
+
+    .topbar, header {
+        padding: 15px;
+    }
+}
+
+/* Cellulari */
+@media only screen and (max-width: 767px) {
+    .container, main {
+        width: 96%;
+        margin: 10px auto;
+    }
+
+    .topbar, header {
+        padding: 12px;
+    }
+
+    .topbar-actions, nav {
+        display: block;
+    }
+
+    .topbar-actions a, nav a {
+        margin-right: 0;
+        width: 100%;
+        margin-bottom: 8px;
+    }
+
+    .card, section {
+        padding: 12px;
+    }
+
+    table {
+        font-size: 14px;
+    }
+
+    th, td {
+        padding: 7px;
+    }
+
+    input[type="submit"],
+    input[type="reset"] {
+        width: 100%;
+        margin-bottom: 8px;
+    }
 }

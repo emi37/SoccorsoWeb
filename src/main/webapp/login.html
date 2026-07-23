@@ -1,38 +1,38 @@
 <!DOCTYPE html>
 <html lang="it">
-<head>
-    <meta charset="UTF-8">
-    <title>SoccorsoWeb - Accesso Area Riservata</title>
-    <link rel="stylesheet" type="text/css" href="css/style.css">
-</head>
-<body class="flex-center-body">
+    <head>
+        <meta charset="UTF-8">
+        <title>SoccorsoWeb - Accesso Area Riservata</title>
+        <link rel="stylesheet" type="text/css" href="css/style.css">
+    </head>
+    <body class="flex-center-body">
 
-    <main class="card-container-login">
-        
-        <h2 class="section-title text-center">Accesso Personale</h2>
-        <p class="text-muted-small">
-            Inserisci le credenziali per accedere alla tua dashboard di controllo
-        </p>
-        
-        <form action="LoginServlet" method="POST">
-            <div class="form-group">
-                <label for="email" class="form-label">E-mail:</label>
-                <input type="email" id="email" name="email" required class="form-control">
+        <main class="card-container-login">
+
+            <h2 class="section-title text-center">Accesso Personale</h2>
+            <p class="text-muted-small">
+                Inserisci le credenziali per accedere alla tua dashboard di controllo
+            </p>
+
+            <form action="LoginServlet" method="POST">
+                <div class="form-group">
+                    <label for="email" class="form-label">E-mail:</label>
+                    <input type="email" id="email" name="email" required class="form-control">
+                </div>
+
+                <div class="form-group mb-24">
+                    <label for="password" class="form-label">Password:</label>
+                    <input type="password" id="password" name="password" required class="form-control">
+                </div>
+
+                <button type="submit" class="btn-primary-full">Accedi</button>
+            </form>
+
+            <div class="text-center mt-20">
+                <a href="homeFinale.html" class="link-back">&larr; Torna alla Home</a>
             </div>
 
-            <div class="form-group mb-24">
-                <label for="password" class="form-label">Password:</label>
-                <input type="password" id="password" name="password" required class="form-control">
-            </div>
+        </main>
 
-            <button type="submit" class="btn-primary-full">Accedi</button>
-        </form>
-        
-        <div class="text-center mt-20">
-            <a href="homeFinale.html" class="link-back">&larr; Torna alla Home</a>
-        </div>
-
-    </main>
-
-</body>
+    </body>
 </html>

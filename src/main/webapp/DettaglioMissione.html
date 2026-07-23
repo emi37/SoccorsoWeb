@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="it">
+    <head>
+        <meta charset="UTF-8">
+        <title>Missioni - SoccorsoWeb</title>
+        <link rel="stylesheet" type="text/css" href="css/style.css">
+    </head>
+
+    <body>
+
+        <header>
+            <h1>SoccorsoWeb</h1>
+
+            <nav>
+                <a href="dashboard.html">Dashboard</a>
+                <a href="homeFinale.html">Home</a>
+                <a href="login.html">Login</a>
+            </nav>
+        </header>
+
+        <main>
+
+            <section>
+                <h2>Dettaglio missione</h2>
+
+                <p>
+                    In questa pagina è possibile consultare una missione e inserire
+                    un aggiornamento operativo.
+                </p>
+            </section>
+
+            <section>
+                <h2>Cerca missione</h2>
+
+                <form action="DettaglioMissioneServlet" method="get">
+                    <p>
+                        <label for="id_missione_cerca">ID missione</label><br>
+                        <input
+                            type="text"
+                            id="id_missione_cerca"
+                            name="id_missione"
+                            required>
+                    </p>
+
+                    <p>
+                        <input type="submit" value="Cerca missione">
+                        <input type="reset" value="Cancella">
+                    </p>
+                </form>
+            </section>
+
+            <section>
+                <h2>Informazioni missione</h2>
+
+                <table>
+                    <tbody>
+                        <tr>
+                            <th>ID missione</th>
+                            <td>Dato non caricato</td>
+                        </tr>
+                        <tr>
+                            <th>Obiettivo</th>
+                            <td>Dato non caricato</td>
+                        </tr>
+                        <tr>
+                            <th>Posizione</th>
+                            <td>Dato non caricato</td>
+                        </tr>
+                        <tr>
+                            <th>Stato</th>
+                            <td>Dato non caricato</td>
+                        </tr>
+                        <tr>
+                            <th>Inizio intervento</th>
+                            <td>Dato non caricato</td>
+                        </tr>
+                        <tr>
+                            <th>Caposquadra</th>
+                            <td>Dato non caricato</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h2>Risorse assegnate</h2>
+
+                <h3>Automezzi sul posto</h3>
+                <ul>
+                    <li>Nessun automezzo caricato nella pagina statica.</li>
+                </ul>
+
+                <h3>Attrezzature e materiali</h3>
+                <ul>
+                    <li>Nessun materiale caricato nella pagina statica.</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>Aggiungi aggiornamento missione</h2>
+
+                <!--Method="post": Dati del form vengono inviati alla servlet-->
+                <form action="DettaglioMissioneServlet" method="post">
+                    <p>
+                        <label for="id_missione">ID missione</label><br>
+                        <input
+                            type="text"
+                            id="id_missione"
+                            name="id_missione"
+                            required>
+                    </p>
+
+                    <p>
+                        <label for="testo_descrittivo">Messaggio</label><br>
+                        <textarea
+                            id="testo_descrittivo"
+                            name="testo_descrittivo"
+                            rows="6"
+                            cols="60"
+                            required>
+                        </textarea>
+                    </p>
+
+                    <p>
+                        <input type="submit" value="Invia aggiornamento">
+                        <input type="reset" value="Cancella dati">
+                    </p>
+                </form>
+            </section>
+
+            <section>
+                <h2>Cronistoria eventi</h2>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data e ora</th>
+                            <th>Operatore</th>
+                            <th>Messaggio</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr>
+                            <td colspan="3">Nessun aggiornamento caricato nella pagina statica.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+        </main>
+
+        <footer>
+            <p>SoccorsoWeb</p>
+        </footer>
+
+    </body>
+</html>
