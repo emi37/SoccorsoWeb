@@ -8,151 +8,158 @@
 
     <body>
 
-        <header>
-            <h1>SoccorsoWeb</h1>
+        <div class="container">
 
-            <nav>
-                <a href="dashboard.html">Dashboard</a>
-                <a href="homeFinale.html">Home</a>
-                <a href="login.html">Login</a>
-            </nav>
-        </header>
+            <header class="topbar">
+                <div>
+                    <h1>SoccorsoWeb</h1>
+                    <p class="subtitle">Gestione Missione e Operazioni</p>
+                </div>
 
-        <main>
+                <nav class="topbar-actions">
+                    <a href="dashboard.html" class="btn">Dashboard</a>
+                    <a href="homeFinale.html" class="btn">Home</a>
+                    <a href="login.html" class="btn btn-danger">Login</a>
+                </nav>
+            </header>
 
-            <section>
-                <h2>Dettaglio missione</h2>
+            <main>
 
-                <p>
-                    In questa pagina è possibile consultare una missione e inserire
-                    un aggiornamento operativo.
-                </p>
-            </section>
+                <div class="card">
+                    <h2>Dettaglio missione</h2>
+                    <p>In questa pagina è possibile consultare una missione e inserire un aggiornamento operativo.</p>
+                </div>
 
-            <section>
-                <h2>Cerca missione</h2>
+                <div class="card">
+                    <h2>Cerca missione</h2>
 
-                <form action="DettaglioMissioneServlet" method="get">
-                    <p>
-                        <label for="id_missione_cerca">ID missione</label><br>
-                        <input
-                            type="text"
-                            id="id_missione_cerca"
-                            name="id_missione"
-                            required>
-                    </p>
+                    <form action="DettaglioMissioneServlet" method="get">
+                        <div class="form-group">
+                            <label class="form-label" for="id_missione_cerca">ID missione</label>
+                            <input
+                                type="text"
+                                id="id_missione_cerca"
+                                name="id_missione"
+                                class="form-control"
+                                required>
+                        </div>
 
-                    <p>
-                        <input type="submit" value="Cerca missione">
-                        <input type="reset" value="Cancella">
-                    </p>
-                </form>
-            </section>
+                        <div>
+                            <input type="submit" value="Cerca missione" class="btn">
+                            <input type="reset" value="Cancella" class="btn btn-danger">
+                        </div>
+                    </form>
+                </div>
 
-            <section>
-                <h2>Informazioni missione</h2>
+                <div class="card">
+                    <h2>Informazioni missione</h2>
 
-                <table>
-                    <tbody>
-                        <tr>
-                            <th>ID missione</th>
-                            <td>Dato non caricato</td>
-                        </tr>
-                        <tr>
-                            <th>Obiettivo</th>
-                            <td>Dato non caricato</td>
-                        </tr>
-                        <tr>
-                            <th>Posizione</th>
-                            <td>Dato non caricato</td>
-                        </tr>
-                        <tr>
-                            <th>Stato</th>
-                            <td>Dato non caricato</td>
-                        </tr>
-                        <tr>
-                            <th>Inizio intervento</th>
-                            <td>Dato non caricato</td>
-                        </tr>
-                        <tr>
-                            <th>Caposquadra</th>
-                            <td>Dato non caricato</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </section>
+                    <div class="table-wrapper">
+                        <table>
+                            <tbody>
+                                <tr>
+                                    <th>ID missione</th>
+                                    <td>Dato non caricato</td>
+                                </tr>
+                                <tr>
+                                    <th>Obiettivo</th>
+                                    <td>Dato non caricato</td>
+                                </tr>
+                                <tr>
+                                    <th>Posizione</th>
+                                    <td>Dato non caricato</td>
+                                </tr>
+                                <tr>
+                                    <th>Stato</th>
+                                    <td>Dato non caricato</td>
+                                </tr>
+                                <tr>
+                                    <th>Inizio intervento</th>
+                                    <td>Dato non caricato</td>
+                                </tr>
+                                <tr>
+                                    <th>Caposquadra</th>
+                                    <td>Dato non caricato</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
-            <section>
-                <h2>Risorse assegnate</h2>
+                <div class="card">
+                    <h2>Risorse assegnate</h2>
 
-                <h3>Automezzi sul posto</h3>
-                <ul>
-                    <li>Nessun automezzo caricato nella pagina statica.</li>
-                </ul>
+                    <h3>Automezzi sul posto</h3>
+                    <ul>
+                        <li>Nessun automezzo caricato nella pagina statica.</li>
+                    </ul>
 
-                <h3>Attrezzature e materiali</h3>
-                <ul>
-                    <li>Nessun materiale caricato nella pagina statica.</li>
-                </ul>
-            </section>
+                    <h3>Attrezzature e materiali</h3>
+                    <ul>
+                        <li>Nessun materiale caricato nella pagina statica.</li>
+                    </ul>
+                </div>
 
-            <section>
-                <h2>Aggiungi aggiornamento missione</h2>
+                <div class="card">
+                    <h2>Aggiungi aggiornamento missione</h2>
 
-                <!--Method="post": Dati del form vengono inviati alla servlet-->
-                <form action="DettaglioMissioneServlet" method="post">
-                    <p>
-                        <label for="id_missione">ID missione</label><br>
-                        <input
-                            type="text"
-                            id="id_missione"
-                            name="id_missione"
-                            required>
-                    </p>
+                    <form action="DettaglioMissioneServlet" method="post">
+                        <div class="form-group">
+                            <label class="form-label" for="id_missione">ID missione</label>
+                            <input
+                                type="text"
+                                id="id_missione"
+                                name="id_missione"
+                                class="form-control"
+                                required>
+                        </div>
 
-                    <p>
-                        <label for="testo_descrittivo">Messaggio</label><br>
-                        <textarea
-                            id="testo_descrittivo"
-                            name="testo_descrittivo"
-                            rows="6"
-                            cols="60"
-                            required>
-                        </textarea>
-                    </p>
+                        <div class="form-group">
+                            <label class="form-label" for="testo_descrittivo">Messaggio</label>
+                            <textarea
+                                id="testo_descrittivo"
+                                name="testo_descrittivo"
+                                rows="6"
+                                class="form-control"
+                                required></textarea>
+                        </div>
 
-                    <p>
-                        <input type="submit" value="Invia aggiornamento">
-                        <input type="reset" value="Cancella dati">
-                    </p>
-                </form>
-            </section>
+                        <div>
+                            <input type="submit" value="Invia aggiornamento" class="btn">
+                            <input type="reset" value="Cancella dati" class="btn btn-danger">
+                        </div>
+                    </form>
+                </div>
 
-            <section>
-                <h2>Cronistoria eventi</h2>
+                <div class="card">
+                    <h2>Cronistoria eventi</h2>
 
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Data e ora</th>
-                            <th>Operatore</th>
-                            <th>Messaggio</th>
-                        </tr>
-                    </thead>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Data e ora</th>
+                                    <th>Operatore</th>
+                                    <th>Messaggio</th>
+                                </tr>
+                            </thead>
 
-                    <tbody>
-                        <tr>
-                            <td colspan="3">Nessun aggiornamento caricato nella pagina statica.</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </section>
+                            <tbody>
+                                <tr>
+                                    <td colspan="3">Nessun aggiornamento caricato nella pagina statica.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
-        </main>
+            </main>
 
-        <footer>
-            <p>SoccorsoWeb</p>
-        </footer>
+            <footer class="message">
+                <p>SoccorsoWeb</p>
+            </footer>
+
+        </div>
 
     </body>
 </html>
