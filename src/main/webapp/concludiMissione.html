@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chiusura Intervento</title>
+</head>
+<body>
+    <main>
+       
+            <header>
+                <h2>Chiusura report missione #${missione.id_missione}</h2>
+            </header>
+
+            <section>
+                <p><strong>ID Richiesta collegata:</strong> ${missione.id_richiesta}</p>
+                <p><strong>Dettaglio operazione:</strong> ${missione.obiettivo}</p>
+            </section>
+
+            <hr>
+
+            <section>
+                <form action="ConcludiMissioneServlet" method="POST">
+                    <input type="hidden" name="id_missione" value="${missione.id_missione}">
+                    <input type="hidden" name="id_richiesta" value="${missione.id_richiesta}">
+
+                    <fieldset>
+                        <legend>Dettagli Chiusura Intervento</legend>
+
+                        <p>
+                            <label for="voto">Valutazione esito intervento (0-5):</label>
+                            <br>
+                            <input type="number" id="voto" name="voto_successo" min="0" max="5" value="5" required>
+                        </p>
+
+                        <p>
+                            <label for="commenti">Relazione finale della squadra:</label>
+                            <br>
+                            <textarea id="commenti" name="commenti" rows="5" required placeholder="Scrivi qui come si è concluso il soccorso sul posto..."></textarea>
+                        </p>
+                    </fieldset>
+
+                    <br>
+                    <button type="submit">REGISTRA CHIUSURA E LIBERA RISORSE</button>
+                </form>
+            </section>
+        
+            <section>
+                <p><strong>Missione non trovata o già conclusa.</strong></p>
+            </section>
+     
+
+        <hr>
+
+        <footer>
+            <a href="DashboardServlet">&larr; Annulla e torna alla Dashboard</a>
+        </footer>
+    </main>
+</body>
+</html>

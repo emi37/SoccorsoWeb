@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Area riservata per gli operatori</title>
+</head>
+<body>
+    <main>
+        <header>
+            <h2>Pannello operatore: ${nomeOperatore}</h2>
+            <a href="LogoutServlet">Esci</a>
+        </header>
+
+        <section>
+            <p>Qui puoi monitorare lo stato delle missioni alle quali sei stato assegnato e aggiornare il tuo profilo professionale.</p>
+        </section>
+
+        <hr>
+
+        <section>
+            <h3>Elenco delle tue missioni:</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Id missione</th>
+                        <th>Obiettivo</th>
+                        <th>Posizione</th>
+                        <th>Stato</th>
+                        <th>Esito (0-5)</th>
+                    </tr>
+                </thead>
+                <tbody>
+               
+                            <tr>
+                                <td><strong>#${m.id_missione}</strong></td>
+                                <td>${m.obiettivo}</td>
+                                <td>${m.posizione}</td>
+                                <td>${m.stato}</td>
+                                <td><strong>${m.visualizzaVoto}</strong></td>
+                            </tr>
+                    
+                        <tr>
+                            <td colspan="5">Non sei ancora stato assegnato a nessuna missione.</td>
+                        </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <hr>
+
+        <section>
+            <h3>Riepilogo Competenze Attive</h3>
+            
+            <fieldset>
+                <legend>Visualizza tutte le tue patenti registrate:</legend>
+                <select>
+                            <option>${pat}</option>
+                        <option>Nessuna patente presente a sistema</option>
+                </select>
+            </fieldset>
+
+            <fieldset>
+                <legend> Visualizza tutte le tue specializzazioni:</legend>
+                <select>
+                            <option>${ab}</option>
+                        <option>Nessuna specializzazione presente a sistema</option>
+                </select>
+            </fieldset>
+        </section>
+
+        <hr>
+
+        <section>
+            <h3>Aggiorna profilo e competenze</h3>
+            <form action="DashboardOperatoreServlet" method="POST">
+                <fieldset>
+                    <legend>Aggiungi competenze</legend>
+                    <p>
+                        <label for="patenti">Aggiungi una nuova Patente di guida:</label><br>
+                        <input type="text" id="patenti" name="patenti" placeholder="Es. B, C, V5 (Scrivi una patente per volta o separate da virgola)">
+                    </p>
+                    <p>
+                        <label for="abilita">Aggiungi una nuova Specializzazione / Abilità:</label><br>
+                        <input type="text" id="abilita" name="abilita" placeholder="Es. primo soccorso, antincendio">
+                    </p>
+                </fieldset>
+                <br>
+                <button type="submit">Salva modifiche scheda</button>
+            </form>
+        </section>
+    </main>
+</body>
+</html>

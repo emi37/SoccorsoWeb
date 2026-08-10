@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Assegnazione risorse complete</title>
+</head>
+<body>
+    <main>
+        <header>
+            <h2>Avvio missione</h2>
+        </header>
+
+        <section>
+            <!-- strong è per il grassetto-->
+            <p><strong>Segnalante:</strong> Mario Rossi</p>
+            <p><strong>Posizione dell'emergenza:</strong> Via Garibaldi 45, L'Aquila</p>
+            <p><strong>Dettagli segnalazione:</strong> Incidente stradale, codice rosso.</p>
+        </section>
+
+        <hr>
+
+        <section>
+            <h3>Configurazione squadra d'intervento</h3>
+            
+            <form action="GestioneRichiestaServletDallAdmin" method="POST">
+                <input type="hidden" name="id_richiesta" value="1024">
+                
+             
+                <fieldset>
+                    <legend>Seleziona gli operatori e nomina un Caposquadra:</legend>
+                    <ul>
+                        <li>
+                            <label><input type="checkbox" name="operatori" value="1"> Luigi Bianchi</label>
+                            - 
+                            <label><input type="radio" name="caposquadra" value="1" required> Caposquadra</label>
+                        </li>
+                        <li>
+                            <label><input type="checkbox" name="operatori" value="2"> Anna Verdi</label>
+                            - 
+                            <label><input type="radio" name="caposquadra" value="2" required> Caposquadra</label>
+                        </li>
+                        <li>
+                            <label><input type="checkbox" name="operatori" value="3"> Marco Neri</label>
+                            - 
+                            <label><input type="radio" name="caposquadra" value="3" required> Caposquadra</label>
+                        </li>
+                    </ul>
+                </fieldset>
+
+                <!-- 2. SELEZIONE MEZZI -->
+                <fieldset>
+                    <legend>Seleziona Mezzi di Soccorso Disponibili:</legend>
+                    <ul>
+                        <li>
+                            <label><input type="checkbox" name="mezzi" value="10"> Ambulanza ALFA (Unità Mobile Rianimazione)</label>
+                        </li>
+                        <li>
+                            <label><input type="checkbox" name="mezzi" value="11"> Automedica BETA (Supporto Medico Avanzato)</label>
+                        </li>
+                    </ul>
+                </fieldset>
+
+                
+                <fieldset>
+                    <legend>Seleziona Attrezzature e Materiali di bordo:</legend>
+                    <ul>
+                        <li>
+                            <label><input type="checkbox" name="materiali" value="100"> Defibrillatore DAE - Modello X2</label>
+                        </li>
+                        <li>
+                            <label><input type="checkbox" name="materiali" value="101"> Kit Trauma Base - Zaino rosso emergenza</label>
+                        </li>
+                        <li>
+                            <label><input type="checkbox" name="materiali" value="102"> Bombola Ossigeno - Capacità 5L</label>
+                        </li>
+                    </ul>
+                </fieldset>
+                
+                <br>
+                <button type="submit">AVVIA INTERVENTO SUL CAMPO</button>
+            </form>
+        </section>
+
+        <hr>
+
+        <footer>
+            <a href="DashboardServlet">&larr; Torna alla Dashboard</a>
+        </footer>
+    </main>
+</body>
+</html>
