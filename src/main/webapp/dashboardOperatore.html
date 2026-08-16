@@ -2,93 +2,98 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Area riservata per gli operatori - SoccorsoWeb</title>
     <link rel="stylesheet" type="text/css" href="css/style.css">
-    <title>Area riservata per gli operatori</title>
 </head>
 <body>
-    <main>
-        <header>
-            <h2>Pannello operatore: ${nomeOperatore}</h2>
-            <a href="LogoutServlet">Esci</a>
+    <div class="container">
+
+        <header class="topbar">
+            <div>
+                <h1>SoccorsoWeb</h1>
+                <p class="subtitle" id="saluto-operatore">Pannello operatore</p>
+            </div>
+            <nav class="topbar-actions">
+                <a href="LogoutServlet" class="btn btn-danger">Esci</a>
+            </nav>
         </header>
 
-        <section>
-            <p>Qui puoi monitorare lo stato delle missioni alle quali sei stato assegnato e aggiornare il tuo profilo professionale.</p>
-        </section>
+        <main>
+            <div class="card">
+                <h2>Informazioni operative</h2>
+                <p>Qui puoi monitorare lo stato delle missioni alle quali sei stato assegnato e aggiornare il tuo profilo professionale.</p>
+            </div>
 
-        <hr>
-
-        <section>
-            <h3>Elenco delle tue missioni:</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Id missione</th>
-                        <th>Obiettivo</th>
-                        <th>Posizione</th>
-                        <th>Stato</th>
-                        <th>Esito (0-5)</th>
-                    </tr>
-                </thead>
-                <tbody>
-               
+            <div class="card">
+                <h2>Elenco delle tue missioni</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
                             <tr>
-                                <td><strong>#${m.id_missione}</strong></td>
-                                <td>${m.obiettivo}</td>
-                                <td>${m.posizione}</td>
-                                <td>${m.stato}</td>
-                                <td><strong>${m.visualizzaVoto}</strong></td>
+                                <th>ID missione</th>
+                                <th>Obiettivo</th>
+                                <th>Posizione</th>
+                                <th>Stato</th>
+                                <th>Esito (0-5)</th>
                             </tr>
-                    
-                        <tr>
-                            <td colspan="5">Non sei ancora stato assegnato a nessuna missione.</td>
-                        </tr>
-                </tbody>
-            </table>
-        </section>
+                        </thead>
+                        <tbody id="missioni-tbody">
+                            <tr>
+                                <td colspan="5" class="text-center">Caricamento in corso...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-        <hr>
+            <div class="card">
+                <h2>Riepilogo Competenze Attive</h2>
+                
+                <div class="form-group">
+                    <label class="form-label" for="patenti-select">Patenti registrate:</label>
+                    <select id="patenti-select" class="form-control">
+                        <option value="">Caricamento patenti...</option>
+                    </select>
+                </div>
 
-        <section>
-            <h3>Riepilogo Competenze Attive</h3>
-            
-            <fieldset>
-                <legend>Visualizza tutte le tue patenti registrate:</legend>
-                <select>
-                            <option>${pat}</option>
-                        <option>Nessuna patente presente a sistema</option>
-                </select>
-            </fieldset>
+                <div class="form-group">
+                    <label class="form-label" for="abilita-select">Specializzazioni:</label>
+                    <select id="abilita-select" class="form-control">
+                        <option value="">Caricamento specializzazioni...</option>
+                    </select>
+                </div>
+            </div>
 
-            <fieldset>
-                <legend> Visualizza tutte le tue specializzazioni:</legend>
-                <select>
-                            <option>${ab}</option>
-                        <option>Nessuna specializzazione presente a sistema</option>
-                </select>
-            </fieldset>
-        </section>
+            <div class="card">
+                <h2>Aggiorna profilo e competenze</h2>
+                <form action="DashboardOperatoreServlet" method="POST">
+                    <fieldset class="fieldset-antispam">
+                        <legend class="legend-antispam">Aggiungi competenze</legend>
+                        
+                        <div class="form-group">
+                            <label for="patenti" class="form-label">Aggiungi una nuova Patente di guida:</label>
+                            <input type="text" id="patenti" name="patenti" class="form-control" placeholder="Es. B, C, V5 (Scrivi una patente per volta o separate da virgola)">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="abilita" class="form-label">Aggiungi una nuova Specializzazione / AbilitÃ :</label>
+                            <input type="text" id="abilita" name="abilita" class="form-control" placeholder="Es. primo soccorso, antincendio">
+                        </div>
+                    </fieldset>
 
-        <hr>
+                    <button type="submit" class="btn">Salva modifiche scheda</button>
+                </form>
+            </div>
+        </main>
 
-        <section>
-            <h3>Aggiorna profilo e competenze</h3>
-            <form action="DashboardOperatoreServlet" method="POST">
-                <fieldset>
-                    <legend>Aggiungi competenze</legend>
-                    <p>
-                        <label for="patenti">Aggiungi una nuova Patente di guida:</label><br>
-                        <input type="text" id="patenti" name="patenti" placeholder="Es. B, C, V5 (Scrivi una patente per volta o separate da virgola)">
-                    </p>
-                    <p>
-                        <label for="abilita">Aggiungi una nuova Specializzazione / Abilità:</label><br>
-                        <input type="text" id="abilita" name="abilita" placeholder="Es. primo soccorso, antincendio">
-                    </p>
-                </fieldset>
-                <br>
-                <button type="submit">Salva modifiche scheda</button>
-            </form>
-        </section>
-    </main>
+        <footer class="message">
+            <p>SoccorsoWeb</p>
+        </footer>
+
+    </div>
+
+    <!-- Script JavaScript per popolare i dati asincronamente -->
+    <script src="js/operatore.js"></script>
 </body>
 </html>
