@@ -1,11 +1,17 @@
 document.addEventListener("DOMContentLoaded", function() {
-    fetch('DatiOperatoreJsonServlet')
-        .then(response => response.json())
+    // Usa l'URL corretto della tua Servlet (es. aggiungendo eventuale slash o percorso)
+    fetch('DashboardOperatoreServlet')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Errore di rete nella risposta del server");
+            }
+            return response.json();
+        })
         .then(data => {
-            // 1. Nome Operatore
+            // 1. Nome Operatore (CORRETTO con i backtick)
             const saluto = document.getElementById("saluto-operatore");
             if (saluto && data.nomeOperatore) {
-                saluto.textContent = Pannello operatore: ${data.nomeOperatore};
+                saluto.textContent = `Pannello operatore: ${data.nomeOperatore}`;
             }
 
             // 2. Tabella Missioni
@@ -31,7 +37,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
             }
 
-            // 3. Patenti Select
+            // 3. Patenti Select (Richiede che data.patenti sia un array)
             const patSelect = document.getElementById("patenti-select");
             if (patSelect) {
                 patSelect.innerHTML = "";
@@ -48,7 +54,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
             }
 
-            // 4. Abilitazioni Select
+            // 4. Abilitazioni Select (Richiede che data.abilita sia un array)
             const abSelect = document.getElementById("abilita-select");
             if (abSelect) {
                 abSelect.innerHTML = "";
@@ -69,4 +75,3 @@ document.addEventListener("DOMContentLoaded", function() {
             console.error("Errore nel caricamento dei dati operatore:", error);
         });
 });
-

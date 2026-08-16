@@ -2,13 +2,10 @@ package it.univaq.disim.webengineering.soccorsoweb.controller;
 
 import it.univaq.disim.webengineering.soccorsoweb.util.DBManager;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -22,8 +19,8 @@ public class DashboardOperatoreServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
-        // Controllo della sessione e del ruolo
+        
+        // Controllo della sessione e del ruolo (fondamenti di sicurezza e sessioni)
         HttpSession session = request.getSession(false);
         if (session == null || !"OPERATORE".equals(session.getAttribute("ruolo"))) {
             response.sendRedirect(request.getContextPath() + "/login.html");
@@ -33,19 +30,20 @@ public class DashboardOperatoreServlet extends HttpServlet {
         int idOperatore = (int) session.getAttribute("id_utente");
         String nomeOperatore = (String) session.getAttribute("nome");
 
-        request.setAttribute("nomeOperatore", nomeOperatore);
-
+        // Impostazione del tipo di contenuto della risposta come JSON puro per il client JS
+        response.setContentType("application/json;charset=UTF-8");
+        
         String patentiCorrenti = "";
         String abilitaCorrenti = "";
-        List<Map<String, Object>> listaMissioni = new ArrayList<>();
 
-        try (Connection conn = DBManager.getConnection()) {
-
-            // Recupero patenti dell'operatore
+        try (Connection conn = DBManager.getConnection();
+             PrintWriter out = response.getWriter()) {
+            
+            // 1. Recupero patenti dell'operatore tramite JDBC
             String sqlPat = "SELECT GROUP_CONCAT(p.codice SEPARATOR ', ') AS lista_patenti "
-                    + "FROM utente_patente up "
-                    + "JOIN patente p ON up.id_patente = p.id_patente "
-                    + "WHERE up.id_utente = ?";
+                          + "FROM utente_patente up "
+                          + "JOIN patente p ON up.id_patente = p.id_patente "
+                          + "WHERE up.id_utente = ?";
             try (PreparedStatement stmtPat = conn.prepareStatement(sqlPat)) {
                 stmtPat.setInt(1, idOperatore);
                 try (ResultSet rsPat = stmtPat.executeQuery()) {
@@ -54,13 +52,12 @@ public class DashboardOperatoreServlet extends HttpServlet {
                     }
                 }
             }
-            request.setAttribute("pat", patentiCorrenti);
 
-            // Recupero abilità dell'operatore
+            // 2. Recupero abilità dell'operatore tramite JDBC
             String sqlAb = "SELECT GROUP_CONCAT(a.nome SEPARATOR ', ') AS lista_abilita "
-                    + "FROM utente_abilita ua "
-                    + "JOIN abilita a ON ua.id_abilita = a.id_abilita "
-                    + "WHERE ua.id_utente = ?";
+                         + "FROM utente_abilita ua "
+                         + "JOIN abilita a ON ua.id_abilita = a.id_abilita "
+                         + "WHERE ua.id_utente = ?";
             try (PreparedStatement stmtAb = conn.prepareStatement(sqlAb)) {
                 stmtAb.setInt(1, idOperatore);
                 try (ResultSet rsAb = stmtAb.executeQuery()) {
@@ -69,48 +66,59 @@ public class DashboardOperatoreServlet extends HttpServlet {
                     }
                 }
             }
-            request.setAttribute("ab", abilitaCorrenti);
 
-            // Recupero missioni dell'operatore
+            // Costruzione manuale della struttura JSON di risposta
+            StringBuilder json = new StringBuilder();
+            json.append("{");
+            json.append("\"nomeOperatore\": \"").append(escapeJson(nomeOperatore)).append("\",");
+            json.append("\"pat\": \"").append(escapeJson(patentiCorrenti)).append("\",");
+            json.append("\"ab\": \"").append(escapeJson(abilitaCorrenti)).append("\",");
+            json.append("\"missioni\": [");
+
+            // 3. Recupero missioni dell'operatore con ordinamento
             String sql = "SELECT m.id_missione, m.obiettivo, m.posizione, m.stato, m.livello_successo "
-                    + "FROM missione m "
-                    + "JOIN assegnazione_operatori_missione aom ON m.id_missione = aom.id_missione "
-                    + "WHERE aom.id_utente = ? "
-                    + "ORDER BY m.stato DESC, m.id_missione DESC";
-
+                       + "FROM missione m "
+                       + "JOIN assegnazione_operatori_missione aom ON m.id_missione = aom.id_missione "
+                       + "WHERE aom.id_utente = ? "
+                       + "ORDER BY m.stato DESC, m.id_missione DESC";
+            
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                 stmt.setInt(1, idOperatore);
                 try (ResultSet rs = stmt.executeQuery()) {
+                    boolean first = true;
                     while (rs.next()) {
-                        Map<String, Object> missione = new HashMap<>();
-                        missione.put("id_missione", rs.getInt("id_missione"));
-                        missione.put("obiettivo", rs.getString("obiettivo"));
-                        missione.put("posizione", rs.getString("posizione"));
-                        missione.put("stato", rs.getString("stato"));
+                        if (!first) json.append(",");
+                        first = false;
 
                         int livelloSuccesso = rs.getInt("livello_successo");
                         String visualizzaVoto = rs.wasNull() ? "-" : livelloSuccesso + " / 5";
-                        missione.put("visualizzaVoto", visualizzaVoto);
+                        String stato = rs.getString("stato");
 
-                        listaMissioni.add(missione);
+                        json.append("{");
+                        json.append("\"id_missione\": ").append(rs.getInt("id_missione")).append(",");
+                        json.append("\"obiettivo\": \"").append(escapeJson(rs.getString("obiettivo"))).append("\",");
+                        json.append("\"posizione\": \"").append(escapeJson(rs.getString("posizione"))).append("\",");
+                        json.append("\"stato\": \"").append(escapeJson(stato)).append("\",");
+                        json.append("\"visualizzaVoto\": \"").append(escapeJson(visualizzaVoto)).append("\"");
+                        json.append("}");
                     }
                 }
             }
-            request.setAttribute("missioni", listaMissioni);
+            json.append("]}");
+            
+            out.print(json.toString());
 
         } catch (Exception e) {
             e.printStackTrace();
-            request.setAttribute("errore", e.getMessage());
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore interno del server");
         }
-
-        // Inoltro della richiesta alla pagina HTML
-        request.getRequestDispatcher("/operatore/dashboard.jsp").forward(request, response);
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
+        
+        // Controllo di sicurezza della sessione anche per le richieste POST
         HttpSession session = request.getSession(false);
         if (session == null || !"OPERATORE".equals(session.getAttribute("ruolo"))) {
             response.sendRedirect(request.getContextPath() + "/login.html");
@@ -118,13 +126,13 @@ public class DashboardOperatoreServlet extends HttpServlet {
         }
 
         int idOperatore = (int) session.getAttribute("id_utente");
-        String patentiRaw = request.getParameter("patenti");
+        String patentiRaw = request.getParameter("patenti"); // Lettura dei parametri POST
         String abilitaRaw = request.getParameter("abilita");
 
         try (Connection conn = DBManager.getConnection()) {
             conn.setAutoCommit(false);
             try {
-                // Sincronizzazione patenti
+                // Sincronizzazione Patenti (Accumulativa)
                 if (patentiRaw != null && !patentiRaw.trim().isEmpty()) {
                     String[] tokens = patentiRaw.split(",");
                     for (String t : tokens) {
@@ -135,9 +143,9 @@ public class DashboardOperatoreServlet extends HttpServlet {
                                 stInsPat.setString(1, tokenPuto);
                                 stInsPat.executeUpdate();
                             }
-
+                            
                             String insUserPat = "INSERT IGNORE INTO utente_patente (id_utente, id_patente) "
-                                    + "VALUES (?, (SELECT id_patente FROM patente WHERE codice = ?))";
+                                              + "VALUES (?, (SELECT id_patente FROM patente WHERE codice = ?))";
                             try (PreparedStatement stInsUserPat = conn.prepareStatement(insUserPat)) {
                                 stInsUserPat.setInt(1, idOperatore);
                                 stInsUserPat.setString(2, tokenPuto);
@@ -147,7 +155,7 @@ public class DashboardOperatoreServlet extends HttpServlet {
                     }
                 }
 
-                // Sincronizzazione abilità
+                // Sincronizzazione Abilità (Accumulativa)
                 if (abilitaRaw != null && !abilitaRaw.trim().isEmpty()) {
                     String[] tokens = abilitaRaw.split(",");
                     for (String t : tokens) {
@@ -158,9 +166,9 @@ public class DashboardOperatoreServlet extends HttpServlet {
                                 stInsAb.setString(1, tokenPuto);
                                 stInsAb.executeUpdate();
                             }
-
+                            
                             String insUserAb = "INSERT IGNORE INTO utente_abilita (id_utente, id_abilita) "
-                                    + "VALUES (?, (SELECT id_abilita FROM abilita WHERE nome = ?))";
+                                             + "VALUES (?, (SELECT id_abilita FROM abilita WHERE nome = ?))";
                             try (PreparedStatement stInsUserAb = conn.prepareStatement(insUserAb)) {
                                 stInsUserAb.setInt(1, idOperatore);
                                 stInsUserAb.setString(2, tokenPuto);
@@ -181,7 +189,16 @@ public class DashboardOperatoreServlet extends HttpServlet {
             e.printStackTrace();
         }
 
-        // Reindirizzamento al GET della servlet
-        response.sendRedirect(request.getContextPath() + "/DashboardOperatoreServlet");
+        // Pattern Post-Redirect-Get (P-R-G): reindirizzamento pulito dopo la POST
+        response.sendRedirect(request.getContextPath() + "/operatore/dashboard.html");
+    }
+
+    // Metodo di utilità per l'escape di caratteri speciali nelle stringhe JSON
+    private String escapeJson(String str) {
+        if (str == null) return "";
+        return str.replace("\\", "\\\\")
+                  .replace("\"", "\\\"")
+                  .replace("\n", " ")
+                  .replace("\r", " ");
     }
 }
