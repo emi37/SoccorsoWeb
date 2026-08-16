@@ -192,7 +192,7 @@ h2.section-title {
 }
 
 .text-center {
-        text-align: center;
+    text-align: center;
 }
 
 .mb-24 {
@@ -360,7 +360,51 @@ li {
 .btn-danger {
     background-color: #dc3545;
 }
+.badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 13px;
+    display: inline-block;
+}
 
+.badge-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.badge-secondary {
+    background-color: #e2e3e5;
+    color: #383d41;
+}
+
+.badge-warning {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.timeline-item {
+    background-color: #f8f9fa;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-left: 5px solid #17a2b8;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.timeline-date {
+    margin: 0 0 8px 0;
+    font-size: 13px;
+    color: #6c757d;
+}
+
+.timeline-content {
+    margin: 0;
+    font-size: 15px;
+    color: #212529;
+    line-height: 1.4;
+    white-space: pre-wrap;
+}
 /* Tablet */
 @media only screen and (min-width: 768px) and (max-width: 959px) {
     .container, main {
@@ -414,4 +458,5 @@ li {
         width: 100%;
         margin-bottom: 8px;
     }
+
 }
