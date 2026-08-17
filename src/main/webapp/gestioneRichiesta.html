@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Assegnazione risorse complete</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/style.css" type="text/css"/>
+    <link rel="stylesheet" href="css/style.css" type="text/css">
+    <link rel="stylesheet" href="css/style.css" type="text/css"/>
+
+
+
+</head>
+<body class="flex-center-body">
+    <main class="card-container-form">
+        <header class="section-header text-left">
+            <h2 class="section-title">Avvio missione #[ID_RICHIESTA]</h2>
+        </header>
+
+        <section class="text-left mb-24">
+            <p><b>Segnalante:</b> [NOME_SEGNALANTE]</p>
+            <p><b>Posizione dell'emergenza:</b> [POSIZIONE]</p>
+            <p><b>Dettagli segnalazione:</b> [DESCRIZIONE]</p>
+        </section>
+
+        <hr class="mb-24">
+
+        <section class="text-left">
+            <h3 class="section-title">Configurazione squadra d'intervento</h3>
+            
+            <form action="GestioneRichiestaServletDallAdmin" method="POST">
+                <input type="hidden" name="id_richiesta" value="[ID_RICHIESTA]">
+                
+                <!-- 1. Operatori e Caposquadra -->
+                <fieldset class="fieldset-antispam">
+                    <legend class="legend-antispam">Seleziona gli operatori e nomina un Caposquadra:</legend>
+                    <div class="scrollable-list">
+                        [LISTA_OPERATORI]
+                    </div>
+                </fieldset>
+
+                <!-- 2. Mezzi -->
+                <fieldset class="fieldset-antispam">
+                    <legend class="legend-antispam">Seleziona Mezzi di Soccorso Disponibili:</legend>
+                    <div class="scrollable-list">
+                        [LISTA_MEZZI]
+                    </div>
+                </fieldset>
+
+                <!-- 3. Materiali -->
+                <fieldset class="fieldset-antispam">
+                    <legend class="legend-antispam">Seleziona Attrezzature e Materiali di bordo:</legend>
+                    <div class="scrollable-list">
+                        [LISTA_MATERIALI]
+                    </div>
+                </fieldset>
+
+                <div class="text-center mt-20">
+                    <button type="submit" class="btn-success-large">AVVIA INTERVENTO SUL CAMPO</button>
+                </div>
+            </form>
+        </section>
+
+        <hr class="mt-20 mb-24">
+
+        <footer class="text-center">
+            <a href="DashboardServlet.java" class="link-back">&larr; Torna alla dashboard</a>
+        </footer>
+    </main>
+</body>
+</html>

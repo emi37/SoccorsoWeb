@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Storico Interventi Conclusi</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css" type="text/css"/>
+
+</head>
+<body>
+    <div class="container mt-20">
+        
+        <!-- Intestazione -->
+        <div class="topbar">
+            <h1 class="main-title">Storico delle missioni concluse</h1>
+            <div class="topbar-actions">
+                <a href="DashboardServlet" class="btn-primary">Torna al pannello di controllo</a>
+            </div>
+        </div>
+
+        <!-- Contenitore Tabella -->
+        <div class="card">
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 110px;">ID missione</th>
+                            <th style="width: 110px;">ID richiesta</th>
+                            <th style="width: 250px;">Dettagli operazione</th>
+                            <th style="width: 140px;">Valutazione (0-5)</th>
+                            <th>Relazione finale</th>
+                        </tr>
+                    </thead>
+                    <tbody id="storicoTableBody">
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">Caricamento dello storico in corso...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
