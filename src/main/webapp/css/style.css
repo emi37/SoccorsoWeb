@@ -11,11 +11,17 @@ body {
     line-height: 1.5;
 }
 
+/* --- Layout & Containers --- */
+.container, 
+.flex-end-container {
+    max-width: 1000px;
+    width: 100%;
+    margin: 0 auto;
+}
+
 .flex-end-container {
     display: flex;
     justify-content: flex-end;
-    max-width: 1000px;
-    width: 100%;
     margin: 10px auto;
     padding: 5px 0;
 }
@@ -27,54 +33,81 @@ body {
     min-height: 90vh;
 }
 
-.card-container {
-    max-width: 700px;
-    width: 100%;
-    margin: 30px auto;
+/* Card e Contenitori unificati */
+.card, 
+.card-container, 
+.card-container-form, 
+.card-container-login {
     background-color: #ffffff;
-    padding: 40px 20px;
     border-radius: 8px;
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+    width: 100%;
+}
+
+.card {
+    padding: 25px;
+    margin-bottom: 24px;
+}
+
+.card-container {
+    max-width: 700px;
+    margin: 30px auto;
+    padding: 40px 20px;
     text-align: center;
 }
 
 .card-container-form {
     max-width: 600px;
-    width: 100%;
     margin: 40px auto;
-    background-color: #ffffff;
     padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
 }
 
 .card-container-login {
     max-width: 400px;
-    width: 100%;
     margin: auto;
-    background-color: #ffffff;
     padding: 30px 20px;
-    border-radius: 8px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
 }
 
-h1.main-title {
+/* --- Tipografia & Intestazioni --- */
+h1, h2 {
     color: #333333;
     margin-top: 0;
+}
+
+h1.main-title, 
+.topbar h1 {
     font-size: 28px;
+    margin: 0;
+}
+
+h1.main-title {
     line-height: 1.2;
 }
 
-h2.section-title {
-    margin-top: 0;
-    color: #333333;
+h2.section-title, 
+.card h2 {
     font-size: 24px;
 }
 
+.subtitle, 
+.card p, 
 .text-muted {
     color: #666666;
+    font-size: 14px;
+}
+
+.text-muted {
     font-size: 16px;
     margin-bottom: 25px;
+}
+
+.card p {
+    margin-bottom: 15px;
+}
+
+.subtitle {
+    margin: 5px 0 0 0;
 }
 
 .text-muted-small {
@@ -84,11 +117,12 @@ h2.section-title {
     text-align: center;
 }
 
+/* --- Pulsanti --- */
+.btn, 
 .btn-primary {
     display: inline-block;
     background-color: #007bff;
     color: #ffffff;
-    padding: 10px 18px;
     text-decoration: none;
     border-radius: 4px;
     font-weight: bold;
@@ -96,6 +130,18 @@ h2.section-title {
     text-align: center;
     border: none;
     cursor: pointer;
+}
+
+.btn {
+    padding: 8px 14px;
+}
+
+.btn-primary {
+    padding: 10px 18px;
+}
+
+.btn:hover {
+    opacity: 0.9;
 }
 
 .btn-primary-full {
@@ -125,6 +171,10 @@ h2.section-title {
     text-align: center;
 }
 
+.btn-danger {
+    background-color: #dc3545;
+}
+
 .link-back {
     text-decoration: none;
     color: #007bff;
@@ -136,6 +186,7 @@ h2.section-title {
     margin-bottom: 15px;
 }
 
+/* --- Form e Controlli --- */
 .form-group {
     margin-bottom: 18px;
     text-align: left;
@@ -149,31 +200,35 @@ h2.section-title {
     font-size: 14px;
 }
 
-.form-control {
+.form-control, 
+.form-control-file, 
+.form-control-small {
     width: 100%;
-    padding: 10px;
     border: 1px solid #ced4da;
     border-radius: 4px;
     font-size: 14px;
+}
+
+.form-control, 
+.form-control-file {
+    padding: 10px;
+}
+
+.form-control {
     font-family: inherit;
 }
 
+textarea.form-control {
+    resize: vertical;
+}
+
 .form-control-file {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-    font-size: 14px;
     background-color: #ffffff;
 }
 
 .form-control-small {
-    width: 100%;
     max-width: 120px;
     padding: 8px;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-    font-size: 14px;
 }
 
 .fieldset-antispam {
@@ -191,22 +246,40 @@ h2.section-title {
     padding: 0 8px;
 }
 
-.text-center {
-    text-align: center;
+/* --- Tabelle e Liste --- */
+.table-wrapper {
+    overflow-x: auto;
 }
 
-.mb-24 {
-    margin-bottom: 24px;
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
 }
 
-.mt-20 {
-    margin-top: 20px;
+th, td {
+    padding: 12px;
+    text-align: left;
+    border: 1px solid #cccccc;
+    border-bottom: 1px solid #dee2e6;
+    font-size: 14px;
 }
 
-textarea.form-control {
-    resize: vertical;
+th {
+    font-weight: bold;
+    color: #333333;
+    background-color: #e9ecef;
 }
 
+ul {
+    margin: 8px 0 16px 0;
+}
+
+li {
+    margin-bottom: 6px;
+}
+
+/* --- Componenti UI & Utility --- */
 .topbar {
     background-color: #ffffff;
     padding: 20px 30px;
@@ -220,18 +293,6 @@ textarea.form-control {
     gap: 15px;
 }
 
-.topbar h1 {
-    margin: 0;
-    font-size: 28px;
-    color: #333333;
-}
-
-.subtitle {
-    color: #666666;
-    font-size: 14px;
-    margin: 5px 0 0 0;
-}
-
 .topbar-actions {
     display: flex;
     gap: 10px;
@@ -239,67 +300,8 @@ textarea.form-control {
     align-items: center;
 }
 
-.container {
-    max-width: 1000px;
-    margin: 0 auto;
-}
-
-.card {
-    background-color: #ffffff;
-    padding: 25px;
-    border-radius: 8px;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
-    margin-bottom: 24px;
-}
-
-.card h2 {
-    margin-top: 0;
-    color: #333333;
-    font-size: 24px;
-}
-
-.card p {
-    color: #666666;
-    font-size: 14px;
-    margin-bottom: 15px;
-}
-
 .section-header {
     margin-bottom: 15px;
-}
-
-.table-wrapper {
-    overflow-x: auto;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-    margin-bottom: 10px;
-}
-
-th, td {
-    padding: 12px;
-    text-align: left;
-    border-bottom: 1px solid #dee2e6;
-    border: 1px solid #cccccc;
-    font-size: 14px;
-}
-
-th {
-    font-weight: bold;
-    color: #333333;
-    background-color: #e9ecef;
-}
-
-ul {
-    margin-top: 8px;
-    margin-bottom: 16px;
-}
-
-li {
-    margin-bottom: 6px;
 }
 
 .quick-actions {
@@ -339,27 +341,6 @@ li {
     margin-top: 20px;
 }
 
-.btn {
-    display: inline-block;
-    background-color: #007bff;
-    color: #ffffff;
-    padding: 8px 14px;
-    text-decoration: none;
-    border-radius: 4px;
-    font-weight: bold;
-    font-size: 14px;
-    text-align: center;
-    border: none;
-    cursor: pointer;
-}
-
-.btn:hover {
-    opacity: 0.9;
-}
-
-.btn-danger {
-    background-color: #dc3545;
-}
 .badge {
     padding: 4px 8px;
     border-radius: 4px;
@@ -406,36 +387,19 @@ li {
     white-space: pre-wrap;
 }
 
-.scrollable-list {
-    max-height: 200px;
-    overflow-y: auto;
-    padding: 10px;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-    background-color: #ffffff;
+.text-center {
+    text-align: center;
 }
 
-.list-item-flex {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 8px;
-    border-bottom: 1px dashed #eee;
-    padding-bottom: 4px;
+.mb-24 {
+    margin-bottom: 24px;
 }
 
-.checkbox-label {
-    display: block;
-    cursor: pointer;
-    margin-bottom: 4px;
+.mt-20 {
+    margin-top: 20px;
 }
 
-.radio-label {
-    font-size: 13px;
-    color: #555;
-    cursor: pointer;
-}
-/* Tablet */
+/* --- Media Queries --- */
 @media only screen and (min-width: 768px) and (max-width: 959px) {
     .container, main {
         width: 95%;
@@ -450,7 +414,6 @@ li {
     }
 }
 
-/* Cellulari */
 @media only screen and (max-width: 767px) {
     .container, main {
         width: 96%;
@@ -488,31 +451,4 @@ li {
         width: 100%;
         margin-bottom: 8px;
     }
-    .text-left {
-        text-align: left;
-    }
-    .text-danger {
-        color: #dc3545;
-    }
-
-    hr.divider {
-        border: 0;
-        border-top: 1px solid #dee2e6;
-        margin: 25px 0;
-    }
-   
-    .text-success {
-        color: #28a745;
-        font-weight: bold;
-    }
-
-    .text-truncate-italic {
-        color: #495057;
-        font-style: italic;
-        max-width: 300px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
 }
-
