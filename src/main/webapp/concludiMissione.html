@@ -7,7 +7,6 @@
     </head>
     <body>
         <main>
-
             <header>
                 <h2>Chiusura report missione #${missione.id_missione}</h2>
             </header>
@@ -20,9 +19,10 @@
             <hr>
 
             <section>
-                <form action="ConcludiMissioneServlet" method="POST">
-                    <input type="hidden" name="id_missione" value="${missione.id_missione}">
-                    <input type="hidden" name="id_richiesta" value="${missione.id_richiesta}">
+                <!-- Ho aggiunto un id al form per pescarlo facilmente dal JS -->
+                <form id="formChiusuraMissione" action="ConcludiMissioneServlet" method="POST">
+                    <input type="hidden" id="id_missione" name="id_missione" value="${missione.id_missione}">
+                    <input type="hidden" id="id_richiesta" name="id_richiesta" value="${missione.id_richiesta}">
 
                     <fieldset>
                         <legend>Dettagli Chiusura Intervento</legend>
@@ -49,12 +49,14 @@
                 <p><strong>Missione non trovata o già conclusa.</strong></p>
             </section>
 
-
             <hr>
 
             <footer>
                 <a href="DashboardServlet">&larr; Annulla e torna alla Dashboard</a>
             </footer>
         </main>
+        
+        <!-- Script agganciato a fondo pagina per non bloccare il rendering -->
+        <script src="js/chiusura_intervento.js"></script>
     </body>
 </html>

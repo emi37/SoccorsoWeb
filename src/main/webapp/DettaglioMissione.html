@@ -2,7 +2,7 @@
 <html lang="it">
     <head>
         <meta charset="UTF-8">
-        <title>Missioni - SoccorsoWeb</title>
+        <title>Missioni </title>
         <link rel="stylesheet" type="text/css" href="css/style.css">
     </head>
 
@@ -33,7 +33,7 @@
                 <div class="card">
                     <h2>Cerca missione</h2>
 
-                    <form action="DettaglioMissioneServlet" method="get">
+                    <form id="formCercaMissione" action="DettaglioMissioneServlet" method="get">
                         <div class="form-group">
                             <label class="form-label" for="id_missione_cerca">ID missione</label>
                             <input
@@ -103,7 +103,7 @@
                 <div class="card">
                     <h2>Aggiungi aggiornamento missione</h2>
 
-                    <form action="DettaglioMissioneServlet" method="post">
+                    <form id="formAggiornaMissione" action="DettaglioMissioneServlet" method="post">
                         <div class="form-group">
                             <label class="form-label" for="id_missione">ID missione</label>
                             <input
@@ -160,6 +160,8 @@
             </footer>
 
         </div>
-
+        
+        <!-- Collegamento al file JS esterno -->
+        <script src="js/missioni.js"></script>
     </body>
 </html>

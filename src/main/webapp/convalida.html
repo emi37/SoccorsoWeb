@@ -13,11 +13,20 @@
         <section>
             <p>Stato attuale: <strong>ATTIVA</strong></p>
             <p class="text-muted">Stiamo preparando i soccorsi, la centrale operativa ha preso in carico la segnalazione.</p>
+            
+            <!-- Aggiunto un feedback visivo per il redirect automatico -->
+            <p class="text-muted" id="messaggioRedirect">
+                <small>Ritorno automatico alla home tra <span id="countdown">5</span> secondi...</small>
+            </p>
         </section>
         <hr class="mt-20 mb-24">
         <footer>
-            <a href="index.html" class="btn">Torna al form iniziale</a>
+            <!-- Aggiunto l'id per intercettare il click manuale -->
+            <a href="index.html" id="btnRitorno" class="btn">Torna al form iniziale</a>
         </footer>
     </main>
+
+    <!-- Script agganciato in fondo, come da manuale -->
+    <script src="js/convalida.js"></script>
 </body>
 </html>

@@ -5,14 +5,13 @@
         <title>Assegnazione risorse complete</title>
         <link rel="stylesheet" type="text/css" href="css/style.css">
     </head>
-    <body>
+    <body class="flex-center-body">
         <main>
             <header>
                 <h2>Avvio missione</h2>
             </header>
 
             <section>
-                <!-- strong è per il grassetto-->
                 <p><strong>Segnalante:</strong> Mario Rossi</p>
                 <p><strong>Posizione dell'emergenza:</strong> Via Garibaldi 45, L'Aquila</p>
                 <p><strong>Dettagli segnalazione:</strong> Incidente stradale, codice rosso.</p>
@@ -23,9 +22,9 @@
             <section>
                 <h3>Configurazione squadra d'intervento</h3>
 
-                <form action="GestioneRichiestaServletDallAdmin" method="POST">
+                <!-- Ho aggiunto l'id per agganciare i controlli JavaScript -->
+                <form id="formAssegnazione" action="GestioneRichiestaServletDallAdmin" method="POST">
                     <input type="hidden" name="id_richiesta" value="1024">
-
 
                     <fieldset>
                         <legend>Seleziona gli operatori e nomina un Caposquadra:</legend>
@@ -61,7 +60,6 @@
                         </ul>
                     </fieldset>
 
-
                     <fieldset>
                         <legend>Seleziona Attrezzature e Materiali di bordo:</legend>
                         <ul>
@@ -88,5 +86,8 @@
                 <a href="DashboardServlet">&larr; Torna alla Dashboard</a>
             </footer>
         </main>
+        
+        <!-- Script inserito a fondo pagina -->
+        <script src="js/gestione_richiesta.js"></script>
     </body>
 </html>

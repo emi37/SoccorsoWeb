@@ -66,7 +66,8 @@
 
             <div class="card">
                 <h2>Aggiorna profilo e competenze</h2>
-                <form action="DashboardOperatoreServlet" method="POST">
+                <!-- Ho aggiunto un ID al form per pescarlo in JS -->
+                <form id="formAggiornaProfilo" action="DashboardOperatoreServlet" method="POST">
                     <fieldset class="fieldset-antispam">
                         <legend class="legend-antispam">Aggiungi competenze</legend>
                         
@@ -76,7 +77,8 @@
                         </div>
                         
                         <div class="form-group">
-                            <label for="abilita" class="form-label">Aggiungi una nuova Specializzazione / AbilitÃ :</label>
+                            <!-- Ho corretto il typo "AbilitÃ " in "Abilità" -->
+                            <label for="abilita" class="form-label">Aggiungi una nuova Specializzazione / Abilità:</label>
                             <input type="text" id="abilita" name="abilita" class="form-control" placeholder="Es. primo soccorso, antincendio">
                         </div>
                     </fieldset>
@@ -91,8 +93,8 @@
         </footer>
 
     </div>
-
-    <!-- Script JavaScript per popolare i dati asincronamente -->
+    
+    <!-- Script agganciato regolarmente -->
     <script src="js/operatore.js"></script>
 </body>
 </html>

@@ -3,7 +3,6 @@
     <head>
         <meta charset="UTF-8">
         <title>Dashboard Amministratore - SoccorsoWeb</title>
-
         <link rel="stylesheet" type="text/css" href="css/style.css">
     </head>
     <body>
@@ -13,7 +12,7 @@
                 <p class="subtitle">Gestione richieste, missioni e risorse di SoccorsoWeb</p>
             </div>
 
-            <nav class="topbar-actions"> <!-- sezione di navigazione menu-->
+            <nav class="topbar-actions"> <!-- sezione di navigazione del menu-->
                 <a href="gestione-mezzi.html" class="btn">Gestione mezzi</a>
                 <a href="gestione-materiali.html" class="btn">Gestione materiali</a>
                 <a href="storico-missioni.html" class="btn">Storico missioni</a>
@@ -34,11 +33,8 @@
                 <!-- contenitore della tabella-->
                 <div class="table-wrapper">
                     <table>
-
                         <thead> <!-- intestazione tabella-->
-
                             <tr> <!--riga tabella-->
-
                                 <th>ID</th> <!-- cella di intestanzione per id della richiesta-->
                                 <th>Segnalante</th>
                                 <th>Email</th>
@@ -47,10 +43,9 @@
                                 <th>Azioni</th>
                             </tr>
                         </thead>
-
                         <tbody id="tabellaRichieste">
                             <tr> <!-- apre riga provvisoria-->
-                                <td colspan="6">Caricamento richieste...</td> <!-- cella provissoria che occupa 6 colonne-->
+                                <td colspan="6">Caricamento richieste in corso...</td> <!-- cella provissoria che occupa 6 colonne-->
                             </tr>
                         </tbody>
                     </table>
@@ -77,10 +72,9 @@
                                 <th>Azioni</th>
                             </tr>
                         </thead>
-
                         <tbody id="tabellaMissioni">
                             <tr>
-                                <td colspan="6">Caricamento missioni...</td>
+                                <td colspan="6">Caricamento missioni in corso...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -111,6 +105,8 @@
             <p id="messaggio" class="message"></p> <!--viene usato per mostrare messaggi dinamini-->
 
         </main>
-
+        
+        <!-- Importazione del JavaScript per popolare la dashboard -->
+        <script src="js/dashboard.js"></script>
     </body>
 </html>
