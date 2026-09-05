@@ -1,4 +1,6 @@
- <!--<!DOCTYPE html>
+   
+
+<!DOCTYPE html>
 <html lang="it">
     <head>
         <meta charset="UTF-8">
@@ -6,13 +8,13 @@
         <link rel="stylesheet" type="text/css" href="css/style.css">
     </head>
     <body>
-        <header class="topbar"> <!-- Intestazione della pagina, titolo, topbar applico uno stile CSS al blocco
+        <header class="topbar">
             <div>
                 <h1>Dashboard Amministratore</h1>
                 <p class="subtitle">Gestione richieste, missioni e risorse di SoccorsoWeb</p>
             </div>
 
-            <nav class="topbar-actions"> <!-- sezione di navigazione del menu
+            <nav class="topbar-actions">
                 <a href="gestione-mezzi.html" class="btn">Gestione mezzi</a>
                 <a href="gestione-materiali.html" class="btn">Gestione materiali</a>
                 <a href="storico-missioni.html" class="btn">Storico missioni</a>
@@ -20,22 +22,21 @@
             </nav>
         </header>
 
-        <main class="container">  <!--contenuto principale di un documento
-            <!-- sezione logica della pagina
+        <main class="container">
+            <!-- SEZIONE RICHIESTE ATTIVE -->
             <section class="card">
-                <!-- contenitore per l'intestazione della selezione
                 <div class="section-header">
                     <div>
                         <h2>Richieste attive</h2>
                         <p>Richieste confermate e pronte per essere trasformate in missioni.</p>
                     </div>
                 </div>
-                <!-- contenitore della tabella
+                
                 <div class="table-wrapper">
                     <table>
-                        <thead> <!-- intestazione tabella
-                            <tr> <!--riga tabella
-                                <th>ID</th> <!-- cella di intestanzione per id della richiesta
+                        <thead>
+                            <tr>
+                                <th>ID</th>
                                 <th>Segnalante</th>
                                 <th>Email</th>
                                 <th>Posizione</th>
@@ -43,16 +44,30 @@
                                 <th>Azioni</th>
                             </tr>
                         </thead>
-                        <tbody id="tabellaRichieste">
-                            <tr> <!-- apre riga provvisoria
-                                <td colspan="6">Caricamento richieste in corso...</td> <!-- cella provissoria che occupa 6 colonne
-                            </tr>
+                        <tbody>
+                            <#list richieste as r>
+                                <tr>
+                                    <td>#${r.id_richiesta!}</td>
+                                    <td>${r.nome_segnalante!""}</td>
+                                    <td>${r.email_segnalante!""}</td>
+                                    <td>${r.posizione!""}</td>
+                                    <td>${r.descrizione!""}</td>
+                                    <td>
+                                        <a href="GestioneRichiestaServletDallAdmin?id_richiesta=${r.id_richiesta!}" class="btn btn-primary">Avvia Missione</a>
+                                    </td>
+                                </tr>
+                            <#else>
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">Nessuna richiesta di soccorso in attesa. Ottimo lavoro!</td>
+                                </tr>
+                            </#list>
                         </tbody>
                     </table>
                 </div>
-            </section> <!-- chiude sezione richieste attive
+            </section>
 
-            <section class="card"> <!--sezione missioni in corso
+            <!-- SEZIONE MISSIONI IN CORSO -->
+            <section class="card">
                 <div class="section-header">
                     <div>
                         <h2>Missioni in corso</h2>
@@ -68,14 +83,27 @@
                                 <th>ID richiesta</th>
                                 <th>Obiettivo</th>
                                 <th>Posizione</th>
-                                <th>Data inizio</th>
+                                <th>Stato</th>
                                 <th>Azioni</th>
                             </tr>
                         </thead>
-                        <tbody id="tabellaMissioni">
-                            <tr>
-                                <td colspan="6">Caricamento missioni in corso...</td>
-                            </tr>
+                        <tbody>
+                            <#list missioni as m>
+                                <tr>
+                                    <td>#${m.id_missione!}</td>
+                                    <td>#${m.id_richiesta!}</td>
+                                    <td>${m.obiettivo!""}</td>
+                                    <td>${m.posizione!""}</td>
+                                    <td><span class="badge-status in-corso">${m.stato!""}</span></td>
+                                    <td>
+                                        <a href="ConcludiMissioneServlet?id_missione=${m.id_missione!}" class="btn btn-success">Concludi</a>
+                                    </td>
+                                </tr>
+                            <#else>
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">Nessuna missione attualmente in corso sul territorio.</td>
+                                </tr>
+                            </#list>
                         </tbody>
                     </table>
                 </div>
@@ -83,30 +111,23 @@
 
             <section class="card">
                 <h2>Azioni rapide</h2>
-
                 <div class="quick-actions">
                     <a href="gestione-mezzi.html" class="action-card">
                         <strong>Mezzi</strong>
-                        <span>Aggiungi, consulta o rimuovi mezzi disponibili.</span> <!--contenitore inline
+                        <span>Aggiungi, consulta o rimuovi mezzi disponibili.</span>
                     </a>
-
                     <a href="gestione-materiali.html" class="action-card">
                         <strong>Materiali</strong>
                         <span>Gestisci materiali e risorse operative.</span>
                     </a>
-
                     <a href="storico-missioni.html" class="action-card">
                         <strong>Storico</strong>
                         <span>Consulta le missioni concluse.</span>
                     </a>
                 </div>
             </section>
-
-            <p id="messaggio" class="message"></p> <!--viene usato per mostrare messaggi dinamini
-
         </main>
-        
-        <!-- Importazione del JavaScript per popolare la dashboard 
-        <script src="js/dashboard.js"></script>
     </body>
-</html>-->
+</html>
+
+

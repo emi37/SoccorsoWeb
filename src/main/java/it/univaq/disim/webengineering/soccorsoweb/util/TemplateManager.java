@@ -17,8 +17,14 @@ public class TemplateManager {
             // imposto la versione (usa quella del jar che metterai in WEB-INF/lib)
             cfg = new Configuration(Configuration.VERSION_2_3_32);
             
-            // dico a freemarker di pescare i template dalla cartella /WEB-INF/templates
-            cfg.setServletContextForTemplateLoading(context, "/WEB-INF/templates");
+            try {
+                // dico a freemarker di pescare i template dalla cartella /WEB-INF/templates
+                // CORRETTO: qui ora c'è 'context', come richiede il parametro!
+                java.io.File directoryTemplate = new java.io.File(context.getRealPath("/WEB-INF/templates"));
+                cfg.setDirectoryForTemplateLoading(directoryTemplate);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             
             // standard encoding
             cfg.setDefaultEncoding("UTF-8");
