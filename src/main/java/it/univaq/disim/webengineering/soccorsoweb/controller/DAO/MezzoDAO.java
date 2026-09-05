@@ -106,4 +106,35 @@ public class MezzoDAO {
 
         return listaMezzi;
     }
+    // Trova i mezzi attivi e non assegnati a missioni in corso
+    public List<Map<String, String>> estraiMezziDisponibili() {
+        List<Map<String, String>> listaMezzi = new ArrayList<>();
+        
+        String query = "SELECT id_mezzo, nome, descrizione " +
+                       "FROM mezzo " +
+                       "WHERE attivo = 1 " +
+                       "AND id_mezzo NOT IN ( " +
+                       "    SELECT amm.id_mezzo " +
+                       "    FROM assegnazione_mezzi_missione amm " +
+                       "    JOIN missione m ON amm.id_missione = m.id_missione " +
+                       "    WHERE m.stato = 'IN_CORSO' " +
+                       ")";
+                       
+        try (Connection connessioneDb = DBManager.getConnection();
+             PreparedStatement statement = connessioneDb.prepareStatement(query);
+             ResultSet risultati = statement.executeQuery()) {
+            
+            while (risultati.next()) {
+                Map<String, String> mezzo = new HashMap<>();
+                mezzo.put("id_mezzo", risultati.getString("id_mezzo"));
+                mezzo.put("nome", risultati.getString("nome"));
+                mezzo.put("descrizione", risultati.getString("descrizione"));
+                listaMezzi.add(mezzo);
+            }
+        } catch (Exception e) {
+            System.err.println("Errore durante la ricerca dei mezzi liberi...");
+            e.printStackTrace();
+        }
+        return listaMezzi;
+    }
 }

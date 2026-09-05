@@ -167,4 +167,115 @@ public class MissioneDAO {
 
         return missioneChiusa;
     }
+    // Metodo per estrarre velocemente lo stato di una missione (ci serve per i check prima degli aggiornamenti)
+    public String estraiStatoMissione(int idMissione) {
+        String statoAttuale = "";
+        
+        String queryStato = "SELECT stato FROM missione WHERE id_missione = ?";
+        
+        try (Connection connessioneDb = DBManager.getConnection();
+             PreparedStatement statementStato = connessioneDb.prepareStatement(queryStato)) {
+            
+            statementStato.setInt(1, idMissione);
+            
+            try (ResultSet risultati = statementStato.executeQuery()) {
+                if (risultati.next()) {
+                    statoAttuale = risultati.getString("stato");
+                }
+            }
+            
+        } catch (Exception e) {
+            System.err.println("Panico durante l'estrazione dello stato della missione...");
+            e.printStackTrace();
+        }
+        
+        return statoAttuale;
+    }
+
+    // Mega-metodo che sostituisce le 4 query della vecchia DettaglioMissioneServlet
+    public Map<String, Object> estraiDettagliCompleti(int idMissione) {
+        Map<String, Object> mappaDettagli = new HashMap<>();
+
+        // Apro una SOLA connessione e mi faccio tutti i giri che mi servono
+        try (Connection connessioneDb = DBManager.getConnection()) {
+
+            // 1. Info base della missione
+            String queryBase = "SELECT obiettivo, posizione, stato, timestamp_inizio " +
+                               "FROM missione WHERE id_missione = ?";
+                               
+            try (PreparedStatement stmtBase = connessioneDb.prepareStatement(queryBase)) {
+                stmtBase.setInt(1, idMissione);
+                try (ResultSet rsBase = stmtBase.executeQuery()) {
+                    if (rsBase.next()) {
+                        mappaDettagli.put("id_missione", idMissione);
+                        mappaDettagli.put("obiettivo", rsBase.getString("obiettivo"));
+                        mappaDettagli.put("posizione", rsBase.getString("posizione"));
+                        mappaDettagli.put("stato", rsBase.getString("stato"));
+                        mappaDettagli.put("inizio", rsBase.getTimestamp("timestamp_inizio").toString());
+                    } else {
+                        // Se non trova la missione, esce subito restituendo una mappa vuota
+                        return mappaDettagli;
+                    }
+                }
+            }
+
+            // 2. Cerchiamo il Caposquadra con una JOIN
+            String nomeCaposquadra = "Non ancora assegnato";
+            String queryCapo = "SELECT u.nome, u.cognome " +
+                               "FROM utente u " +
+                               "JOIN assegnazione_operatori_missione aom ON u.id_utente = aom.id_utente " +
+                               "WHERE aom.id_missione = ? AND aom.is_caposquadra = 1";
+                               
+            try (PreparedStatement stmtCapo = connessioneDb.prepareStatement(queryCapo)) {
+                stmtCapo.setInt(1, idMissione);
+                try (ResultSet rsCapo = stmtCapo.executeQuery()) {
+                    if (rsCapo.next()) {
+                        nomeCaposquadra = rsCapo.getString("nome") + " " + rsCapo.getString("cognome");
+                    }
+                }
+            }
+            mappaDettagli.put("caposquadra", nomeCaposquadra);
+
+            // 3. Estraiamo i Mezzi associati
+            List<String> listaMezzi = new ArrayList<>();
+            String queryMezzi = "SELECT m.nome, m.descrizione " +
+                                "FROM mezzo m " +
+                                "JOIN assegnazione_mezzi_missione amm ON m.id_mezzo = amm.id_mezzo " +
+                                "WHERE amm.id_missione = ?";
+                                
+            try (PreparedStatement stmtMezzi = connessioneDb.prepareStatement(queryMezzi)) {
+                stmtMezzi.setInt(1, idMissione);
+                try (ResultSet rsMezzi = stmtMezzi.executeQuery()) {
+                    while (rsMezzi.next()) {
+                        // Concateno la stringa così FreeMarker deve solo stamparla in un loop <li>
+                        listaMezzi.add(rsMezzi.getString("nome") + " (" + rsMezzi.getString("descrizione") + ")");
+                    }
+                }
+            }
+            mappaDettagli.put("mezzi", listaMezzi);
+
+            // 4. Estraiamo i Materiali associati
+            List<String> listaMateriali = new ArrayList<>();
+            String queryMateriali = "SELECT mat.nome, mat.descrizione " +
+                                    "FROM materiale mat " +
+                                    "JOIN assegnazione_materiale_missione ama ON mat.id_materiale = ama.id_materiale " +
+                                    "WHERE ama.id_missione = ?";
+                                    
+            try (PreparedStatement stmtMat = connessioneDb.prepareStatement(queryMateriali)) {
+                stmtMat.setInt(1, idMissione);
+                try (ResultSet rsMat = stmtMat.executeQuery()) {
+                    while (rsMat.next()) {
+                        listaMateriali.add(rsMat.getString("nome") + " - " + rsMat.getString("descrizione"));
+                    }
+                }
+            }
+            mappaDettagli.put("materiali", listaMateriali);
+
+        } catch (Exception e) {
+            System.err.println("Errore brutto durante il recupero dei dettagli completi della missione dal DB...");
+            e.printStackTrace();
+        }
+
+        return mappaDettagli;
+    }
 }

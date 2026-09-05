@@ -45,7 +45,7 @@ public class CaptchaServlet extends HttpServlet {
 
             // Diciamo al browser che gli stiamo per mandare un payload JSON puro
             response.setContentType("application/json;charset=UTF-8");
-            
+
             // Assembliamo la stringa JSON grezza a mano (vecchia scuola)
             String stringaJson = "{ \"domanda\": \"Quanto fa " + primoNumero + " + " + secondoNumero + "?\" }";
 
@@ -53,7 +53,7 @@ public class CaptchaServlet extends HttpServlet {
             try (PrintWriter stampante = response.getWriter()) {
                 stampante.write(stringaJson);
             }
-            
+
         } catch (Exception e) {
             // Catch d'ordinanza per non far crashare male la chiamata fetch(AJAX) del client
             System.err.println("Disastro durante la generazione o l'invio del Captcha in JSON...");

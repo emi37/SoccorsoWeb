@@ -111,4 +111,35 @@ public class MaterialeDAO {
 
         return listaMateriali;
     }
+    // Trova i materiali attivi e non usati in missioni in corso
+    public List<Map<String, String>> estraiMaterialiDisponibili() {
+        List<Map<String, String>> listaMateriali = new ArrayList<>();
+        
+        String query = "SELECT id_materiale, nome, descrizione " +
+                       "FROM materiale " +
+                       "WHERE attivo = 1 " +
+                       "AND id_materiale NOT IN ( " +
+                       "    SELECT ama.id_materiale " +
+                       "    FROM assegnazione_materiale_missione ama " +
+                       "    JOIN missione m ON ama.id_missione = m.id_missione " +
+                       "    WHERE m.stato = 'IN_CORSO' " +
+                       ")";
+                       
+        try (Connection connessioneDb = DBManager.getConnection();
+             PreparedStatement statement = connessioneDb.prepareStatement(query);
+             ResultSet risultati = statement.executeQuery()) {
+            
+            while (risultati.next()) {
+                Map<String, String> materiale = new HashMap<>();
+                materiale.put("id_materiale", risultati.getString("id_materiale"));
+                materiale.put("nome", risultati.getString("nome"));
+                materiale.put("descrizione", risultati.getString("descrizione"));
+                listaMateriali.add(materiale);
+            }
+        } catch (Exception e) {
+            System.err.println("Errore brutto durante la ricerca dei materiali disponibili...");
+            e.printStackTrace();
+        }
+        return listaMateriali;
+    }
 }
