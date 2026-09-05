@@ -1,15 +1,14 @@
- <!-- <!doctype html>
+<!doctype html>
 <html lang="it">
     <head>
         <meta charset="UTF-8">
-        <title>Missioni </title>
-        <link rel="stylesheet" type="text/css" href="css/style.css">
+        <title>Dettaglio Missione - SoccorsoWeb</title>
+        <!-- I path a css/js restano relativi alla root pubblica del server -->
+        <link rel="stylesheet" type="text/css" href="${request.contextPath}/css/style.css">
     </head>
 
     <body>
-
         <div class="container">
-
             <header class="topbar">
                 <div>
                     <h1>SoccorsoWeb</h1>
@@ -17,111 +16,104 @@
                 </div>
 
                 <nav class="topbar-actions">
-                    <a href="dashboard.html" class="btn">Dashboard</a>
-                    <a href="homeFinale.html" class="btn">Home</a>
-                    <a href="login.html" class="btn btn-danger">Login</a>
+                    <a href="${request.contextPath}/DashboardServlet" class="btn">Dashboard</a>
+                    <a href="${request.contextPath}/homeFinale.html" class="btn">Home</a>
+                    <a href="${request.contextPath}/LogoutServlet" class="btn btn-danger">Logout</a>
                 </nav>
             </header>
 
             <main>
-
                 <div class="card">
                     <h2>Dettaglio missione</h2>
                     <p>In questa pagina è possibile consultare una missione e inserire un aggiornamento operativo.</p>
                 </div>
 
+                <!-- Form per cercare un'altra missione al volo -->
                 <div class="card">
                     <h2>Cerca missione</h2>
-
-                    <form id="formCercaMissione" action="DettaglioMissioneServlet" method="get">
+                    <form id="formCercaMissione" action="${request.contextPath}/DettaglioMissioneServlet" method="get">
                         <div class="form-group">
                             <label class="form-label" for="id_missione_cerca">ID missione</label>
-                            <input
-                                type="text"
-                                id="id_missione_cerca"
-                                name="id_missione"
-                                class="form-control"
-                                required>
+                            <input type="text" id="id_missione_cerca" name="id_missione" class="form-control" required>
                         </div>
-
                         <div>
                             <input type="submit" value="Cerca missione" class="btn">
-                            <input type="reset" value="Cancella" class="btn btn-danger">
                         </div>
                     </form>
                 </div>
 
+                <!-- INIZIO INIEZIONE DATI FREEMARKER: Info Base -->
                 <div class="card">
                     <h2>Informazioni missione</h2>
-
                     <div class="table-wrapper">
                         <table>
                             <tbody>
                                 <tr>
                                     <th>ID missione</th>
-                                    <td>Dato non caricato</td>
+                                    <td>${missione.id_missione}</td>
                                 </tr>
                                 <tr>
                                     <th>Obiettivo</th>
-                                    <td>Dato non caricato</td>
+                                    <td>${missione.obiettivo}</td>
                                 </tr>
                                 <tr>
                                     <th>Posizione</th>
-                                    <td>Dato non caricato</td>
+                                    <td>${missione.posizione}</td>
                                 </tr>
                                 <tr>
                                     <th>Stato</th>
-                                    <td>Dato non caricato</td>
+                                    <td><strong>${missione.stato}</strong></td>
                                 </tr>
                                 <tr>
                                     <th>Inizio intervento</th>
-                                    <td>Dato non caricato</td>
+                                    <td>${missione.inizio}</td>
                                 </tr>
                                 <tr>
                                     <th>Caposquadra</th>
-                                    <td>Dato non caricato</td>
+                                    <td>${missione.caposquadra}</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
 
+                <!-- INIEZIONE LISTE FREEMARKER: Mezzi e Materiali -->
                 <div class="card">
                     <h2>Risorse assegnate</h2>
 
                     <h3>Automezzi sul posto</h3>
                     <ul>
-                        <li>Nessun automezzo caricato nella pagina statica.</li>
+                        <#list mezzi as mezzo>
+                            <li><strong>${mezzo.nome}</strong> - ${mezzo.descrizione}</li>
+                        <#else>
+                            <li class="text-muted">Nessun automezzo associato a questa missione.</li>
+                        </#list>
                     </ul>
 
                     <h3>Attrezzature e materiali</h3>
                     <ul>
-                        <li>Nessun materiale caricato nella pagina statica.</li>
+                        <#list materiali as materiale>
+                            <li><strong>${materiale.nome}</strong> - ${materiale.descrizione}</li>
+                        <#else>
+                            <li class="text-muted">Nessun materiale associato a questa missione.</li>
+                        </#list>
                     </ul>
                 </div>
 
+                <!-- SE LA MISSIONE E' IN CORSO, MOSTRO IL FORM -->
+                <#if missione.stato == "IN_CORSO">
                 <div class="card">
                     <h2>Aggiungi aggiornamento missione</h2>
-
-                    <form id="formAggiornaMissione" action="DettaglioMissioneServlet" method="post">
+                    <form id="formAggiornaMissione" action="${request.contextPath}/DettaglioMissioneServlet" method="post">
                         <div class="form-group">
                             <label class="form-label" for="id_missione">ID missione</label>
-                            <input
-                                type="text"
-                                id="id_missione"
-                                name="id_missione"
-                                class="form-control"
-                                required>
+                            <!-- Precompiliamo l'ID rendendolo readonly per evitare errori umani -->
+                            <input type="text" id="id_missione" name="id_missione" class="form-control" value="${missione.id_missione}" readonly required>
                         </div>
 
                         <div class="form-group">
                             <label class="form-label" for="testo_descrittivo">Messaggio</label>
-                            <textarea
-                                id="testo_descrittivo"
-                                name="testo_descrittivo"
-                                rows="6"
-                                class="form-control"
-                                required></textarea>
+                            <textarea id="testo_descrittivo" name="testo_descrittivo" rows="6" class="form-control" required></textarea>
                         </div>
 
                         <div>
@@ -130,10 +122,11 @@
                         </div>
                     </form>
                 </div>
+                </#if>
 
+                <!-- INIEZIONE TIMELINE FREEMARKER -->
                 <div class="card">
                     <h2>Cronistoria eventi</h2>
-
                     <div class="table-wrapper">
                         <table>
                             <thead>
@@ -143,11 +136,18 @@
                                     <th>Messaggio</th>
                                 </tr>
                             </thead>
-
                             <tbody>
+                                <#list timeline as evento>
                                 <tr>
-                                    <td colspan="3">Nessun aggiornamento caricato nella pagina statica.</td>
+                                    <td>${evento.data}</td>
+                                    <td>${evento.operatore}</td>
+                                    <td>${evento.testo}</td>
                                 </tr>
+                                <#else>
+                                <tr>
+                                    <td colspan="3" class="text-muted">Nessun aggiornamento registrato.</td>
+                                </tr>
+                                </#list>
                             </tbody>
                         </table>
                     </div>
@@ -161,7 +161,7 @@
 
         </div>
         
-        <!-- Collegamento al file JS esterno -->
-    <!--    <script src="js/missioni.js"></script>
+        <!-- Il tuo JS (se serve ancora per altre logiche lato client) -->
+        <script src="${request.contextPath}/js/missioni.js"></script>
     </body>
-</html>    -->
+</html>
