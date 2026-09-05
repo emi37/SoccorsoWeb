@@ -1,13 +1,5 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package it.univaq.disim.webengineering.soccorsoweb.controller.DAO;
 
-/**
- *
- * @author edoar
- */
 import it.univaq.disim.webengineering.soccorsoweb.model.Mezzo;
 import it.univaq.disim.webengineering.soccorsoweb.util.DBManager;
 import java.sql.Connection;
@@ -28,7 +20,8 @@ public class MezzoDAO {
                 + "(nome, descrizione, attivo) "
                 + "VALUES (?, ?, 1)";
 
-        try (Connection connessioneDb = DBManager.getConnection(); PreparedStatement statementAggiunta = connessioneDb.prepareStatement(queryAggiunta)) {
+        try (Connection connessioneDb = DBManager.getConnection(); 
+             PreparedStatement statementAggiunta = connessioneDb.prepareStatement(queryAggiunta)) {
 
             statementAggiunta.setString(1, nuovoMezzo.getNome());
             statementAggiunta.setString(2, nuovoMezzo.getDescrizione());
@@ -57,7 +50,8 @@ public class MezzoDAO {
                 + "    WHERE mis.stato = 'IN_CORSO'"
                 + ")";
 
-        try (Connection connessioneDb = DBManager.getConnection(); PreparedStatement statementCancellazione = connessioneDb.prepareStatement(queryCancellazione)) {
+        try (Connection connessioneDb = DBManager.getConnection(); 
+             PreparedStatement statementCancellazione = connessioneDb.prepareStatement(queryCancellazione)) {
 
             statementCancellazione.setInt(1, idDaCancellare);
             int righeNascoste = statementCancellazione.executeUpdate();
@@ -86,15 +80,17 @@ public class MezzoDAO {
                 + ") THEN 'IMPEGNATO' ELSE 'LIBERO' END AS stato_attuale "
                 + "FROM mezzo m WHERE m.attivo = 1";
 
-        try (Connection connessioneDb = DBManager.getConnection(); PreparedStatement statementLista = connessioneDb.prepareStatement(queryLista); ResultSet risultatiLista = statementLista.executeQuery()) {
+        try (Connection connessioneDb = DBManager.getConnection(); 
+             PreparedStatement statementLista = connessioneDb.prepareStatement(queryLista); 
+             ResultSet risultatiLista = statementLista.executeQuery()) {
 
             while (risultatiLista.next()) {
-                // Impacchetto i dati in una mappa per passarla comodamente alla JSP/FreeMarker
+                // Impacchetto i dati in una mappa usando chiavi allineate con FreeMarker
                 Map<String, String> mappaMezzo = new HashMap<>();
-                mappaMezzo.put("id", String.valueOf(risultatiLista.getInt("id_mezzo")));
+                mappaMezzo.put("id_mezzo", String.valueOf(risultatiLista.getInt("id_mezzo")));
                 mappaMezzo.put("nome", risultatiLista.getString("nome"));
                 mappaMezzo.put("descrizione", risultatiLista.getString("descrizione"));
-                mappaMezzo.put("stato", risultatiLista.getString("stato_attuale"));
+                mappaMezzo.put("attivo", risultatiLista.getString("stato_attuale"));
 
                 listaMezzi.add(mappaMezzo);
             }
@@ -106,6 +102,7 @@ public class MezzoDAO {
 
         return listaMezzi;
     }
+
     // Trova i mezzi attivi e non assegnati a missioni in corso
     public List<Map<String, String>> estraiMezziDisponibili() {
         List<Map<String, String>> listaMezzi = new ArrayList<>();

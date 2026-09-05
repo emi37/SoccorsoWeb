@@ -1,7 +1,10 @@
 package it.univaq.disim.webengineering.soccorsoweb.controller;
 
 import it.univaq.disim.webengineering.soccorsoweb.controller.DAO.MezzoDAO;
+import it.univaq.disim.webengineering.soccorsoweb.util.TemplateManager;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -9,9 +12,8 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import java.util.List;
 
-@WebServlet("/GestioneMezzi")
+@WebServlet(name = "GestioneMezziServlet", urlPatterns = {"/GestioneMezzi"})
 public class GestioneMezziServlet extends HttpServlet {
 
     @Override
@@ -23,40 +25,48 @@ public class GestioneMezziServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // check permessi
+        // Check permessi: blocca chi non è ADMIN
         HttpSession sessioneAttuale = request.getSession(false);
         if (sessioneAttuale == null || !"ADMIN".equals(sessioneAttuale.getAttribute("ruolo"))) {
-            response.sendRedirect("login.html");
+            response.sendRedirect(request.getContextPath() + "/login.html");
             return;
         }
 
         try {
             MezzoDAO mezzoDao = new MezzoDAO();
 
-            // se mi passano l'id da eliminare, faccio fare il soft-delete al DAO
+            // 1. GESTIONE CANCELLAZIONE (Soft-Delete)
             String idDaEliminareStr = request.getParameter("elimina");
-            if (idDaEliminareStr != null) {
+            if (idDaEliminareStr != null && !idDaEliminareStr.trim().isEmpty()) {
                 int idMezzo = Integer.parseInt(idDaEliminareStr);
                 mezzoDao.rimuoviMezzoSeLibero(idMezzo);
 
-                // pulisco l'url facendo un redirect su se stessa
-                response.sendRedirect("GestioneMezzi");
+                // Pattern PRG: pulisco l'URL facendo un redirect pulito
+                response.sendRedirect(request.getContextPath() + "/GestioneMezzi");
                 return;
             }
 
-            // mi faccio dare la lista già calcolata e impacchettata dal DAO
+            // 2. LETTURA DEI DATI 
             List<Map<String, String>> listaMezzi = mezzoDao.estraiTuttiIMezziConStato();
 
-            // passo i dati e renderizzo usando il template engine
-            request.setAttribute("mezzi", listaMezzi);
+            // 3. PREPARAZIONE DATI PER FREEMARKER
+            Map<String, Object> dataModel = new HashMap<>();
+            dataModel.put("mezzi", listaMezzi); // La lista che la vista leggerà con <#list mezzi as m>
+            dataModel.put("request", request);
 
-            // TODO: Qui FreeMarker si prenderà il request.getAttribute("mezzi")
-            // Per ora lasciamo il forward classico verso la view
-            request.getRequestDispatcher("/WEB-INF/admin/gestione_mezzi.ftl").forward(request, response);
+            // 4. RENDERING TRAMITE TEMPLATE MANAGER (Punta alla cartella templates in automatico)
+            TemplateManager.process("gestione_mezzi.ftl", dataModel, response, getServletContext());
 
         } catch (Exception e) {
             System.err.println("Errore brutto nel controller della gestione mezzi...");
             e.printStackTrace();
         }
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        // Se arriva una POST, la giriamo alla GET per sicurezza
+        doGet(request, response);
     }
 }

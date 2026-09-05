@@ -15,8 +15,6 @@ public class AggiungiMezzoServlet extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-        // Il caricamento del driver MySQL ora lo fa il DBManager, 
-        // ma teniamo il metodo init pulito chiamando il padre come da regola
         super.init();
     }
 
@@ -29,12 +27,13 @@ public class AggiungiMezzoServlet extends HttpServlet {
 
         // check permessi
         if (sessioneAttuale == null || !"ADMIN".equals(sessioneAttuale.getAttribute("ruolo"))) {
-            response.sendRedirect("login.html");
+            // Aggiunto getContextPath() per evitare errori 404 sul redirect
+            response.sendRedirect(request.getContextPath() + "/login.html");
             return;
         }
 
         try {
-            // estraggo i parametri inviati dal client
+            // estraggo i parametri inviati dal client (devono coincidere con gli attributi name=".." del form HTML)
             String nomeInserito = request.getParameter("nome");
             String descrizioneInserita = request.getParameter("descrizione");
 

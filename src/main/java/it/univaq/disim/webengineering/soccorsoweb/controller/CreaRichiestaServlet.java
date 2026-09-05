@@ -25,7 +25,6 @@ public class CreaRichiestaServlet extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-        // Solita chiamata pulita al padre, il driver JDBC se lo gestisce il DBManager
         super.init();
     }
 
@@ -88,7 +87,6 @@ public class CreaRichiestaServlet extends HttpServlet {
             if (parteFoto != null && parteFoto.getSize() > 0) {
                 String nomeOriginale = Paths.get(parteFoto.getSubmittedFileName()).getFileName().toString();
 
-                // ci piazzo un uuid per evitare che due file con lo stesso nome si sovrascrivano
                 nomeFileSalvato = UUID.randomUUID().toString() + "_" + nomeOriginale;
                 String percorsoUpload = getServletContext().getRealPath("") + File.separator + "uploads";
                 File cartellaUpload = new File(percorsoUpload);
@@ -97,7 +95,6 @@ public class CreaRichiestaServlet extends HttpServlet {
                     cartellaUpload.mkdirs();
                 }
 
-                // salvo fisicamente l'immagine nella cartella del server
                 parteFoto.write(percorsoUpload + File.separator + nomeFileSalvato);
             }
         } catch (Exception e) {
@@ -120,6 +117,10 @@ public class CreaRichiestaServlet extends HttpServlet {
             nuovaRichiesta.setIpOrigine(ipOrigine);
             nuovaRichiesta.setTokenConvalida(tokenConvalida);
 
+            // ECCO L'AGGIUNTA FONDAMENTALE: chiamo il DAO per scrivere davvero nel DB
+            RichiestaSoccorsoDAO richiestaDao = new RichiestaSoccorsoDAO();
+            salvataggioRiuscito = richiestaDao.salvaNuovaRichiesta(nuovaRichiesta);
+
         } catch (Exception e) {
             System.err.println("Panico nel controller durante il salvataggio della richiesta nel DB...");
             e.printStackTrace();
@@ -139,7 +140,6 @@ public class CreaRichiestaServlet extends HttpServlet {
             System.out.println(linkConvalida);
             System.out.println("=====================================");
 
-            // Pattern PRG
             response.sendRedirect(request.getContextPath() + "/richiesta-inviata.html");
         } else {
             response.sendRedirect(request.getContextPath() + "/richiesta.html?errore=salvataggio");

@@ -8,7 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-@WebServlet(name = "LogoutServlet", urlPatterns = {"/LogoutServlet"})
+@WebServlet(name = "LogoutServlet", urlPatterns = {"/Logout"})
 public class LogoutServlet extends HttpServlet {
 
     @Override
@@ -20,7 +20,7 @@ public class LogoutServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // Prendo la sessione SOLO se esiste (false), non ha senso crearla per poi distruggerla
+        // Prendo la sessione SOLO se esiste (false)
         HttpSession sessioneAttuale = request.getSession(false);
 
         if (sessioneAttuale != null) {
@@ -28,14 +28,13 @@ public class LogoutServlet extends HttpServlet {
             sessioneAttuale.invalidate();
         }
 
-        // Ti butto fuori, tornando alla home page pubblica
-        response.sendRedirect(request.getContextPath() + "/index.html");
+        // CORREZIONE: Ti rimando alla pagina di login che sappiamo esistere, evitando freeze
+        response.sendRedirect(request.getContextPath() + "/login.html");
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // Se per caso il logout viene chiamato tramite un form in POST, lo giriamo alla GET
         doGet(request, response);
     }
 }

@@ -16,7 +16,6 @@ public class CreaAdminEOperatoreServlet extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-        // Solita chiamata al padre. Il DBManager pensa a caricare il driver JDBC.
         super.init();
     }
 
@@ -24,7 +23,6 @@ public class CreaAdminEOperatoreServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // check permessi: prendo la sessione corrente senza crearne una nuova
         HttpSession sessioneAttuale = request.getSession(false);
         if (sessioneAttuale == null || !"ADMIN".equals(sessioneAttuale.getAttribute("ruolo"))) {
             response.sendRedirect(request.getContextPath() + "/login.html");
@@ -34,20 +32,16 @@ public class CreaAdminEOperatoreServlet extends HttpServlet {
         boolean inserimentoRiuscito = false;
 
         try {
-            // Tiro giù i parametri inviati dal form HTML
             String nomeInserito = request.getParameter("nome");
             String cognomeInserito = request.getParameter("cognome");
             String emailInserita = request.getParameter("email");
             String passwordInserita = request.getParameter("password");
             String ruoloScelto = request.getParameter("ruolo");
 
-            // Controllo ruspante per assicurarmi che ci siano i dati fondamentali
             if (emailInserita != null && passwordInserita != null && ruoloScelto != null) {
 
-                // Hasho la password qui nel controller con jBcrypt prima di passarla al DAO
                 String passwordCifrata = BCrypt.hashpw(passwordInserita, BCrypt.gensalt());
 
-                // Assemblo l'oggetto Utente (il Modello)
                 Utenti nuovoUtente = new Utenti();
                 nuovoUtente.setNome(nomeInserito);
                 nuovoUtente.setCognome(cognomeInserito);
@@ -55,18 +49,41 @@ public class CreaAdminEOperatoreServlet extends HttpServlet {
                 nuovoUtente.setPassword(passwordCifrata);
                 nuovoUtente.setRuolo(ruoloScelto);
 
-                // Chiamo il DAO e gli faccio fare la INSERT sporca nel database
                 UtenteDAO utenteDao = new UtenteDAO();
-                inserimentoRiuscito = utenteDao.salvaNuovoUtente(nuovoUtente);
+                
+                // CORREZIONE ERRORE: Ora riceviamo l'ID (long), non più un boolean
+                long idNuovoUtente = utenteDao.salvaNuovoUtente(nuovoUtente);
+
+                if (idNuovoUtente > 0) {
+                    inserimentoRiuscito = true;
+
+                    // Se è un operatore, salviamo anche le sue patenti e abilità
+                    if ("OPERATORE".equals(ruoloScelto)) {
+                        
+                        // Estraiamo gli array di checkbox dal form HTML
+                        String[] patentiSelezionate = request.getParameterValues("patenti");
+                        if (patentiSelezionate != null) {
+                            for (String idPatenteStr : patentiSelezionate) {
+                                utenteDao.collegaPatente(idNuovoUtente, Integer.parseInt(idPatenteStr));
+                            }
+                        }
+
+                        String[] abilitaSelezionate = request.getParameterValues("abilita");
+                        if (abilitaSelezionate != null) {
+                            for (String idAbilitaStr : abilitaSelezionate) {
+                                utenteDao.collegaAbilita(idNuovoUtente, Integer.parseInt(idAbilitaStr));
+                            }
+                        }
+                    }
+                }
             }
 
         } catch (Exception e) {
-            // Stampata d'ordinanza a console per beccare le eccezioni al volo
             System.err.println("Panico nel controller durante la creazione del nuovo utente...");
             e.printStackTrace();
         }
 
-        // Pattern PRG: niente forward, ma un bel redirect pulito in base all'esito
+        // Redirect in base all'esito
         if (inserimentoRiuscito) {
             response.sendRedirect(request.getContextPath() + "/creazione_utente_ok.html");
         } else {
