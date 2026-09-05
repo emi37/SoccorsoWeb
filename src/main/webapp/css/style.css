@@ -11,7 +11,6 @@ body {
     line-height: 1.5;
 }
 
-/* --- Layout & Containers --- */
 .container, 
 .flex-end-container {
     max-width: 1000px;
@@ -33,7 +32,6 @@ body {
     min-height: 90vh;
 }
 
-/* Card e Contenitori unificati */
 .card, 
 .card-container, 
 .card-container-form, 
@@ -69,7 +67,7 @@ body {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
 }
 
-/* --- Tipografia & Intestazioni --- */
+/* --- Tipografia e intestazioni --- */
 h1, h2 {
     color: #333333;
     margin-top: 0;
@@ -399,7 +397,7 @@ li {
     margin-top: 20px;
 }
 
-/* --- Media Queries --- */
+
 @media only screen and (min-width: 768px) and (max-width: 959px) {
     .container, main {
         width: 95%;
@@ -452,3 +450,5 @@ li {
         margin-bottom: 8px;
     }
 }
+
+
