@@ -1,11 +1,9 @@
 package it.univaq.disim.webengineering.soccorsoweb.controller;
 
+import it.univaq.disim.webengineering.soccorsoweb.controller.DAO.UtenteDAO;
+import it.univaq.disim.webengineering.soccorsoweb.model.Utenti;
 import org.mindrot.jbcrypt.BCrypt;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -16,79 +14,69 @@ import jakarta.servlet.http.HttpSession;
 @WebServlet(name = "LoginServlet", urlPatterns = {"/LoginServlet"})
 public class LoginServlet extends HttpServlet {
 
-    private static final String DB_URL = "jdbc:mysql://localhost:3306/soccorsoweb_db";
-    private static final String DB_USER = "root";
-    private static final String DB_PASS = "root";
-
     @Override
     public void init() throws ServletException {
-        // carico il driver una sola volta al boot
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            System.err.println("Driver MySQL mancante");
-            e.printStackTrace();
-        }
+        // Init pulitissimo. Il DBManager carica il driver per conto suo.
+        super.init();
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        // Se qualcuno prova ad accedere a /LoginServlet scrivendolo nella barra dell'URL (GET), 
+        // lo rimbalziamo brutalmente alla pagina di login HTML.
+        response.sendRedirect(request.getContextPath() + "/login.html");
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // input dal form
+        // Tiriamo giù l'input dal form HTML
         String emailInserita = request.getParameter("email");
         String passwordInserita = request.getParameter("password");
 
         boolean loginEffettuato = false;
         String ruoloUtente = "";
 
-        // query spezzata 
-        String sql = "SELECT id_utente, nome, password, ruolo " +
-                     "FROM utente " +
-                     "WHERE email = ? AND attivo = TRUE";            
+        try {
+            // Niente più SQL in giro, chiamo solo il DAO!
+            UtenteDAO utenteDao = new UtenteDAO();
+            Utenti utenteTrovato = utenteDao.estraiUtentePerEmail(emailInserita);
 
-        // connessione nativa
-        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setString(1, emailInserita);
-            
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    String hashSalvato = rs.getString("password");
-                    
-                    // check jBcrypt
-                    if (BCrypt.checkpw(passwordInserita, hashSalvato)) {
-                        loginEffettuato = true;
-                        
-                        int idUtente = rs.getInt("id_utente");
-                        String nomeUtente = rs.getString("nome");
-                        ruoloUtente = rs.getString("ruolo");
-                        
-                        // inizializzo sessione per utente verificato
-                        HttpSession session = request.getSession();
-                        session.setAttribute("id_utente", idUtente);
-                        session.setAttribute("nome", nomeUtente);
-                        session.setAttribute("ruolo", ruoloUtente);
-                    }
+            // Se il DAO ha trovato qualcuno con questa email, procedo col check della password
+            if (utenteTrovato != null) {
+
+                // Magia di jBcrypt: confronta la password in chiaro con l'hash salvato nel DB
+                if (BCrypt.checkpw(passwordInserita, utenteTrovato.getPassword())) {
+                    loginEffettuato = true;
+                    ruoloUtente = utenteTrovato.getRuolo();
+
+                    // Creiamo la sessione (passando true) e ci salviamo dentro i dati utili
+                    HttpSession sessioneAttuale = request.getSession(true);
+                    sessioneAttuale.setAttribute("id_utente", utenteTrovato.getIdUtente());
+                    sessioneAttuale.setAttribute("nome", utenteTrovato.getNome());
+                    sessioneAttuale.setAttribute("ruolo", ruoloUtente);
                 }
             }
         } catch (Exception e) {
-            System.err.println("Errore query di login");
+            System.err.println("Panico nel controller durante la fase di login...");
             e.printStackTrace();
         }
 
-        // smistamento ruoli o gestione errore pulita senza html in java
+        // Smistamento da vigile urbano: decido dove mandarti in base a chi sei
         if (loginEffettuato) {
             if ("ADMIN".equals(ruoloUtente)) {
                 response.sendRedirect(request.getContextPath() + "/DashboardServlet");
             } else if ("OPERATORE".equals(ruoloUtente)) {
                 response.sendRedirect(request.getContextPath() + "/DashboardOperatoreServlet");
+            } else {
+                // Sicurezza: ruolo non riconosciuto
+                response.sendRedirect(request.getContextPath() + "/login.html?errore=ruolo");
             }
         } else {
-            // se fallisce, rimando alla login con la query string di errore 
-            // (toccherà al frontend in JS, o alla jsp, leggere 'errore=1' e mostrare il box rosso)
-            response.sendRedirect(request.getContextPath() + "/login.html?errore=1");
+            // Se fallisce (email o pass sbagliate), rimando alla login con errore
+            response.sendRedirect(request.getContextPath() + "/login.html?errore=credenziali");
         }
     }
 }

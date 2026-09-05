@@ -13,6 +13,10 @@ import it.univaq.disim.webengineering.soccorsoweb.util.DBManager;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class UtenteDAO {
 
@@ -81,5 +85,37 @@ public class UtenteDAO {
         }
 
         return inserimentoRiuscito;
+    }
+    // Trova tutti gli operatori che non sono attualmente impiegati in missioni attive
+    public List<Map<String, String>> estraiOperatoriDisponibili() {
+        List<Map<String, String>> listaOperatori = new ArrayList<>();
+        
+        // Magia SQL: Uso la subquery per escludere chi sta in una missione IN_CORSO
+        String query = "SELECT id_utente, nome, cognome " +
+                       "FROM utente " +
+                       "WHERE ruolo = 'OPERATORE' " +
+                       "AND id_utente NOT IN ( " +
+                       "    SELECT aom.id_utente " +
+                       "    FROM assegnazione_operatori_missioni aom " +
+                       "    JOIN missione m ON aom.id_missione = m.id_missione " +
+                       "    WHERE m.stato = 'IN_CORSO' " +
+                       ") " +
+                       "ORDER BY cognome, nome";
+                       
+        try (Connection connessioneDb = DBManager.getConnection();
+             PreparedStatement statement = connessioneDb.prepareStatement(query);
+             ResultSet risultati = statement.executeQuery()) {
+            
+            while (risultati.next()) {
+                Map<String, String> operatore = new HashMap<>();
+                operatore.put("id_utente", risultati.getString("id_utente"));
+                operatore.put("nome_completo", risultati.getString("cognome") + " " + risultati.getString("nome"));
+                listaOperatori.add(operatore);
+            }
+        } catch (Exception e) {
+            System.err.println("Panico durante la ricerca degli operatori liberi...");
+            e.printStackTrace();
+        }
+        return listaOperatori;
     }
 }

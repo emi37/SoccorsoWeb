@@ -10,7 +10,6 @@ public class DBManager {
     private static final String URL = "jdbc:mysql://localhost:3306/soccorsoweb_db";
     
     // IMPORTANTISSIMO: Se su MySQL Workbench hai impostato una password per 'root', 
-    // scrivila tra le virgolette qui sotto. Altrimenti lascia vuoto.
     private static final String USER = "root"; 
     private static final String PASSWORD = "12345"; 
 

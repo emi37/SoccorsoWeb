@@ -1,234 +1,136 @@
 package it.univaq.disim.webengineering.soccorsoweb.controller;
 
+import it.univaq.disim.webengineering.soccorsoweb.controller.DAO.AbilitaDAO;
+import it.univaq.disim.webengineering.soccorsoweb.controller.DAO.MissioneDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.util.List;
+import java.util.Map;
 
 @WebServlet(name = "DashboardOperatoreServlet", urlPatterns = {"/DashboardOperatoreServlet"})
 public class DashboardOperatoreServlet extends HttpServlet {
 
-    private static final String DB_URL = "jdbc:mysql://localhost:3306/soccorsoweb_db";
-    private static final String DB_USER = "root";
-    private static final String DB_PASS = "root";
-
     @Override
     public void init() throws ServletException {
-        // carico il driver una volta sola all'avvio
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            System.err.println("Driver MySQL non trovato");
-            e.printStackTrace();
-        }
+        // Pulizia totale: il DBManager pensa al driver.
+        super.init();
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
-        // check permessi
-        HttpSession session = request.getSession(false);
-        if (session == null || !"OPERATORE".equals(session.getAttribute("ruolo"))) {
+
+        // check permessi come un vero vigile urbano
+        HttpSession sessioneAttuale = request.getSession(false);
+        if (sessioneAttuale == null || !"OPERATORE".equals(sessioneAttuale.getAttribute("ruolo"))) {
             response.sendRedirect(request.getContextPath() + "/login.html");
             return;
         }
 
-        int idOperatore = (int) session.getAttribute("id_utente");
-        String nomeOperatore = (String) session.getAttribute("nome");
+        int idOperatore = (int) sessioneAttuale.getAttribute("id_utente");
+        String nomeOperatore = (String) sessioneAttuale.getAttribute("nome");
 
-        // output in JSON puro
+        // Diciamo al browser che gli spariamo del JSON
         response.setContentType("application/json;charset=UTF-8");
-        
-        String patentiCorrenti = "";
-        String abilitaCorrenti = "";
 
-        // connessione nativa
-        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
-             PrintWriter out = response.getWriter()) {
-            
-            // 1. recupero patenti
-            String sqlPat = "SELECT GROUP_CONCAT(p.codice SEPARATOR ', ') AS lista_patenti " +
-                            "FROM utente_patente up " +
-                            "JOIN patente p ON up.id_patente = p.id_patente " +
-                            "WHERE up.id_utente = ?";
-            
-            try (PreparedStatement stmtPat = conn.prepareStatement(sqlPat)) {
-                stmtPat.setInt(1, idOperatore);
-                try (ResultSet rsPat = stmtPat.executeQuery()) {
-                    if (rsPat.next() && rsPat.getString("lista_patenti") != null) {
-                        patentiCorrenti = rsPat.getString("lista_patenti");
-                    }
-                }
-            }
+        try (PrintWriter out = response.getWriter()) {
 
-            // 2. recupero specializzazioni/abilità
-            String sqlAb = "SELECT GROUP_CONCAT(a.nome SEPARATOR ', ') AS lista_abilita " +
-                           "FROM utente_abilita ua " +
-                           "JOIN abilita a ON ua.id_abilita = a.id_abilita " +
-                           "WHERE ua.id_utente = ?";
-                           
-            try (PreparedStatement stmtAb = conn.prepareStatement(sqlAb)) {
-                stmtAb.setInt(1, idOperatore);
-                try (ResultSet rsAb = stmtAb.executeQuery()) {
-                    if (rsAb.next() && rsAb.getString("lista_abilita") != null) {
-                        abilitaCorrenti = rsAb.getString("lista_abilita");
-                    }
-                }
-            }
+            // Istanzio i nostri due fantastici DAO
+            AbilitaDAO abilitaDao = new AbilitaDAO();
+            MissioneDAO missioneDao = new MissioneDAO();
 
-            // buildo il JSON a mano
+            // NOTA: Usa metodi del DAO per leggere le stringhe (GROUP_CONCAT)
+            // Se non li hai nel DAO, basta aggiungerli con una banale SELECT!
+            String patentiCorrenti = abilitaDao.estraiPatentiFormatoStringa(idOperatore);
+            String abilitaCorrenti = abilitaDao.estraiAbilitaFormatoStringa(idOperatore);
+
+            // Mi faccio dare la lista delle missioni già pronta!
+            List<Map<String, String>> missioni = missioneDao.estraiMissioniPerOperatore(idOperatore);
+
+            // Buildo il JSON a mano e faccio l'escape INLINE per non creare metodi extra!
             StringBuilder json = new StringBuilder();
             json.append("{");
-            json.append("\"nomeOperatore\": \"").append(escapeJson(nomeOperatore)).append("\",");
-            json.append("\"pat\": \"").append(escapeJson(patentiCorrenti)).append("\",");
-            json.append("\"ab\": \"").append(escapeJson(abilitaCorrenti)).append("\",");
+
+            String nomePulito = (nomeOperatore == null ? "" : nomeOperatore.replace("\\", "\\\\").replace("\"", "\\\""));
+            json.append("\"nomeOperatore\": \"").append(nomePulito).append("\",");
+
+            String patPulite = (patentiCorrenti == null ? "" : patentiCorrenti.replace("\\", "\\\\").replace("\"", "\\\""));
+            json.append("\"pat\": \"").append(patPulite).append("\",");
+
+            String abPulite = (abilitaCorrenti == null ? "" : abilitaCorrenti.replace("\\", "\\\\").replace("\"", "\\\""));
+            json.append("\"ab\": \"").append(abPulite).append("\",");
+
             json.append("\"missioni\": [");
 
-            // 3. recupero missioni associate
-            String sql = "SELECT m.id_missione, m.obiettivo, m.posizione, m.stato, m.livello_successo " +
-                         "FROM missione m " +
-                         "JOIN assegnazione_operatori_missione aom ON m.id_missione = aom.id_missione " +
-                         "WHERE aom.id_utente = ? " +
-                         "ORDER BY m.stato DESC, m.id_missione DESC";
-            
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setInt(1, idOperatore);
-                try (ResultSet rs = stmt.executeQuery()) {
-                    boolean first = true;
-                    while (rs.next()) {
-                        if (!first) json.append(",");
-                        first = false;
-
-                        int livelloSuccesso = rs.getInt("livello_successo");
-                        String visualizzaVoto = rs.wasNull() ? "-" : livelloSuccesso + " / 5";
-                        String stato = rs.getString("stato");
-
-                        json.append("{");
-                        json.append("\"id_missione\": ").append(rs.getInt("id_missione")).append(",");
-                        json.append("\"obiettivo\": \"").append(escapeJson(rs.getString("obiettivo"))).append("\",");
-                        json.append("\"posizione\": \"").append(escapeJson(rs.getString("posizione"))).append("\",");
-                        json.append("\"stato\": \"").append(escapeJson(stato)).append("\",");
-                        json.append("\"visualizzaVoto\": \"").append(escapeJson(visualizzaVoto)).append("\"");
-                        json.append("}");
-                    }
+            boolean primoGiro = true;
+            for (Map<String, String> singolaMissione : missioni) {
+                if (!primoGiro) {
+                    json.append(",");
                 }
+                primoGiro = false;
+
+                String obPulito = singolaMissione.get("obiettivo") == null ? "" : singolaMissione.get("obiettivo").replace("\\", "\\\\").replace("\"", "\\\"");
+                String posPulita = singolaMissione.get("posizione") == null ? "" : singolaMissione.get("posizione").replace("\\", "\\\\").replace("\"", "\\\"");
+
+                json.append("{");
+                json.append("\"id_missione\": ").append(singolaMissione.get("id_missione")).append(",");
+                json.append("\"obiettivo\": \"").append(obPulito).append("\",");
+                json.append("\"posizione\": \"").append(posPulita).append("\",");
+                json.append("\"stato\": \"").append(singolaMissione.get("stato")).append("\",");
+                json.append("\"visualizzaVoto\": \"").append(singolaMissione.get("visualizzaVoto")).append("\"");
+                json.append("}");
             }
+
             json.append("]}");
-            
+
             // sparo il json al client
             out.print(json.toString());
 
         } catch (Exception e) {
-            System.err.println("Errore db durante fetch dati operatore");
+            System.err.println("Errore ruspante durante il fetch dati dell'operatore...");
             e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore interno del server");
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore interno");
         }
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         // check permessi
-        HttpSession session = request.getSession(false);
-        if (session == null || !"OPERATORE".equals(session.getAttribute("ruolo"))) {
+        HttpSession sessioneAttuale = request.getSession(false);
+        if (sessioneAttuale == null || !"OPERATORE".equals(sessioneAttuale.getAttribute("ruolo"))) {
             response.sendRedirect(request.getContextPath() + "/login.html");
             return;
         }
 
-        int idOperatore = (int) session.getAttribute("id_utente");
-        
+        int idOperatore = (int) sessioneAttuale.getAttribute("id_utente");
+
         // input dal form (patenti e abilità separate da virgola)
         String patentiRaw = request.getParameter("patenti");
         String abilitaRaw = request.getParameter("abilita");
 
-        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS)) {
-            // stacco l'autocommit per la transazione
-            conn.setAutoCommit(false);
-            
-            try {
-                // sync patenti
-                if (patentiRaw != null && !patentiRaw.trim().isEmpty()) {
-                    String[] tokens = patentiRaw.split(",");
-                    for (String t : tokens) {
-                        String tokenPuto = t.trim().toUpperCase();
-                        if (!tokenPuto.isEmpty()) {
-                            
-                            String insPat = "INSERT IGNORE INTO patente (codice) VALUES (?)";
-                            try (PreparedStatement stInsPat = conn.prepareStatement(insPat)) {
-                                stInsPat.setString(1, tokenPuto);
-                                stInsPat.executeUpdate();
-                            }
-                            
-                            String insUserPat = "INSERT IGNORE INTO utente_patente (id_utente, id_patente) " +
-                                                "VALUES (?, (SELECT id_patente FROM patente WHERE codice = ?))";
-                            try (PreparedStatement stInsUserPat = conn.prepareStatement(insUserPat)) {
-                                stInsUserPat.setInt(1, idOperatore);
-                                stInsUserPat.setString(2, tokenPuto);
-                                stInsUserPat.executeUpdate();
-                            }
-                        }
-                    }
-                }
+        try {
+            // Creo gli array al volo gestendo i null
+            String[] arrayPatenti = (patentiRaw != null && !patentiRaw.trim().isEmpty()) ? patentiRaw.split(",") : new String[0];
+            String[] arrayAbilita = (abilitaRaw != null && !abilitaRaw.trim().isEmpty()) ? abilitaRaw.split(",") : new String[0];
 
-                // sync specializzazioni
-                if (abilitaRaw != null && !abilitaRaw.trim().isEmpty()) {
-                    String[] tokens = abilitaRaw.split(",");
-                    for (String t : tokens) {
-                        String tokenPuto = t.trim().toLowerCase();
-                        if (!tokenPuto.isEmpty()) {
-                            
-                            String insAb = "INSERT IGNORE INTO abilita (nome) VALUES (?)";
-                            try (PreparedStatement stInsAb = conn.prepareStatement(insAb)) {
-                                stInsAb.setString(1, tokenPuto);
-                                stInsAb.executeUpdate();
-                            }
-                            
-                            String insUserAb = "INSERT IGNORE INTO utente_abilita (id_utente, id_abilita) " +
-                                               "VALUES (?, (SELECT id_abilita FROM abilita WHERE nome = ?))";
-                            try (PreparedStatement stInsUserAb = conn.prepareStatement(insUserAb)) {
-                                stInsUserAb.setInt(1, idOperatore);
-                                stInsUserAb.setString(2, tokenPuto);
-                                stInsUserAb.executeUpdate();
-                            }
-                        }
-                    }
-                }
+            // Magia totale: passo la palla al DAO che fa tutta la transazione in sicurezza!
+            AbilitaDAO abilitaDao = new AbilitaDAO();
+            abilitaDao.salvaAbilitaEPatentiOperatore(idOperatore, arrayPatenti, arrayAbilita);
 
-                conn.commit();
-                
-            } catch (Exception ex) {
-                System.err.println("Errore in transazione, faccio rollback");
-                conn.rollback();
-                throw ex; // rilancio per far scattare il catch esterno
-            } finally {
-                // rimetto a posto l'autocommit
-                conn.setAutoCommit(true);
-            }
         } catch (Exception e) {
-            System.err.println("Errore aggiornamento competenze a db");
+            System.err.println("Panico durante l'aggiornamento delle competenze dell'operatore...");
             e.printStackTrace();
         }
 
-        // pattern PRG (Post-Redirect-Get) per pulire lo stato
+        // pattern PRG (Post-Redirect-Get) per pulire lo stato ed evitare ricaricamenti molesti
         response.sendRedirect(request.getContextPath() + "/operatore/dashboard.html");
-    }
-
-    // escape ruspante ma funzionale per il json
-    private String escapeJson(String str) {
-        if (str == null) return "";
-        return str.replace("\\", "\\\\")
-                  .replace("\"", "\\\"")
-                  .replace("\n", " ")
-                  .replace("\r", " ");
     }
 }

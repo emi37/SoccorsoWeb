@@ -11,6 +11,9 @@ package it.univaq.disim.webengineering.soccorsoweb.controller.DAO;
 import it.univaq.disim.webengineering.soccorsoweb.util.DBManager;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.HashMap;
+import java.util.Map;
 
 public class RichiestaSoccorsoDAO {
 
@@ -71,5 +74,33 @@ public class RichiestaSoccorsoDAO {
         }
 
         return tokenSvuotato;
+    }
+    // Estrae i dettagli di una specifica richiesta per mostrarla all'admin
+    public Map<String, String> estraiDettagliRichiesta(int idRichiesta) {
+        Map<String, String> dettagli = new HashMap<>();
+        
+        String query = "SELECT nome_segnalante, posizione, descrizione, timestamp_segnalazione " +
+                       "FROM richiesta_soccorso " +
+                       "WHERE id_richiesta = ?";
+                       
+        try (Connection connessioneDb = DBManager.getConnection();
+             PreparedStatement statement = connessioneDb.prepareStatement(query)) {
+            
+            statement.setInt(1, idRichiesta);
+            
+            try (ResultSet risultati = statement.executeQuery()) {
+                if (risultati.next()) {
+                    dettagli.put("id_richiesta", String.valueOf(idRichiesta));
+                    dettagli.put("nome", risultati.getString("nome_segnalante"));
+                    dettagli.put("posizione", risultati.getString("posizione"));
+                    dettagli.put("descrizione", risultati.getString("descrizione"));
+                    dettagli.put("data_ora", risultati.getTimestamp("timestamp_segnalazione").toString());
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Errore durante l'estrazione dei dettagli della richiesta...");
+            e.printStackTrace();
+        }
+        return dettagli;
     }
 }

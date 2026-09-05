@@ -11,6 +11,7 @@ package it.univaq.disim.webengineering.soccorsoweb.controller.DAO;
 import it.univaq.disim.webengineering.soccorsoweb.util.DBManager;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 public class AbilitaDAO {
 
@@ -100,5 +101,61 @@ public class AbilitaDAO {
         }
 
         return salvataggioOk;
+    }
+
+    // Estrae tutte le patenti dell'operatore in un'unica stringa separata da virgola
+    public String estraiPatentiFormatoStringa(int idOperatore) {
+        String patentiCorrenti = "";
+
+        // Spezziamo la query col +
+        String queryPatenti = "SELECT GROUP_CONCAT(p.codice SEPARATOR ', ') AS lista_patenti "
+                + "FROM utente_patente up "
+                + "JOIN patente p ON up.id_patente = p.id_patente "
+                + "WHERE up.id_utente = ?";
+
+        try (Connection connessioneDb = DBManager.getConnection(); PreparedStatement statementPatenti = connessioneDb.prepareStatement(queryPatenti)) {
+
+            statementPatenti.setInt(1, idOperatore);
+
+            try (ResultSet risultati = statementPatenti.executeQuery()) {
+                // Controllo anche il null perché se non ha patenti GROUP_CONCAT ridà NULL
+                if (risultati.next() && risultati.getString("lista_patenti") != null) {
+                    patentiCorrenti = risultati.getString("lista_patenti");
+                }
+            }
+
+        } catch (Exception e) {
+            System.err.println("Errore ruspante durante la lettura delle patenti...");
+            e.printStackTrace();
+        }
+
+        return patentiCorrenti;
+    }
+
+    // Estrae tutte le abilità dell'operatore in un'unica stringa separata da virgola
+    public String estraiAbilitaFormatoStringa(int idOperatore) {
+        String abilitaCorrenti = "";
+
+        String queryAbilita = "SELECT GROUP_CONCAT(a.nome SEPARATOR ', ') AS lista_abilita "
+                + "FROM utente_abilita ua "
+                + "JOIN abilita a ON ua.id_abilita = a.id_abilita "
+                + "WHERE ua.id_utente = ?";
+
+        try (Connection connessioneDb = DBManager.getConnection(); PreparedStatement statementAbilita = connessioneDb.prepareStatement(queryAbilita)) {
+
+            statementAbilita.setInt(1, idOperatore);
+
+            try (ResultSet risultati = statementAbilita.executeQuery()) {
+                if (risultati.next() && risultati.getString("lista_abilita") != null) {
+                    abilitaCorrenti = risultati.getString("lista_abilita");
+                }
+            }
+
+        } catch (Exception e) {
+            System.err.println("Panico durante la lettura delle abilità dell'operatore...");
+            e.printStackTrace();
+        }
+
+        return abilitaCorrenti;
     }
 }

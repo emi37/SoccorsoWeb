@@ -1,9 +1,8 @@
 package it.univaq.disim.webengineering.soccorsoweb.controller;
 
+import it.univaq.disim.webengineering.soccorsoweb.controller.DAO.RichiestaSoccorsoDAO;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -11,62 +10,55 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-@WebServlet("/IgnoraRichiesta")
+@WebServlet(name = "IgnoraRichiestaServlet", urlPatterns = {"/IgnoraRichiestaServlet"})
 public class IgnoraRichiestaServlet extends HttpServlet {
-
-    private static final String DB_URL = "jdbc:mysql://localhost:3306/soccorsoweb_db";
-    private static final String DB_USER = "root";
-    private static final String DB_PASS = "root";
 
     @Override
     public void init() throws ServletException {
-        // carico il driver una sola volta al boot
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            System.err.println("Driver MySQL mancante");
-            e.printStackTrace();
-        }
+        // Solita chiamata al padre. Il driver MySQL se lo gestisce DBManager in background.
+        super.init();
     }
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
-        // check permessi
-        HttpSession session = request.getSession(false);
-        if (session == null || !"ADMIN".equals(session.getAttribute("ruolo"))) {
-            response.sendRedirect("login.html");
+
+        // 1. Controllo di sicurezza: se non sei ADMIN loggato, torni al login.
+        HttpSession sessioneAttuale = request.getSession(false);
+        if (sessioneAttuale == null || !"ADMIN".equals(sessioneAttuale.getAttribute("ruolo"))) {
+            response.sendRedirect(request.getContextPath() + "/login.html");
             return;
         }
 
-        // pesco l'id da scartare
-        String idParam = request.getParameter("id");
-        
-        if (idParam != null && !idParam.trim().isEmpty()) {
-            try {
-                int idRichiesta = Integer.parseInt(idParam);
-                
-                // query spezzata per leggibilità
-                String query = "UPDATE richiesta_soccorso " +
-                               "SET stato = 'IGNORATA' " +
-                               "WHERE id_richiesta = ?";
-                
-                // connessione nativa
-                try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
-                     PreparedStatement ps = conn.prepareStatement(query)) {
-                    
-                    ps.setInt(1, idRichiesta);
-                    ps.executeUpdate();
-                }
-                
-            } catch (Exception e) {
-                System.err.println("Errore durante l'aggiornamento dello stato della richiesta (IGNORATA)");
-                e.printStackTrace();
+        // 2. Pesco l'id della richiesta da ignorare dalla query string (es. ?id_richiesta=8)
+        String idDaIgnorareStr = request.getParameter("id_richiesta");
+
+        try {
+            // Controllo ruspante per evitare NullPointer o stringhe vuote
+            if (idDaIgnorareStr != null && !idDaIgnorareStr.trim().isEmpty()) {
+
+                int idRichiesta = Integer.parseInt(idDaIgnorareStr);
+
+                // 3. Magia del DAO: delego a lui la query di UPDATE
+                RichiestaSoccorsoDAO richiestaDao = new RichiestaSoccorsoDAO();
+                richiestaDao.aggiornaStatoRichiestaInIgnorata(idRichiesta);
             }
+        } catch (Exception e) {
+            // Rete di sicurezza in console se l'ID passato non è un numero o il DB va offline
+            System.err.println("Panico nel controller durante lo scarto della richiesta...");
+            e.printStackTrace();
         }
 
-        // torno alla dashboard pulendo l'url (pattern PRG)
+        // 4. Pattern PRG: Finito il giro, rimbalziamo l'admin sulla dashboard per pulire l'URL
         response.sendRedirect(request.getContextPath() + "/DashboardServlet");
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        // Se in futuro modifichi l'HTML usando un <form method="POST"> invece di un link, 
+        // questa Servlet non andrà in crash (Errore 405), ma girerà la pratica direttamente al doGet!
+        doGet(request, response);
     }
 }

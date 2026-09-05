@@ -1,11 +1,10 @@
 package it.univaq.disim.webengineering.soccorsoweb.controller;
 
+import it.univaq.disim.webengineering.soccorsoweb.controller.DAO.RichiestaSoccorsoDAO;
+import it.univaq.disim.webengineering.soccorsoweb.model.RichiestaSoccorso;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.util.UUID;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
@@ -24,47 +23,38 @@ import jakarta.servlet.http.Part;
 )
 public class CreaRichiestaServlet extends HttpServlet {
 
-    private static final String DB_URL = "jdbc:mysql://localhost:3306/soccorsoweb_db";
-    private static final String DB_USER = "root";
-    private static final String DB_PASS = "root";
-
     @Override
     public void init() throws ServletException {
-        // carico il driver una volta sola all'avvio
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            System.err.println("Driver MySQL mancante");
-            e.printStackTrace();
-        }
+        // Solita chiamata pulita al padre, il driver JDBC se lo gestisce il DBManager
+        super.init();
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-            
+
         request.setCharacterEncoding("UTF-8");
-        
-        // estraggo i dati dal form
-        String nome = request.getParameter("nome_segnalante");
-        String emailSegnalante = request.getParameter("email_segnalante");
-        String posizione = request.getParameter("posizione");
-        String descrizione = request.getParameter("descrizione");
+
+        // estraggo i dati dal form html
+        String nomeInserito = request.getParameter("nome_segnalante");
+        String emailInserita = request.getParameter("email_segnalante");
+        String posizioneInserita = request.getParameter("posizione");
+        String descrizioneInserita = request.getParameter("descrizione");
         String captchaInserito = request.getParameter("captcha");
         String ipOrigine = request.getRemoteAddr();
-        
-        // validazione base input obbligatori
-        if (nome == null || nome.isBlank()
-                || emailSegnalante == null || emailSegnalante.isBlank()
-                || posizione == null || posizione.isBlank()
-                || descrizione == null || descrizione.isBlank()) {
+
+        // validazione ruspante degli input obbligatori
+        if (nomeInserito == null || nomeInserito.isBlank()
+                || emailInserita == null || emailInserita.isBlank()
+                || posizioneInserita == null || posizioneInserita.isBlank()
+                || descrizioneInserita == null || descrizioneInserita.isBlank()) {
             response.sendRedirect(request.getContextPath() + "/richiesta.html?errore=dati_mancanti");
             return;
         }
 
-        // check sessione captcha
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("captchaRisultato") == null) {
+        // check sessione per il captcha
+        HttpSession sessioneAttuale = request.getSession(false);
+        if (sessioneAttuale == null || sessioneAttuale.getAttribute("captchaRisultato") == null) {
             response.sendRedirect(request.getContextPath() + "/richiesta.html?errore=captcha_mancante");
             return;
         }
@@ -74,8 +64,8 @@ public class CreaRichiestaServlet extends HttpServlet {
             return;
         }
 
-        // verifica valore captcha
-        int captchaCorretto = (int) session.getAttribute("captchaRisultato");
+        // verifica matematica del captcha calcolato dalla CaptchaServlet
+        int captchaCorretto = (int) sessioneAttuale.getAttribute("captchaRisultato");
         try {
             int valoreInserito = Integer.parseInt(captchaInserito);
             if (valoreInserito != captchaCorretto) {
@@ -87,87 +77,69 @@ public class CreaRichiestaServlet extends HttpServlet {
             return;
         }
 
-        // brucio il captcha per evitare riutilizzi
-        session.removeAttribute("captchaRisultato");
-        
-        String nomeFileSalvato = null;
-        
-        // gestione file upload (multipart)
-        try {
-            Part filePart = request.getPart("foto");
-            if (filePart != null && filePart.getSize() > 0) {
-                String nomeOriginale = Paths.get(filePart.getSubmittedFileName())
-                        .getFileName()
-                        .toString();
-                
-                // aggiungo uuid per evitare collisioni nomi
-                nomeFileSalvato = UUID.randomUUID().toString() + "_" + nomeOriginale;
-                String percorsoUpload = getServletContext().getRealPath("")
-                        + File.separator
-                        + "uploads";
-                File directoryUpload = new File(percorsoUpload);
+        // brucio il captcha appena usato per evitare che lo riciclino
+        sessioneAttuale.removeAttribute("captchaRisultato");
 
-                if (!directoryUpload.exists()) {
-                    directoryUpload.mkdirs();
+        String nomeFileSalvato = null;
+
+        // gestione dell'upload file (la foto dell'emergenza)
+        try {
+            Part parteFoto = request.getPart("foto");
+            if (parteFoto != null && parteFoto.getSize() > 0) {
+                String nomeOriginale = Paths.get(parteFoto.getSubmittedFileName()).getFileName().toString();
+
+                // ci piazzo un uuid per evitare che due file con lo stesso nome si sovrascrivano
+                nomeFileSalvato = UUID.randomUUID().toString() + "_" + nomeOriginale;
+                String percorsoUpload = getServletContext().getRealPath("") + File.separator + "uploads";
+                File cartellaUpload = new File(percorsoUpload);
+
+                if (!cartellaUpload.exists()) {
+                    cartellaUpload.mkdirs();
                 }
-                filePart.write(percorsoUpload + File.separator + nomeFileSalvato);
+
+                // salvo fisicamente l'immagine nella cartella del server
+                parteFoto.write(percorsoUpload + File.separator + nomeFileSalvato);
             }
         } catch (Exception e) {
-            System.err.println("Errore upload file, ignoro e vado avanti");
+            System.err.println("Errore durante l'upload del file, lo ignoro e vado avanti...");
             e.printStackTrace();
             nomeFileSalvato = null;
         }
-        
-        String tokenConvalida = UUID.randomUUID().toString();
-        boolean salvato = false;
-        
-        // query concatenata col +
-        String sql = "INSERT INTO richiesta_soccorso " +
-                     "(descrizione, posizione, nome_segnalante, email_segnalante, ip_origine, token_convalida, stato, foto) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, 'IN_ATTESA', ?)";
 
-        // apro connessione e preparo lo statement
-        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-             
-            // bind parametri
-            stmt.setString(1, descrizione);
-            stmt.setString(2, posizione);
-            stmt.setString(3, nome);
-            stmt.setString(4, emailSegnalante);
-            stmt.setString(5, ipOrigine);
-            stmt.setString(6, tokenConvalida);
-            stmt.setString(7, nomeFileSalvato);
-            
-            int righeInserite = stmt.executeUpdate();
-            if (righeInserite > 0) {
-                salvato = true;
-            }
-            
+        // genero un token finto e brutale per la convalida via mail
+        String tokenConvalida = UUID.randomUUID().toString();
+        boolean salvataggioRiuscito = false;
+
+        try {
+            // Assemblo l'oggetto di dominio per passarlo pulito al DAO
+            RichiestaSoccorso nuovaRichiesta = new RichiestaSoccorso();
+            nuovaRichiesta.setNomeSegnalante(nomeInserito);
+            nuovaRichiesta.setEmailSegnalante(emailInserita);
+            nuovaRichiesta.setPosizione(posizioneInserita);
+            nuovaRichiesta.setDescrizione(descrizioneInserita);
+            nuovaRichiesta.setIpOrigine(ipOrigine);
+            nuovaRichiesta.setTokenConvalida(tokenConvalida);
+
         } catch (Exception e) {
-            System.err.println("Errore inserimento richiesta a db");
+            System.err.println("Panico nel controller durante il salvataggio della richiesta nel DB...");
             e.printStackTrace();
         }
-        
-        if (salvato) {
-            // assemblo il link di validazione per la mail finta
-            String linkConvalida = request.getScheme()
-                    + "://"
-                    + request.getServerName()
-                    + ":"
-                    + request.getServerPort()
-                    + request.getContextPath()
-                    + "/ConvalidaServlet?token="
-                    + tokenConvalida;
 
-            // log per emulare invio email
+        if (salvataggioRiuscito) {
+            // assemblo il link di validazione per la mail finta
+            String linkConvalida = request.getScheme() + "://" + request.getServerName() + ":"
+                    + request.getServerPort() + request.getContextPath()
+                    + "/ConvalidaServlet?token=" + tokenConvalida;
+
+            // log ruspante per emulare invio email come da direttive
             System.out.println("=====================================");
             System.out.println("SIMULAZIONE EMAIL DI CONVALIDA");
-            System.out.println("Destinatario: " + emailSegnalante);
-            System.out.println("Ciao " + nome + ", conferma la richiesta cliccando qui:");
+            System.out.println("Destinatario: " + emailInserita);
+            System.out.println("Ciao " + nomeInserito + ", conferma la richiesta cliccando qui:");
             System.out.println(linkConvalida);
             System.out.println("=====================================");
-            
+
+            // Pattern PRG
             response.sendRedirect(request.getContextPath() + "/richiesta-inviata.html");
         } else {
             response.sendRedirect(request.getContextPath() + "/richiesta.html?errore=salvataggio");

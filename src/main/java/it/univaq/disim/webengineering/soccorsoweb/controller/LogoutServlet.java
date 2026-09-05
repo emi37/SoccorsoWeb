@@ -12,16 +12,30 @@ import jakarta.servlet.http.HttpSession;
 public class LogoutServlet extends HttpServlet {
 
     @Override
+    public void init() throws ServletException {
+        super.init();
+    }
+
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
-        // Recuperiamo la sessione corrente senza crearne una nuova
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            session.invalidate(); 
+
+        // Prendo la sessione SOLO se esiste (false), non ha senso crearla per poi distruggerla
+        HttpSession sessioneAttuale = request.getSession(false);
+
+        if (sessioneAttuale != null) {
+            // Straccio la sessione e cancello tutti i dati
+            sessioneAttuale.invalidate();
         }
-        
-        // Ritorno immediato alla pagina di login iniziale
-        response.sendRedirect(request.getContextPath() + "/login.html");
+
+        // Ti butto fuori, tornando alla home page pubblica
+        response.sendRedirect(request.getContextPath() + "/index.html");
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        // Se per caso il logout viene chiamato tramite un form in POST, lo giriamo alla GET
+        doGet(request, response);
     }
 }
