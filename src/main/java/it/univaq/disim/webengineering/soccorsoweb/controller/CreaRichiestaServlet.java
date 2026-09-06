@@ -2,10 +2,13 @@ package it.univaq.disim.webengineering.soccorsoweb.controller;
 
 import it.univaq.disim.webengineering.soccorsoweb.controller.DAO.RichiestaSoccorsoDAO;
 import it.univaq.disim.webengineering.soccorsoweb.model.RichiestaSoccorso;
+import it.univaq.disim.webengineering.soccorsoweb.util.TemplateManager; // Import aggiunto
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.UUID;
+import java.util.HashMap; // Import aggiunto
+import java.util.Map;     // Import aggiunto
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
@@ -140,7 +143,23 @@ public class CreaRichiestaServlet extends HttpServlet {
             System.out.println(linkConvalida);
             System.out.println("=====================================");
 
-            response.sendRedirect(request.getContextPath() + "/richiesta-inviata.html");
+            // --- MODIFICA FONDAMENTALE: Invocazione del TemplateManager ---
+            try {
+                // Impacchettiamo i dati (Email e Token) per FreeMarker
+                Map<String, Object> dataModel = new HashMap<>();
+                dataModel.put("email", emailInserita);
+                dataModel.put("token", tokenConvalida);
+                dataModel.put("request", request); // Serve per il CSS
+                
+                // Rimandiamo alla pagina di conferma grafica
+                TemplateManager.process("richiesta_inviata.ftl", dataModel, response, getServletContext());
+            } catch (Exception e) {
+                System.err.println("Errore durante il rendering di richiesta_inviata.ftl...");
+                e.printStackTrace();
+                response.sendRedirect(request.getContextPath() + "/richiesta.html?errore=rendering");
+            }
+            // --------------------------------------------------------------
+
         } else {
             response.sendRedirect(request.getContextPath() + "/richiesta.html?errore=salvataggio");
         }

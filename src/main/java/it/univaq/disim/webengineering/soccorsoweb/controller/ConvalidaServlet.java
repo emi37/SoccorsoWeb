@@ -43,10 +43,12 @@ public class ConvalidaServlet extends HttpServlet {
 
         // Smistamento finale verso le pagine statiche HTML (in attesa di FreeMarker)
         // Se la convalida è andata a buon fine, il DAO ha già impostato la richiesta su 'ATTIVA'
+// Smistamento finale verso le pagine statiche HTML
         if (convalidaOk) {
-            response.sendRedirect(request.getContextPath() + "/convalida_successo.html");
+            // CORREZIONE: Il file su NetBeans si chiama convalida.html
+            response.sendRedirect(request.getContextPath() + "/convalida.html");
         } else {
-            // Se il token è scaduto, sbagliato o già usato, lo mandiamo alla pagina di errore
+            // Se il token è scaduto, sbagliato o già usato
             response.sendRedirect(request.getContextPath() + "/errore_convalida.html");
         }
     }

@@ -14,19 +14,35 @@
             <p>Stato attuale: <strong>ATTIVA</strong></p>
             <p class="text-muted">Stiamo preparando i soccorsi, la centrale operativa ha preso in carico la segnalazione.</p>
             
-            <!-- Aggiunto un feedback visivo per il redirect automatico -->
+            <!-- Feedback visivo per il redirect automatico -->
             <p class="text-muted" id="messaggioRedirect">
-                <small>Ritorno automatico alla home tra <span id="countdown">5</span> secondi...</small>
+                <small>Ritorno automatico alla home tra <span id="countdown" style="font-weight: bold; color: #007bff;">5</span> secondi...</small>
             </p>
         </section>
         <hr class="mt-20 mb-24">
         <footer>
-            <!-- Aggiunto l'id per intercettare il click manuale -->
-            <a href="index.html" id="btnRitorno" class="btn">Torna al form iniziale</a>
+            <!-- Il bottone ora punta al file corretto del tuo progetto -->
+            <a href="homeFinale.html" class="btn">Torna alla Home Page</a>
         </footer>
     </main>
 
-    <!-- Script agganciato in fondo, come da manuale -->
-    <script src="js/convalida.js"></script>
+    <!-- SCRIPT INTEGRATO: Gestisce il timer e il reindirizzamento senza dipendere da file esterni rotti -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            let tempoRimanente = 5;
+            const displayContoAllaRovescia = document.getElementById('countdown');
+            
+            const intervallo = setInterval(function() {
+                tempoRimanente--;
+                displayContoAllaRovescia.textContent = tempoRimanente;
+                
+                if (tempoRimanente <= 0) {
+                    clearInterval(intervallo);
+                    // Raggiunto lo zero, reindirizza al file corretto!
+                    window.location.href = "homeFinale.html";
+                }
+            }, 1000);
+        });
+    </script>
 </body>
 </html>
