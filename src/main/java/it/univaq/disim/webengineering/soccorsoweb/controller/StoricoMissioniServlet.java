@@ -1,15 +1,17 @@
 package it.univaq.disim.webengineering.soccorsoweb.controller;
 
 import it.univaq.disim.webengineering.soccorsoweb.controller.DAO.MissioneDAO;
+import it.univaq.disim.webengineering.soccorsoweb.util.TemplateManager;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import java.util.List;
-import java.util.Map;
 
 @WebServlet(name = "StoricoMissioniServlet", urlPatterns = {"/StoricoMissioni"})
 public class StoricoMissioniServlet extends HttpServlet {
@@ -39,11 +41,11 @@ public class StoricoMissioniServlet extends HttpServlet {
             List<Map<String, String>> listaStorico = missioneDao.estraiStoricoMissioni();
 
             // Impacchetto i dati nella request per farli leggere a FreeMarker
-            request.setAttribute("missioni_archiviate", listaStorico);
+            Map<String, Object> dataModel = new HashMap<>();
+            dataModel.put("missioni_archiviate", listaStorico);
 
-            // Deleghiamo tutto il rendering HTML al template engine
-            request.getRequestDispatcher("/WEB-INF/template/storico_missioni.ftl").forward(request, response);
-
+           // Deleghiamo tutto il rendering al TemplateManager con il NUOVO NOME E POSIZIONE
+            TemplateManager.process("storico_missioni.ftl", dataModel, response, getServletContext());
         } catch (Exception e) {
             // Rete di sicurezza ruspante
             System.err.println("Panico nel controller durante l'estrazione dello storico missioni...");

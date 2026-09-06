@@ -6,77 +6,165 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <h1>Gestione Operatori e Amministratori</h1>
+    <div style="padding: 20px;">
+        <h1>Gestione Operatori e Amministratori</h1>
 
-    <!-- Form Creazione -->
-    <div class="form-container" style="margin-bottom: 20px; padding: 15px; border: 1px solid #ccc;">
-        <h2>Aggiungi un nuovo Utente</h2>
-        <form action="CreaAdminEOperatoreServlet" method="POST">
-            <label>Nome:</label>
-            <input type="text" name="nome" required>
-            
-            <label>Cognome:</label>
-            <input type="text" name="cognome" required>
-            
-            <label>Email:</label>
-            <input type="email" name="email" required>
-            
-            <label>Password:</label>
-            <input type="password" name="password" required>
-            
-            <label>Ruolo:</label>
-            <select name="ruolo" required>
-                <option value="OPERATORE">Operatore</option>
-                <option value="ADMIN">Amministratore</option>
-            </select>
+        <!-- FORM CREAZIONE -->
+        <div class="form-container" style="margin-bottom: 30px; padding: 20px; border: 1px solid #ccc; border-radius: 8px; background-color: #fff;">
+            <h2>Aggiungi un nuovo Utente</h2>
+            <form action="CreaAdminEOperatoreServlet" method="POST">
+                
+                <!-- Gruppo Dati Base (sempre visibile) -->
+                <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 15px;">
+                    <div>
+                        <label>Nome:</label><br>
+                        <input type="text" name="nome" required>
+                    </div>
+                    <div>
+                        <label>Cognome:</label><br>
+                        <input type="text" name="cognome" required>
+                    </div>
+                    <div>
+                        <label>Email:</label><br>
+                        <input type="email" name="email" required>
+                    </div>
+                    <div>
+                        <label>Password:</label><br>
+                        <input type="password" name="password" required>
+                    </div>
+                    <div>
+                        <label>Ruolo:</label><br>
+                        <select name="ruolo" id="sceltaRuolo" required>
+                            <option value="OPERATORE">Operatore</option>
+                            <option value="ADMIN">Amministratore</option>
+                        </select>
+                    </div>
+                </div>
 
-            <br><br>
-            <h3>Seleziona Abilità (Solo se Operatore):</h3>
-            <#if abilita?? && abilita?size &gt; 0>
-                <#list abilita as a>
-                    <input type="checkbox" name="abilita" value="${a.id_abilita!}"> ${a.nome!}<br>
-                </#list>
-            </#if>
+                <!-- SEZIONE A SCOMPARSA (Abilità e Patenti) -->
+                <div id="sezioneCompetenze" style="border-top: 1px solid #eee; padding-top: 15px; margin-top: 15px;">
+                    <h3>Seleziona Abilità (Solo se Operatore):</h3>
+                    <#if abilita?? && abilita?size &gt; 0>
+                        <div style="column-count: 2;">
+                        <#list abilita as a>
+                            <label><input type="checkbox" name="abilita" value="${a.id_abilita!}"> ${a.nome!}</label><br>
+                        </#list>
+                        </div>
+                    </#if>
 
-            <br>
-            <h3>Seleziona Patenti (Solo se Operatore):</h3>
-            <#if patenti?? && patenti?size &gt; 0>
-                <#list patenti as p>
-                    <input type="checkbox" name="patenti" value="${p.id_patente!}"> ${p.codice!}<br>
-                </#list>
-            </#if>
+                    <br>
+                    <h3>Seleziona Patenti (Solo se Operatore):</h3>
+                    <#if patenti?? && patenti?size &gt; 0>
+                        <div style="column-count: 2;">
+                        <#list patenti as p>
+                            <label><input type="checkbox" name="patenti" value="${p.id_patente!}"> ${p.codice!}</label><br>
+                        </#list>
+                        </div>
+                    </#if>
+                </div>
 
-            <br><br>
-            <button type="submit" class="btn">Crea Utente</button>
-        </form>
+                <br>
+                <button type="submit" class="btn btn-primary" style="padding: 10px 20px; font-size: 16px;">Crea Utente</button>
+            </form>
+        </div>
+
+        <!-- LISTE SEPARATE E A TENDINA -->
+        
+        <!-- Tendina 1: OPERATORI (Ora è CHIUSA di default, ho tolto l'attributo "open") -->
+        <details class="tendina-container">
+            <summary class="tendina-titolo">🚑 Lista Operatori (Clicca per espandere/comprimere)</summary>
+            <div class="table-wrapper">
+                <table>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Cognome</th>
+                        <th>Email</th>
+                        <th>Stato Operativo</th>
+                    </tr>
+                    <#assign operatoriTrovati = false>
+                    <#if operatori?? && operatori?size &gt; 0>
+                        <#list operatori as o>
+                            <#if o.stato_attuale != "AMMINISTRATORE">
+                                <#assign operatoriTrovati = true>
+                                <tr>
+                                    <td>${o.id_utente!}</td>
+                                    <td>${o.nome!}</td>
+                                    <td>${o.cognome!}</td>
+                                    <td>${o.email!}</td>
+                                    <td>
+                                        <#if o.stato_attuale == "LIBERO">
+                                            <strong style="color: green;">LIBERO</strong>
+                                        <#else>
+                                            <strong style="color: red;">IMPEGNATO</strong>
+                                        </#if>
+                                    </td>
+                                </tr>
+                            </#if>
+                        </#list>
+                    </#if>
+                    <#if !operatoriTrovati>
+                        <tr><td colspan="5">Nessun operatore in archivio.</td></tr>
+                    </#if>
+                </table>
+            </div>
+        </details>
+
+        <!-- Tendina 2: AMMINISTRATORI (Già chiusa di default) -->
+        <details class="tendina-container">
+            <summary class="tendina-titolo">👨‍💻 Lista Amministratori (Clicca per espandere/comprimere)</summary>
+            <div class="table-wrapper">
+                <table>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Cognome</th>
+                        <th>Email</th>
+                        <th>Ruolo</th>
+                    </tr>
+                    <#assign adminTrovati = false>
+                    <#if operatori?? && operatori?size &gt; 0>
+                        <#list operatori as o>
+                            <#if o.stato_attuale == "AMMINISTRATORE">
+                                <#assign adminTrovati = true>
+                                <tr>
+                                    <td>${o.id_utente!}</td>
+                                    <td>${o.nome!}</td>
+                                    <td>${o.cognome!}</td>
+                                    <td>${o.email!}</td>
+                                    <td><strong style="color: blue;">ADMIN</strong></td>
+                                </tr>
+                            </#if>
+                        </#list>
+                    </#if>
+                    <#if !adminTrovati>
+                        <tr><td colspan="5">Nessun amministratore presente.</td></tr>
+                    </#if>
+                </table>
+            </div>
+        </details>
+        
+        <br>
+        <a href="DashboardServlet" class="btn" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;">&larr; Torna alla Dashboard</a>
     </div>
 
-    <!-- Tabella Visualizzazione -->
-    <h2>Lista Operatori</h2>
-    <table border="1">
-        <tr>
-            <th>ID</th>
-            <th>Nome</th>
-            <th>Cognome</th>
-            <th>Email</th>
-            <th>Stato (Attivo)</th>
-        </tr>
-        <#if operatori?? && operatori?size &gt; 0>
-            <#list operatori as o>
-            <tr>
-                <td>${o.id_utente!}</td>
-                <td>${o.nome!}</td>
-                <td>${o.cognome!}</td>
-                <td>${o.email!}</td>
-                <td>${o.attivo!}</td>
-            </tr>
-            </#list>
-        <#else>
-            <tr><td colspan="5">Nessun operatore disponibile al momento.</td></tr>
-        </#if>
-    </table>
-    
-    <br>
-    <a href="DashboardServlet" class="btn">Torna alla Dashboard</a>
+    <!-- SCRIPT MAGICO PER FAR COMPARIRE/SCOMPARIRE PATENTI E ABILITA' -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var selectRuolo = document.getElementById("sceltaRuolo");
+            var sezioneCompetenze = document.getElementById("sezioneCompetenze");
+
+            function aggiornaVista() {
+                if (selectRuolo.value === "ADMIN") {
+                    sezioneCompetenze.style.display = "none";
+                } else {
+                    sezioneCompetenze.style.display = "block";
+                }
+            }
+
+            aggiornaVista();
+            selectRuolo.addEventListener("change", aggiornaVista);
+        });
+    </script>
 </body>
 </html>

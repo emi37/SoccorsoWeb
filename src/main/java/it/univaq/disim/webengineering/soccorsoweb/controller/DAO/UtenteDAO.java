@@ -43,12 +43,11 @@ public class UtenteDAO {
         return utenteTrovato;
     }
 
-    // 2. Salvataggio Utente (Modificato per restituire l'ID generato dal DB)
+    // 2. Salvataggio Utente (Restituisce l'ID generato dal DB)
     public long salvaNuovoUtente(Utenti nuovoUtente) {
         long idGenerato = -1;
         String queryInserimento = "INSERT INTO utente (nome, cognome, email, password, ruolo, attivo) VALUES (?, ?, ?, ?, ?, 1)";
 
-        // Aggiungo RETURN_GENERATED_KEYS per farmi ridare l'ID appena creato
         try (Connection connessioneDb = DBManager.getConnection(); 
              PreparedStatement statementInserimento = connessioneDb.prepareStatement(queryInserimento, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -103,26 +102,36 @@ public class UtenteDAO {
     // 5. Estrae TUTTI gli operatori per la gestione Admin (con calcolo stato LIBERO/IMPEGNATO)
     public List<Map<String, String>> estraiTuttiGliOperatoriConStato() {
         List<Map<String, String>> listaOperatori = new ArrayList<>();
+        
+        // Query sistemata: prende TUTTI gli utenti attivi. Se Admin scrive "AMMINISTRATORE", se Operatore calcola LIBERO/IMPEGNATO
         String query = "SELECT u.id_utente, u.nome, u.cognome, u.email, "
-                + "CASE WHEN EXISTS ("
-                + "    SELECT 1 FROM assegnazione_operatori_missioni aom "
+                + "CASE "
+                + "  WHEN u.ruolo = 'ADMIN' THEN 'AMMINISTRATORE' "
+                + "  WHEN EXISTS ("
+                + "    SELECT 1 FROM assegnazione_operatori_missione aom "
                 + "    JOIN missione mis ON aom.id_missione = mis.id_missione "
                 + "    WHERE aom.id_utente = u.id_utente AND mis.stato = 'IN_CORSO'"
-                + ") THEN 'IMPEGNATO' ELSE 'LIBERO' END AS stato_attuale "
-                + "FROM utente u WHERE u.ruolo = 'OPERATORE' AND u.attivo = 1 "
-                + "ORDER BY u.cognome, u.nome";
+                + "  ) THEN 'IMPEGNATO' ELSE 'LIBERO' "
+                + "END AS stato_attuale "
+                + "FROM utente u "
+                + "WHERE u.attivo = 1 "
+                + "ORDER BY u.id_utente DESC";
 
-        try (Connection conn = DBManager.getConnection(); PreparedStatement stmt = conn.prepareStatement(query); ResultSet rs = stmt.executeQuery()) {
+        try (Connection conn = DBManager.getConnection(); 
+             PreparedStatement stmt = conn.prepareStatement(query); 
+             ResultSet rs = stmt.executeQuery()) {
+             
             while (rs.next()) {
                 Map<String, String> operatore = new HashMap<>();
                 operatore.put("id_utente", String.valueOf(rs.getInt("id_utente")));
                 operatore.put("nome", rs.getString("nome"));
                 operatore.put("cognome", rs.getString("cognome"));
                 operatore.put("email", rs.getString("email"));
-                operatore.put("attivo", rs.getString("stato_attuale"));
+                operatore.put("stato_attuale", rs.getString("stato_attuale"));
                 listaOperatori.add(operatore);
             }
         } catch (Exception e) {
+            System.err.println("Errore estrazione operatori con stato...");
             e.printStackTrace();
         }
         return listaOperatori;
@@ -136,7 +145,7 @@ public class UtenteDAO {
                        "WHERE ruolo = 'OPERATORE' AND attivo = 1 " +
                        "AND id_utente NOT IN ( " +
                        "    SELECT aom.id_utente " +
-                       "    FROM assegnazione_operatori_missioni aom " +
+                       "    FROM assegnazione_operatori_missione aom " +
                        "    JOIN missione m ON aom.id_missione = m.id_missione " +
                        "    WHERE m.stato = 'IN_CORSO' " +
                        ") " +

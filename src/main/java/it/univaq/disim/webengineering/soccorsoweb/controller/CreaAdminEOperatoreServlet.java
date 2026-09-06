@@ -50,7 +50,7 @@ public class CreaAdminEOperatoreServlet extends HttpServlet {
                 nuovoUtente.setRuolo(ruoloScelto);
 
                 UtenteDAO utenteDao = new UtenteDAO();
-                
+
                 // CORREZIONE ERRORE: Ora riceviamo l'ID (long), non più un boolean
                 long idNuovoUtente = utenteDao.salvaNuovoUtente(nuovoUtente);
 
@@ -59,7 +59,7 @@ public class CreaAdminEOperatoreServlet extends HttpServlet {
 
                     // Se è un operatore, salviamo anche le sue patenti e abilità
                     if ("OPERATORE".equals(ruoloScelto)) {
-                        
+
                         // Estraiamo gli array di checkbox dal form HTML
                         String[] patentiSelezionate = request.getParameterValues("patenti");
                         if (patentiSelezionate != null) {
@@ -83,9 +83,9 @@ public class CreaAdminEOperatoreServlet extends HttpServlet {
             e.printStackTrace();
         }
 
-        // Redirect in base all'esito
+        // ECCO LA MODIFICA: Redirect diretto alla dashboard degli operatori
         if (inserimentoRiuscito) {
-            response.sendRedirect(request.getContextPath() + "/creazione_utente_ok.html");
+            response.sendRedirect(request.getContextPath() + "/GestioneOperatori");
         } else {
             response.sendRedirect(request.getContextPath() + "/creazione_utente_errore.html");
         }

@@ -13,9 +13,10 @@
             </div>
 
             <nav class="topbar-actions">
-                <!-- I link ora puntano agli URL definiti in @WebServlet, senza il suffisso della classe -->
+                <a href="GestioneOperatori" class="btn">Gestione operatori</a>
                 <a href="GestioneMezzi" class="btn">Gestione mezzi</a>
                 <a href="GestioneMateriali" class="btn">Gestione materiali</a>
+                <!-- Link verificato e blindato -->
                 <a href="StoricoMissioni" class="btn">Storico missioni</a>
                 <a href="Logout" class="btn btn-danger" style="background-color: #dc3545; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Logout</a>
             </nav>
@@ -46,13 +47,15 @@
                         <tbody>
                             <#list richieste as r>
                             <tr>
-                                <td>#${r.id_richiesta!}</td>
-                                <td>${r.nome_segnalante!""}</td>
-                                <td>${r.email_segnalante!""}</td>
-                                <td>${r.posizione!""}</td>
-                                <td>${r.descrizione!""}</td>
+                                <!-- SINTASSI MULTI-FALLBACK: Trova il dato in qualsiasi modo Java lo chiami -->
+                                <td>#${(r.id)!(r.idRichiesta)!(r.id_richiesta)!""}</td>
+                                <td>${(r.segnalante)!(r.nomeSegnalante)!(r.nome_segnalante)!""}</td>
+                                <td>${(r.email)!(r.emailSegnalante)!(r.email_segnalante)!""}</td>
+                                <td>${(r.posizione)!""}</td>
+                                <td>${(r.descrizione)!""}</td>
                                 <td>
-                                    <a href="GestioneRichiestaServletDallAdmin?id_richiesta=${r.id_richiesta!}" class="btn btn-primary">Avvia Missione</a>
+                                    <!-- IL LINK ORA RICEVE L'ID ESATTO -->
+                                    <a href="GestioneRichiestaServletDallAdmin?id_richiesta=${(r.id)!(r.idRichiesta)!(r.id_richiesta)!}" class="btn btn-primary">Avvia Missione</a>
                                 </td>
                             </tr>
                             <#else>
@@ -89,13 +92,19 @@
                         <tbody>
                             <#list missioni as m>
                             <tr>
-                                <td>#${m.id_missione!}</td>
-                                <td>#${m.id_richiesta!}</td>
+                                <td>#${(m.id_missione)!(m.idMissione)!""}</td>
+                                <td>#${(m.id_richiesta)!(m.idRichiesta)!""}</td>
                                 <td>${m.obiettivo!""}</td>
                                 <td>${m.posizione!""}</td>
                                 <td><span class="badge-status in-corso">${m.stato!""}</span></td>
                                 <td>
-                                    <a href="ConcludiMissioneServlet?id_missione=${m.id_missione!}" class="btn btn-success">Concludi</a>
+<a href="ConcludiMissioneServlet?id_missione=${(m.id_missione)!(m.idMissione)!""}&id_richiesta=${(m.id_richiesta)!(m.idRichiesta)!""}" class="btn btn-primary">Concludi</a>
+
+
+
+
+
+
                                 </td>
                             </tr>
                             <#else>
@@ -108,19 +117,19 @@
                 </div>
             </section>
 
+            <!-- SEZIONE AZIONI RAPIDE -->
             <section class="card">
                 <h2>Azioni rapide</h2>
                 <div class="quick-actions">
-                    <!-- LINK AGGIORNATI ALLE SERVLET ANCHE QUI -->
-                    <a href="GestioneMezziServlet" class="action-card">
+                    <a href="GestioneMezzi" class="action-card">
                         <strong>Mezzi</strong>
                         <span>Aggiungi, consulta o rimuovi mezzi disponibili.</span>
                     </a>
-                    <a href="GestioneMaterialiServlet" class="action-card">
+                    <a href="GestioneMateriali" class="action-card">
                         <strong>Materiali</strong>
                         <span>Gestisci materiali e risorse operative.</span>
                     </a>
-                    <a href="StoricoMissioniServlet" class="action-card">
+                    <a href="StoricoMissioni" class="action-card">
                         <strong>Storico</strong>
                         <span>Consulta le missioni concluse.</span>
                     </a>

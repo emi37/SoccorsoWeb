@@ -30,7 +30,7 @@
             <th>Nome</th>
             <th>Descrizione</th>
             <th>Stato (Attivo)</th>
-            <th>Azioni</th>
+           <!--   <th>Azioni</th>  -->
         </tr>
         
         <#if materiali?? && materiali?size &gt; 0>
@@ -40,11 +40,11 @@
                 <td>${m.nome!}</td>
                 <td>${m.descrizione!}</td>
                 <td>${m.attivo!}</td> 
-                <td>
+                <!--  <td>
                     <a href="GestioneMateriali?elimina=${m.id_materiale!}">Nascondi</a>
                     <!-- Bottone per lo storico (richiesto dalle specifiche) -->
                     <a href="StoricoMateriale?id=${m.id_materiale!}">Vedi Storico</a>
-                </td>
+                </td>    -->
             </tr>
             </#list>
         <#else>

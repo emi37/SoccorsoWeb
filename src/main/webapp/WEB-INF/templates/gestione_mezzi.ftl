@@ -33,7 +33,7 @@
             <th>Nome</th>
             <th>Descrizione</th>
             <th>Stato (Attivo)</th>
-            <th>Azioni</th>
+           <!--  <th>Azioni</th>-->
         </tr>
         
         <#if mezzi?? && mezzi?size &gt; 0>
@@ -43,10 +43,10 @@
                 <td>${m.nome!}</td>
                 <td>${m.descrizione!}</td>
                 <td>${m.attivo!}</td> 
-                <td>
+                    <!-- <td>
                     <a href="GestioneMezzi?elimina=${m.id_mezzo!}">Nascondi</a>
                     <a href="StoricoMezzo?id=${m.id_mezzo!}">Vedi Storico</a>
-                </td>
+                </td> -->
             </tr>
             </#list>
         <#else>
