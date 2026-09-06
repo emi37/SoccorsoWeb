@@ -16,8 +16,8 @@ public class UtenteDAO {
     // 1. Estrazione per il Login
     public Utenti estraiUtentePerEmail(String emailCercata) {
         Utenti utenteTrovato = null;
-        String queryRicerca = "SELECT id_utente, nome, cognome, password, ruolo "
-                + "FROM utente "
+        String queryRicerca = "SELECT id_utente, nome, cognome, email, password, ruolo "
+                + "FROM utenti "
                 + "WHERE email = ? AND attivo = 1";
 
         try (Connection connessioneDb = DBManager.getConnection(); 
@@ -46,7 +46,7 @@ public class UtenteDAO {
     // 2. Salvataggio Utente (Restituisce l'ID generato dal DB)
     public long salvaNuovoUtente(Utenti nuovoUtente) {
         long idGenerato = -1;
-        String queryInserimento = "INSERT INTO utente (nome, cognome, email, password, ruolo, attivo) VALUES (?, ?, ?, ?, ?, 1)";
+        String queryInserimento = "INSERT INTO utenti (nome, cognome, email, password, ruolo, attivo) VALUES (?, ?, ?, ?, ?, 1)";
 
         try (Connection connessioneDb = DBManager.getConnection(); 
              PreparedStatement statementInserimento = connessioneDb.prepareStatement(queryInserimento, Statement.RETURN_GENERATED_KEYS)) {
@@ -141,7 +141,7 @@ public class UtenteDAO {
     public List<Map<String, String>> estraiOperatoriDisponibili() {
         List<Map<String, String>> listaOperatori = new ArrayList<>();
         String query = "SELECT id_utente, nome, cognome " +
-                       "FROM utente " +
+                       "FROM utenti " +
                        "WHERE ruolo = 'OPERATORE' AND attivo = 1 " +
                        "AND id_utente NOT IN ( " +
                        "    SELECT aom.id_utente " +

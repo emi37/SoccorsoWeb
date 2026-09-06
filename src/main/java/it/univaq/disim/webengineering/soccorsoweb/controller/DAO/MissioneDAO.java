@@ -372,4 +372,39 @@ public class MissioneDAO {
 
         return mappaDettagli;
     }
+    // Estrae le missioni attualmente IN_CORSO a cui è stato assegnato uno specifico operatore
+    public List<Map<String, String>> estraiMissioniAttivePerOperatore(long idOperatore) {
+        List<Map<String, String>> listaMissioni = new ArrayList<>();
+        
+        // La query fa una JOIN tra le missioni e la tabella delle assegnazioni
+        String query = "SELECT m.id_missione, m.id_richiesta, m.obiettivo, m.posizione, m.stato " +
+                       "FROM missione m " +
+                       "JOIN assegnazione_operatori_missione aom ON m.id_missione = aom.id_missione " +
+                       "WHERE aom.id_utente = ? AND m.stato = 'IN_CORSO'";
+                       
+        try (Connection connessioneDb = DBManager.getConnection();
+             PreparedStatement statement = connessioneDb.prepareStatement(query)) {
+             
+            // Inseriamo l'ID dell'operatore al posto del punto interrogativo
+            statement.setLong(1, idOperatore);
+            
+            try (ResultSet risultati = statement.executeQuery()) {
+                while (risultati.next()) {
+                    Map<String, String> missione = new HashMap<>();
+                    missione.put("id_missione", String.valueOf(risultati.getInt("id_missione")));
+                    missione.put("id_richiesta", String.valueOf(risultati.getInt("id_richiesta")));
+                    missione.put("obiettivo", risultati.getString("obiettivo"));
+                    missione.put("posizione", risultati.getString("posizione"));
+                    missione.put("stato", risultati.getString("stato"));
+                    
+                    listaMissioni.add(missione);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Errore nell'estrazione delle missioni per l'operatore ID: " + idOperatore);
+            e.printStackTrace();
+        }
+        
+        return listaMissioni;
+    }
 }
