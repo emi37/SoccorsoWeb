@@ -23,7 +23,7 @@
                         <a href="${request.contextPath}/DashboardOperatoreServlet" class="btn">Area Operativa</a>
                     </#if>
                     <a href="${request.contextPath}/homeFinale.html" class="btn">Home</a>
-                    <a href="${request.contextPath}/LogoutServlet" class="btn btn-danger">Logout</a>
+                    <a href="${request.contextPath}/Logout" class="btn btn-danger">Logout</a>
                 </nav>
             </header>
 
@@ -31,20 +31,6 @@
                 <div class="card">
                     <h2>Dettaglio missione</h2>
                     <p>In questa pagina è possibile consultare una missione e inserire un aggiornamento operativo.</p>
-                </div>
-
-                <!-- Form per cercare un'altra missione al volo -->
-                <div class="card">
-                    <h2>Cerca missione</h2>
-                    <form id="formCercaMissione" action="${request.contextPath}/DettaglioMissioneServlet" method="get">
-                        <div class="form-group">
-                            <label class="form-label" for="id_missione_cerca">ID missione</label>
-                            <input type="text" id="id_missione_cerca" name="id_missione" class="form-control" required>
-                        </div>
-                        <div>
-                            <input type="submit" value="Cerca missione" class="btn">
-                        </div>
-                    </form>
                 </div>
 
                 <!-- INIZIO INIEZIONE DATI FREEMARKER: Info Base -->
@@ -82,17 +68,17 @@
                     </div>
                 </div>
 
-                <!-- INIEZIONE LISTE FREEMARKER: Mezzi e Materiali -->
+                <!-- INIEZIONE LISTE FREEMARKER: Mezzi e Materiali CORRETTA -->
                 <div class="card">
                     <h2>Risorse assegnate</h2>
 
                     <h3>Automezzi sul posto</h3>
                     <ul>
-                        <#if mezzi??>
-                            <#list mezzi as mezzo>
-                                <li><strong>${mezzo.nome!}</strong> - ${mezzo.descrizione!}</li>
-                            <#else>
-                                <li class="text-muted">Nessun automezzo associato a questa missione.</li>
+                        <!-- Cerchiamo dentro 'missione' e verifichiamo che la lista non sia vuota -->
+                        <#if missione.mezzi?? && missione.mezzi?has_content>
+                            <!-- Stampiamo direttamente la stringa di testo passata dal Java -->
+                            <#list missione.mezzi as mezzoStringa>
+                                <li>${mezzoStringa}</li>
                             </#list>
                         <#else>
                             <li class="text-muted">Nessun automezzo associato a questa missione.</li>
@@ -101,11 +87,9 @@
 
                     <h3>Attrezzature e materiali</h3>
                     <ul>
-                        <#if materiali??>
-                            <#list materiali as materiale>
-                                <li><strong>${materiale.nome!}</strong> - ${materiale.descrizione!}</li>
-                            <#else>
-                                <li class="text-muted">Nessun materiale associato a questa missione.</li>
+                        <#if missione.materiali?? && missione.materiali?has_content>
+                            <#list missione.materiali as materialeStringa>
+                                <li>${materialeStringa}</li>
                             </#list>
                         <#else>
                             <li class="text-muted">Nessun materiale associato a questa missione.</li>
@@ -114,13 +98,14 @@
                 </div>
 
                 <!-- SE LA MISSIONE E' IN CORSO, MOSTRO IL FORM -->
+              <!-- SE LA MISSIONE E' IN CORSO, MOSTRO IL FORM (ATTUALMENTE NASCOSTO) -->
+                <#-- 
                 <#if (missione.stato!"") == "IN_CORSO">
                 <div class="card">
                     <h2>Aggiungi aggiornamento missione</h2>
                     <form id="formAggiornaMissione" action="${request.contextPath}/DettaglioMissioneServlet" method="post">
                         <div class="form-group">
                             <label class="form-label" for="id_missione">ID missione</label>
-                            <!-- Precompiliamo l'ID rendendolo readonly per evitare errori umani -->
                             <input type="text" id="id_missione" name="id_missione" class="form-control" value="${missione.id_missione!}" readonly required>
                         </div>
 
@@ -136,8 +121,10 @@
                     </form>
                 </div>
                 </#if>
+                -->
 
-                <!-- INIEZIONE TIMELINE FREEMARKER -->
+                <!-- INIEZIONE TIMELINE FREEMARKER (ATTUALMENTE NASCOSTA) -->
+                <#-- 
                 <div class="card">
                     <h2>Cronistoria eventi</h2>
                     <div class="table-wrapper">
@@ -171,6 +158,7 @@
                         </table>
                     </div>
                 </div>
+                -->
 
             </main>
 
@@ -180,7 +168,7 @@
 
         </div>
         
-        <!-- Il tuo JS (se serve ancora per altre logiche lato client) -->
+        <!-- Il tuo JS -->
         <script src="${request.contextPath}/js/missioni.js"></script>
     </body>
 </html>

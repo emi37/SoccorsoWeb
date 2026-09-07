@@ -324,7 +324,7 @@ public class MissioneDAO {
             }
 
             String nomeCaposquadra = "Non ancora assegnato";
-            String queryCapo = "SELECT u.nome, u.cognome FROM utente u "
+            String queryCapo = "SELECT u.nome, u.cognome FROM utenti u "
                     + "JOIN assegnazione_operatori_missione aom ON u.id_utente = aom.id_utente "
                     + "WHERE aom.id_missione = ? AND aom.is_caposquadra = 1";
             try (PreparedStatement stmtCapo = connessioneDb.prepareStatement(queryCapo)) {

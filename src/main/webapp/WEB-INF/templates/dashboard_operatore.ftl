@@ -16,7 +16,7 @@
                 <p class="subtitle">Benvenuto, <b>${(utente.nome)!"Operatore"} ${(utente.cognome)!""}</b></p>
             </div>
             <div class="topbar-actions">
-                <a href="${request.contextPath}/LogoutServlet" class="btn btn-danger">Logout</a>
+                <a href="${request.contextPath}/Logout" class="btn btn-danger">Logout</a>
             </div>
         </header>
 
