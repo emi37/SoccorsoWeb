@@ -45,7 +45,7 @@ public class DashboardServlet extends HttpServlet {
             try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS)) {
 
                 // 1. Estrazione Richieste
-                String sqlRichieste = "SELECT id_richiesta, nome_segnalante, email_segnalante, posizione, descrizione FROM richiesta_soccorso WHERE stato = 'IN_ATTESA'";
+                String sqlRichieste = "SELECT id_richiesta, nome_segnalante, email_segnalante, posizione, descrizione FROM richiesta_soccorso WHERE stato = 'ATTIVA'";
                 try (PreparedStatement stmt = conn.prepareStatement(sqlRichieste);
                      ResultSet rs = stmt.executeQuery()) {
                     while (rs.next()) {
