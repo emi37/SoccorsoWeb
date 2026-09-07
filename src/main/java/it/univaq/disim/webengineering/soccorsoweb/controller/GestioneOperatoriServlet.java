@@ -49,7 +49,7 @@ public class GestioneOperatoriServlet extends HttpServlet {
             TemplateManager.process("gestione_operatori.ftl", dataModel, response, getServletContext());
 
         } catch (Exception e) {
-            System.err.println("Panico nel caricamento della dashboard operatori...");
+            System.err.println("Errore nel caricamento della dashboard operatori...");
             e.printStackTrace();
         }
     }

@@ -33,24 +33,48 @@ public class DashboardOperatoreServlet extends HttpServlet {
         }
 
         try {
-            // Recupero l'ID dell'operatore loggato dalla sessione
-            long idOperatore = (long) sessioneAttuale.getAttribute("id_utente");
+            // FIX: Estrazione sicura dell'ID per evitare crash (ClassCastException)
+            Object objId = sessioneAttuale.getAttribute("id_utente");
+            long idOperatore = -1;
+            if (objId != null) {
+                idOperatore = Long.parseLong(objId.toString());
+            }
 
-            // 2. Chiamo i DAO per recuperare i dati che servono all'operatore
+            // 2. Chiamo i DAO per recuperare le missioni
             MissioneDAO missioneDao = new MissioneDAO();
-
-            // Mi faccio dare la lista delle missioni IN CORSO a cui questo specifico operatore è stato assegnato
             List<Map<String, String>> mieMissioni = missioneDao.estraiMissioniAttivePerOperatore(idOperatore);
+            
             // 3. Prepara i dati per FreeMarker usando una Mappa (dataModel)
             Map<String, Object> dataModel = new HashMap<>();
-            dataModel.put("mie_missioni", mieMissioni);
-// Se serve, puoi passare anche i dati dell'operatore: dataModel.put("nome", sessioneAttuale.getAttribute("nome"));
+            
+            // FIX: Passiamo la request per far caricare il CSS senza che FreeMarker esploda
+            dataModel.put("request", request);
+            
+            // FIX: Rinominiamo la variabile nel nome esatto che il file .ftl si aspetta
+            dataModel.put("missioniInCorso", mieMissioni);
+            
+            // FIX: Costruiamo l'oggetto "utente" per il messaggio di benvenuto e lo stato
+            Map<String, String> datiUtente = new HashMap<>();
+            
+            // Gestione null-safe per nome e cognome
+            Object nomeObj = sessioneAttuale.getAttribute("nome");
+            Object cognomeObj = sessioneAttuale.getAttribute("cognome");
+            datiUtente.put("nome", nomeObj != null ? nomeObj.toString() : "Operatore");
+            datiUtente.put("cognome", cognomeObj != null ? cognomeObj.toString() : "");
 
-// 4. Rendering magico con FreeMarker!
+            // Calcolo logico dello stato: se la lista missioni ha qualcosa, è IMPEGNATO.
+            if (mieMissioni != null && !mieMissioni.isEmpty()) {
+                datiUtente.put("stato_attuale", "IMPEGNATO");
+            } else {
+                datiUtente.put("stato_attuale", "LIBERO");
+            }
+            dataModel.put("utente", datiUtente);
+
+            // 4. Rendering magico con FreeMarker!
             TemplateManager.process("dashboard_operatore.ftl", dataModel, response, getServletContext());
 
         } catch (Exception e) {
-            System.err.println("Errore brutto nel caricamento della dashboard operatore...");
+            System.err.println("Errore nel caricamento della dashboard operatore...");
             e.printStackTrace();
             response.sendRedirect(request.getContextPath() + "/login.html");
         }

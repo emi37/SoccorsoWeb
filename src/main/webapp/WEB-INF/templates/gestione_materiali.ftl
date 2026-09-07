@@ -42,7 +42,7 @@
                 <td>${m.attivo!}</td> 
                 <!--  <td>
                     <a href="GestioneMateriali?elimina=${m.id_materiale!}">Nascondi</a>
-                    <!-- Bottone per lo storico (richiesto dalle specifiche) -->
+                    <!-- Bottone per lo storico (richiesto dalle specifiche)
                     <a href="StoricoMateriale?id=${m.id_materiale!}">Vedi Storico</a>
                 </td>    -->
             </tr>

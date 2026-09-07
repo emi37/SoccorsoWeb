@@ -13,7 +13,7 @@
             </div>
 
             <nav class="topbar-actions">
-                <a href="GestioneOperatori" class="btn">Gestione operatori</a>
+                <a href="GestioneOperatori" class="btn">Gestione operatori e admin</a>
                 <a href="GestioneMezzi" class="btn">Gestione mezzi</a>
                 <a href="GestioneMateriali" class="btn">Gestione materiali</a>
                 <!-- Link verificato e blindato -->

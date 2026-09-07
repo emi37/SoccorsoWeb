@@ -103,8 +103,8 @@ public class UtenteDAO {
     public List<Map<String, String>> estraiTuttiGliOperatoriConStato() {
         List<Map<String, String>> listaOperatori = new ArrayList<>();
         
-        // Query sistemata: prende TUTTI gli utenti attivi. Se Admin scrive "AMMINISTRATORE", se Operatore calcola LIBERO/IMPEGNATO
-        String query = "SELECT u.id_utente, u.nome, u.cognome, u.email, "
+        // FIX CRITICO: Aggiunto u.ruolo e modificata la FROM per puntare a "utenti"
+        String query = "SELECT u.id_utente, u.nome, u.cognome, u.email, u.ruolo, "
                 + "CASE "
                 + "  WHEN u.ruolo = 'ADMIN' THEN 'AMMINISTRATORE' "
                 + "  WHEN EXISTS ("
@@ -113,7 +113,7 @@ public class UtenteDAO {
                 + "    WHERE aom.id_utente = u.id_utente AND mis.stato = 'IN_CORSO'"
                 + "  ) THEN 'IMPEGNATO' ELSE 'LIBERO' "
                 + "END AS stato_attuale "
-                + "FROM utente u "
+                + "FROM utenti u " // Tabella corretta
                 + "WHERE u.attivo = 1 "
                 + "ORDER BY u.id_utente DESC";
 
@@ -127,6 +127,7 @@ public class UtenteDAO {
                 operatore.put("nome", rs.getString("nome"));
                 operatore.put("cognome", rs.getString("cognome"));
                 operatore.put("email", rs.getString("email"));
+                operatore.put("ruolo", rs.getString("ruolo")); // Necessario per i filtri FreeMarker
                 operatore.put("stato_attuale", rs.getString("stato_attuale"));
                 listaOperatori.add(operatore);
             }

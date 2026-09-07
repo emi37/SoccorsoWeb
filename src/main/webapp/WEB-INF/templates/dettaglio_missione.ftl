@@ -16,7 +16,12 @@
                 </div>
 
                 <nav class="topbar-actions">
-                    <a href="${request.contextPath}/DashboardServlet" class="btn">Dashboard</a>
+                    <!-- Navigazione Intelligente basata sul ruolo -->
+                    <#if (request.getSession().getAttribute("ruolo")!"") == "ADMIN">
+                        <a href="${request.contextPath}/DashboardServlet" class="btn">Dashboard Admin</a>
+                    <#else>
+                        <a href="${request.contextPath}/DashboardOperatoreServlet" class="btn">Area Operativa</a>
+                    </#if>
                     <a href="${request.contextPath}/homeFinale.html" class="btn">Home</a>
                     <a href="${request.contextPath}/LogoutServlet" class="btn btn-danger">Logout</a>
                 </nav>
@@ -50,27 +55,27 @@
                             <tbody>
                                 <tr>
                                     <th>ID missione</th>
-                                    <td>${missione.id_missione}</td>
+                                    <td>${missione.id_missione!}</td>
                                 </tr>
                                 <tr>
                                     <th>Obiettivo</th>
-                                    <td>${missione.obiettivo}</td>
+                                    <td>${missione.obiettivo!}</td>
                                 </tr>
                                 <tr>
                                     <th>Posizione</th>
-                                    <td>${missione.posizione}</td>
+                                    <td>${missione.posizione!}</td>
                                 </tr>
                                 <tr>
                                     <th>Stato</th>
-                                    <td><strong>${missione.stato}</strong></td>
+                                    <td><strong>${missione.stato!}</strong></td>
                                 </tr>
                                 <tr>
                                     <th>Inizio intervento</th>
-                                    <td>${missione.inizio}</td>
+                                    <td>${missione.inizio!}</td>
                                 </tr>
                                 <tr>
                                     <th>Caposquadra</th>
-                                    <td>${missione.caposquadra}</td>
+                                    <td>${missione.caposquadra!}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -83,32 +88,40 @@
 
                     <h3>Automezzi sul posto</h3>
                     <ul>
-                        <#list mezzi as mezzo>
-                            <li><strong>${mezzo.nome}</strong> - ${mezzo.descrizione}</li>
+                        <#if mezzi??>
+                            <#list mezzi as mezzo>
+                                <li><strong>${mezzo.nome!}</strong> - ${mezzo.descrizione!}</li>
+                            <#else>
+                                <li class="text-muted">Nessun automezzo associato a questa missione.</li>
+                            </#list>
                         <#else>
                             <li class="text-muted">Nessun automezzo associato a questa missione.</li>
-                        </#list>
+                        </#if>
                     </ul>
 
                     <h3>Attrezzature e materiali</h3>
                     <ul>
-                        <#list materiali as materiale>
-                            <li><strong>${materiale.nome}</strong> - ${materiale.descrizione}</li>
+                        <#if materiali??>
+                            <#list materiali as materiale>
+                                <li><strong>${materiale.nome!}</strong> - ${materiale.descrizione!}</li>
+                            <#else>
+                                <li class="text-muted">Nessun materiale associato a questa missione.</li>
+                            </#list>
                         <#else>
                             <li class="text-muted">Nessun materiale associato a questa missione.</li>
-                        </#list>
+                        </#if>
                     </ul>
                 </div>
 
                 <!-- SE LA MISSIONE E' IN CORSO, MOSTRO IL FORM -->
-                <#if missione.stato == "IN_CORSO">
+                <#if (missione.stato!"") == "IN_CORSO">
                 <div class="card">
                     <h2>Aggiungi aggiornamento missione</h2>
                     <form id="formAggiornaMissione" action="${request.contextPath}/DettaglioMissioneServlet" method="post">
                         <div class="form-group">
                             <label class="form-label" for="id_missione">ID missione</label>
                             <!-- Precompiliamo l'ID rendendolo readonly per evitare errori umani -->
-                            <input type="text" id="id_missione" name="id_missione" class="form-control" value="${missione.id_missione}" readonly required>
+                            <input type="text" id="id_missione" name="id_missione" class="form-control" value="${missione.id_missione!}" readonly required>
                         </div>
 
                         <div class="form-group">
@@ -137,17 +150,23 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <#list timeline as evento>
-                                <tr>
-                                    <td>${evento.data}</td>
-                                    <td>${evento.operatore}</td>
-                                    <td>${evento.testo}</td>
-                                </tr>
+                                <#if timeline??>
+                                    <#list timeline as evento>
+                                    <tr>
+                                        <td>${evento.data!}</td>
+                                        <td>${evento.operatore!}</td>
+                                        <td>${evento.testo!}</td>
+                                    </tr>
+                                    <#else>
+                                    <tr>
+                                        <td colspan="3" class="text-muted text-center" style="padding: 15px;">Nessun aggiornamento registrato.</td>
+                                    </tr>
+                                    </#list>
                                 <#else>
-                                <tr>
-                                    <td colspan="3" class="text-muted">Nessun aggiornamento registrato.</td>
-                                </tr>
-                                </#list>
+                                    <tr>
+                                        <td colspan="3" class="text-muted text-center" style="padding: 15px;">Nessun aggiornamento registrato.</td>
+                                    </tr>
+                                </#if>
                             </tbody>
                         </table>
                     </div>

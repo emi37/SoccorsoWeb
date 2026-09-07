@@ -14,7 +14,6 @@
             <h2>Aggiungi un nuovo Utente</h2>
             <form action="CreaAdminEOperatoreServlet" method="POST">
                 
-                <!-- Gruppo Dati Base (sempre visibile) -->
                 <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 15px;">
                     <div>
                         <label>Nome:</label><br>
@@ -44,7 +43,7 @@
                 <!-- SEZIONE A SCOMPARSA (Abilità e Patenti) -->
                 <div id="sezioneCompetenze" style="border-top: 1px solid #eee; padding-top: 15px; margin-top: 15px;">
                     <h3>Seleziona Abilità (Solo se Operatore):</h3>
-                    <#if abilita?? && abilita?size &gt; 0>
+                    <#if abilita??>
                         <div style="column-count: 2;">
                         <#list abilita as a>
                             <label><input type="checkbox" name="abilita" value="${a.id_abilita!}"> ${a.nome!}</label><br>
@@ -54,7 +53,7 @@
 
                     <br>
                     <h3>Seleziona Patenti (Solo se Operatore):</h3>
-                    <#if patenti?? && patenti?size &gt; 0>
+                    <#if patenti??>
                         <div style="column-count: 2;">
                         <#list patenti as p>
                             <label><input type="checkbox" name="patenti" value="${p.id_patente!}"> ${p.codice!}</label><br>
@@ -68,9 +67,7 @@
             </form>
         </div>
 
-        <!-- LISTE SEPARATE E A TENDINA -->
-        
-        <!-- Tendina 1: OPERATORI (Ora è CHIUSA di default, ho tolto l'attributo "open") -->
+        <!-- Tendina 1: OPERATORI (Chiusa di default) -->
         <details class="tendina-container">
             <summary class="tendina-titolo">🚑 Lista Operatori (Clicca per espandere/comprimere)</summary>
             <div class="table-wrapper">
@@ -83,9 +80,10 @@
                         <th>Stato Operativo</th>
                     </tr>
                     <#assign operatoriTrovati = false>
-                    <#if operatori?? && operatori?size &gt; 0>
+                    <#if operatori??>
                         <#list operatori as o>
-                            <#if o.stato_attuale != "AMMINISTRATORE">
+                            <!-- Filtro esatto per chi ha Ruolo = OPERATORE -->
+                            <#if (o.ruolo!"") == "OPERATORE">
                                 <#assign operatoriTrovati = true>
                                 <tr>
                                     <td>${o.id_utente!}</td>
@@ -93,7 +91,7 @@
                                     <td>${o.cognome!}</td>
                                     <td>${o.email!}</td>
                                     <td>
-                                        <#if o.stato_attuale == "LIBERO">
+                                        <#if (o.stato_attuale!"") == "LIBERO">
                                             <strong style="color: green;">LIBERO</strong>
                                         <#else>
                                             <strong style="color: red;">IMPEGNATO</strong>
@@ -110,7 +108,7 @@
             </div>
         </details>
 
-        <!-- Tendina 2: AMMINISTRATORI (Già chiusa di default) -->
+        <!-- Tendina 2: AMMINISTRATORI (Chiusa di default) -->
         <details class="tendina-container">
             <summary class="tendina-titolo">👨‍💻 Lista Amministratori (Clicca per espandere/comprimere)</summary>
             <div class="table-wrapper">
@@ -123,9 +121,10 @@
                         <th>Ruolo</th>
                     </tr>
                     <#assign adminTrovati = false>
-                    <#if operatori?? && operatori?size &gt; 0>
+                    <#if operatori??>
                         <#list operatori as o>
-                            <#if o.stato_attuale == "AMMINISTRATORE">
+                            <!-- Filtro esatto per chi ha Ruolo = ADMIN -->
+                            <#if (o.ruolo!"") == "ADMIN">
                                 <#assign adminTrovati = true>
                                 <tr>
                                     <td>${o.id_utente!}</td>
@@ -148,7 +147,7 @@
         <a href="DashboardServlet" class="btn" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;">&larr; Torna alla Dashboard</a>
     </div>
 
-    <!-- SCRIPT MAGICO PER FAR COMPARIRE/SCOMPARIRE PATENTI E ABILITA' -->
+    <!-- SCRIPT PER FAR COMPARIRE/SCOMPARIRE LE COMPETENZE -->
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             var selectRuolo = document.getElementById("sceltaRuolo");

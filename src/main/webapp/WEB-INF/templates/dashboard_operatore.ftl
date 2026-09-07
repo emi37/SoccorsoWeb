@@ -2,76 +2,78 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard Operatore - SoccorsoWeb</title>
-    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <title>Area Operativa - SoccorsoWeb</title>
+    <!-- Richiamiamo il tuo CSS universale -->
+    <link rel="stylesheet" type="text/css" href="${request.contextPath}/css/style.css">
 </head>
 <body>
-    <header class="topbar">
-        <div>
-            <h1>Area Operativa</h1>
-            <p class="subtitle">Benvenuto nella tua dashboard, Operatore!</p>
-        </div>
-
-        <nav class="topbar-actions">
-            <!-- Pulsante di disconnessione in rosso -->
-            <a href="/SoccorsoWeb/Logout"class="btn btn-danger" style="background-color: #dc3545; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Logout</a>
-        </nav>
-    </header>
-
-    <main class="container mt-20">
-        <!-- SEZIONE LE MIE MISSIONI -->
-        <section class="card">
-            <div class="section-header">
-                <div>
-                    <h2>Le tue missioni attive</h2>
-                    <p>Elenco degli interventi in corso a cui sei stato assegnato dalla centrale.</p>
-                </div>
+    <div class="container">
+        
+        <!-- HEADER e TOPBAR -->
+        <header class="topbar">
+            <div>
+                <h1 class="main-title">Centrale Operativa</h1>
+                <p class="subtitle">Benvenuto, <b>${(utente.nome)!"Operatore"} ${(utente.cognome)!""}</b></p>
             </div>
+            <div class="topbar-actions">
+                <a href="${request.contextPath}/LogoutServlet" class="btn btn-danger">Logout</a>
+            </div>
+        </header>
 
+        <!-- SEZIONE 1: STATO OPERATIVO -->
+        <section class="card">
+            <h2 class="section-title">Il tuo Stato Attuale</h2>
+            <p style="font-size: 16px;">
+                Attualmente il tuo stato è: 
+                <#if (utente.stato_attuale!"") == "LIBERO">
+                    <span class="badge" style="background-color: #28a745; color: white;">LIBERO</span>
+                    <br><br><span class="text-muted">Sei a disposizione della centrale. Mantieni il dispositivo acceso e attendi istruzioni.</span>
+                <#else>
+                    <span class="badge badge-danger">IMPEGNATO</span>
+                    <br><br><span class="text-muted">Sei assegnato a un intervento in corso. Procedi con cautela.</span>
+                </#if>
+            </p>
+        </section>
+
+        <!-- SEZIONE 2: MISSIONE ASSEGNATA -->
+        <section class="card">
+            <h2 class="section-title">La tua Missione in Corso</h2>
             <div class="table-wrapper">
                 <table>
-                    <thead>
-                        <tr>
-                            <th>ID Missione</th>
-                            <th>ID Richiesta</th>
-                            <th>Obiettivo</th>
-                            <th>Posizione</th>
-                            <th>Stato</th>
-                            <th>Azioni</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Il controllo FreeMarker per vedere se la Servlet ha passato la lista -->
-                        <#if mie_missioni?? && mie_missioni?size &gt; 0>
-                            <#list mie_missioni as m>
+                    <tr>
+                        <th>ID Missione</th>
+                        <th>Obiettivo / Emergenza</th>
+                        <th>Posizione Segnalata</th>
+                        <th>Azioni</th>
+                    </tr>
+                    
+                    <#assign missioniTrovate = false>
+                    <#if missioniInCorso??>
+                        <#list missioniInCorso as m>
+                            <#assign missioniTrovate = true>
                             <tr>
-                                <td><strong>#${m.id_missione!}</strong></td>
-                                <td>#${m.id_richiesta!}</td>
-                                <td>${m.obiettivo!""}</td>
-                                <td>${m.posizione!""}</td>
-                                <td><span style="color: #007bff; font-weight: bold;">${m.stato!}</span></td>
+                                <td>#${m.id_missione!}</td>
+                                <td>${m.obiettivo!}</td>
+                                <td>${m.posizione!}</td>
                                 <td>
-                                    <!-- Il tasto magico che apre la pagina "Dettaglio Missione" che avevi già fatto! -->
-                                    <a href="DettaglioMissioneServlet?id_missione=${m.id_missione!}" class="btn btn-primary">Apri / Aggiorna</a>
+                                    <!-- Il bottone porta l'operatore a leggere i dettagli dell'emergenza -->
+                                    <a href="${request.contextPath}/DettaglioMissioneServlet?id_missione=${m.id_missione!}" class="btn btn-primary">Vedi Dettagli</a>
                                 </td>
                             </tr>
-                            </#list>
-                        <#else>
-                            <tr>
-                                <td colspan="6" class="text-center text-muted" style="padding: 30px;">
-                                    Attualmente non sei assegnato a nessuna missione in corso. Resta in attesa di comunicazioni dalla centrale.
-                                </td>
-                            </tr>
-                        </#if>
-                    </tbody>
+                        </#list>
+                    </#if>
+                    
+                    <#if !missioniTrovate>
+                        <tr>
+                            <td colspan="4" class="text-center text-muted" style="padding: 20px;">
+                                Nessuna missione attiva al momento. Ottimo lavoro!
+                            </td>
+                        </tr>
+                    </#if>
                 </table>
             </div>
         </section>
-    </main>
 
-    <!-- Footer di sistema -->
-    <footer class="message text-center mt-20">
-        <p>SoccorsoWeb - Sistema di Gestione Emergenze</p>
-    </footer>
+    </div>
 </body>
 </html>
