@@ -17,7 +17,7 @@ public class RichiestaSoccorsoDAO {
         boolean salvataggioOk = false;
         String query = "INSERT INTO richiesta_soccorso "
                 + "(nome_segnalante, email_segnalante, posizione, descrizione, ip_origine, token_convalida, stato, timestamp_creazione) "
-                + "VALUES (?, ?, ?, ?, ?, ?, 'IN_ATTESA', NOW())";
+                + "VALUES (?, ?, ?, ?, ?, ?, 'ATTIVA', NOW())";
 
         try (Connection conn = DBManager.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, richiesta.getNomeSegnalante());

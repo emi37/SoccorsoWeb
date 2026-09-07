@@ -2,7 +2,6 @@ package it.univaq.disim.webengineering.soccorsoweb.controller;
 
 import it.univaq.disim.webengineering.soccorsoweb.controller.DAO.UtenteDAO;
 import it.univaq.disim.webengineering.soccorsoweb.model.Utenti;
-import org.mindrot.jbcrypt.BCrypt;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -10,6 +9,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import org.mindrot.jbcrypt.BCrypt;
 
 @WebServlet(name = "LoginServlet", urlPatterns = {"/LoginServlet"})
 public class LoginServlet extends HttpServlet {
@@ -48,7 +48,9 @@ public class LoginServlet extends HttpServlet {
             if (utenteTrovato != null) {
 
                 // Magia di jBcrypt: confronta la password in chiaro con l'hash salvato nel DB
-                if (passwordInserita.equals(utenteTrovato.getPassword())) {
+                if (BCrypt.checkpw(passwordInserita, utenteTrovato.getPassword())) {
+    // Login OK
+} {
                     loginEffettuato = true;
                     ruoloUtente = utenteTrovato.getRuolo();
 

@@ -49,7 +49,7 @@ public class ConvalidaServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/convalida.html");
         } else {
             // Se il token è scaduto, sbagliato o già usato
-            response.sendRedirect(request.getContextPath() + "/errore_convalida.html");
+            response.sendRedirect(request.getContextPath() + "/CreazioneUtente_errore.html");
         }
     }
 }
