@@ -13,8 +13,7 @@ public class ConvalidaServlet extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-        // Chiamata standard al padre.
-        // Niente più caricamento del driver MySQL qui, ci pensa il nostro fidato DBManager!
+        
         super.init();
     }
 
@@ -22,33 +21,29 @@ public class ConvalidaServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // Tiriamo giù il token dalla query string dell'URL (es. ?token=123-abc)
+        
         String tokenRicevuto = request.getParameter("token");
         boolean convalidaOk = false;
 
         try {
-            // Procediamo solo se il token non è nullo e non è uno spazio vuoto
+           
             if (tokenRicevuto != null && !tokenRicevuto.trim().isEmpty()) {
 
-                // Magia pura: evochiamo il DAO e gli lasciamo sbrigare la pratica.
-                // Il metodo svuotaTokenConvalida controlla automaticamente se sono passati meno di 10 minuti
+                //  evochiamo il DAO e gli lasciamo sbrigare la pratica.
                 RichiestaSoccorsoDAO richiestaDao = new RichiestaSoccorsoDAO();
                 convalidaOk = richiestaDao.svuotaTokenConvalida(tokenRicevuto);
             }
         } catch (Exception e) {
-            // Stampata ignorante a console in caso di esplosioni
+            // Stampata per verificare
             System.err.println("Panico nel controller durante il check della convalida...");
             e.printStackTrace();
         }
 
-        // Smistamento finale verso le pagine statiche HTML (in attesa di FreeMarker)
+        
         // Se la convalida è andata a buon fine, il DAO ha già impostato la richiesta su 'ATTIVA'
-// Smistamento finale verso le pagine statiche HTML
         if (convalidaOk) {
-            // CORREZIONE: Il file su NetBeans si chiama convalida.html
             response.sendRedirect(request.getContextPath() + "/convalida.html");
         } else {
-            // Se il token è scaduto, sbagliato o già usato
             response.sendRedirect(request.getContextPath() + "/CreazioneUtente_errore.html");
         }
     }
