@@ -29,7 +29,7 @@ public class ConvalidaServlet extends HttpServlet {
            
             if (tokenRicevuto != null && !tokenRicevuto.trim().isEmpty()) {
 
-                //  evochiamo il DAO e gli lasciamo sbrigare la pratica.
+                //  richiesta al DAO
                 RichiestaSoccorsoDAO richiestaDao = new RichiestaSoccorsoDAO();
                 convalidaOk = richiestaDao.svuotaTokenConvalida(tokenRicevuto);
             }

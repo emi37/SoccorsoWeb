@@ -82,19 +82,18 @@ public class GestioneRichiestaServletDallAdmin extends HttpServlet {
             String[] mezziScelti = request.getParameterValues("id_mezzo");
             String[] materialiScelti = request.getParameterValues("id_materiale");
 
-            // Ora basta che sia selezionato almeno il Caposquadra!
+            // devo selezionare il caposquadra
             if (caposquadraScelto != null && !caposquadraScelto.trim().isEmpty()) {
                 
                 RichiestaSoccorsoDAO richiestaDao = new RichiestaSoccorsoDAO();
                 Map<String, String> dettagliRichiesta = richiestaDao.estraiDettagliRichiesta(idRichiesta);
                 
-                // Fallback sicuri in caso non trovino i dati dalla mappa
                 String obiettivo = dettagliRichiesta.getOrDefault("descrizione", "Intervento di soccorso");
                 String posizione = dettagliRichiesta.getOrDefault("posizione", "Posizione sconosciuta");
 
-                // Estrazione sicura dell'ID Admin (Niente più ClassCastException silenziose)
+                //estrazione dell'ID Admin
                 Object objId = sessioneAttuale.getAttribute("id_utente");
-                int idAdmin = 1; // ID di default in caso di emergenza
+                int idAdmin = 1; // ID di default 
                 if (objId != null) {
                     idAdmin = Integer.parseInt(objId.toString());
                 }
@@ -117,11 +116,11 @@ public class GestioneRichiestaServletDallAdmin extends HttpServlet {
                 }
             }
             
-            // Se fallisce, stampiamo l'errore nell'URL così te ne accorgi e non va solo a vuoto
+            // Se fallisce, stampo l'errore nell'URL e non va solo a vuoto 
             response.sendRedirect(request.getContextPath() + "/GestioneRichiestaServletDallAdmin?id_richiesta=" + idRichiesta + "&errore=dati_mancanti");
 
         } catch (Exception e) {
-            System.err.println("Panico totale durante la POST per avviare la missione...");
+            System.err.println("errore durante ill POST per avviare la missione...");
             e.printStackTrace();
             response.sendRedirect(request.getContextPath() + "/DashboardServlet?errore=critico");
         }

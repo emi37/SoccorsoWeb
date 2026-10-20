@@ -51,16 +51,15 @@ public class CreaAdminEOperatoreServlet extends HttpServlet {
 
                 UtenteDAO utenteDao = new UtenteDAO();
 
-                // CORREZIONE ERRORE: Ora riceviamo l'ID (long), non più un boolean
                 long idNuovoUtente = utenteDao.salvaNuovoUtente(nuovoUtente);
 
                 if (idNuovoUtente > 0) {
                     inserimentoRiuscito = true;
 
-                    // Se è un operatore, salviamo anche le sue patenti e abilità
+                    // Se è un operatore, allora salva sia le sue patenti che le abilità
                     if ("OPERATORE".equals(ruoloScelto)) {
 
-                        // Estraiamo gli array di checkbox dal form HTML
+                        // Estre gli array di checkbox dal form html
                         String[] patentiSelezionate = request.getParameterValues("patenti");
                         if (patentiSelezionate != null) {
                             for (String idPatenteStr : patentiSelezionate) {
@@ -83,7 +82,7 @@ public class CreaAdminEOperatoreServlet extends HttpServlet {
             e.printStackTrace();
         }
 
-        // ECCO LA MODIFICA: Redirect diretto alla dashboard degli operatori
+        //redirect alla dashboard degli operatori
         if (inserimentoRiuscito) {
             response.sendRedirect(request.getContextPath() + "/GestioneOperatori");
         } else {

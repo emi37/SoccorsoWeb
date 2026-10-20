@@ -39,13 +39,12 @@ public class GestioneOperatoriServlet extends HttpServlet {
             UtenteDAO utenteDao = new UtenteDAO();
             Map<String, Object> dataModel = new HashMap<>();
             
-            // Passiamo a FreeMarker le 3 liste cruciali per la pagina
+            // Passiamo a FreeMarker le 3 liste che servono per la pagina
             dataModel.put("operatori", utenteDao.estraiTuttiGliOperatoriConStato());
             dataModel.put("abilita", utenteDao.estraiTutteLeAbilita());
             dataModel.put("patenti", utenteDao.estraiTutteLePatenti());
             dataModel.put("request", request);
 
-            // Rendering della nuova pagina
             TemplateManager.process("gestione_operatori.ftl", dataModel, response, getServletContext());
 
         } catch (Exception e) {

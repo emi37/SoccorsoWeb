@@ -51,7 +51,6 @@ public class DettaglioMissioneServlet extends HttpServlet {
 
             if (dettagliMissione != null && !dettagliMissione.isEmpty()) {
 
-                // MOTORE FREEMARKER: Usiamo la HashMap e il TemplateManager invece del Dispatcher
                 Map<String, Object> dataModel = new HashMap<>();
                 dataModel.put("request", request); // Essenziale per il contextPath del CSS
                 dataModel.put("missione", dettagliMissione);
@@ -64,7 +63,7 @@ public class DettaglioMissioneServlet extends HttpServlet {
             }
 
         } catch (Exception e) {
-            System.err.println("Panico nel controller durante la lettura dei dettagli missione...");
+            System.err.println("errore durante la lettura dei dettagli missione...");
             e.printStackTrace();
             response.sendRedirect(request.getContextPath() + dashboardRitorno);
         }
@@ -103,7 +102,7 @@ public class DettaglioMissioneServlet extends HttpServlet {
             }
 
         } catch (Exception e) {
-            System.err.println("Disastro totale durante l'inserimento di un log missione...");
+            System.err.println("errore totale durante l'inserimento di un log missione...");
             e.printStackTrace();
         }
 

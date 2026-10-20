@@ -27,13 +27,12 @@ public class AggiungiMezzoServlet extends HttpServlet {
 
         // check permessi
         if (sessioneAttuale == null || !"ADMIN".equals(sessioneAttuale.getAttribute("ruolo"))) {
-            // Aggiunto getContextPath() per evitare errori 404 sul redirect
             response.sendRedirect(request.getContextPath() + "/login.html");
             return;
         }
 
         try {
-            // estraggo i parametri inviati dal client (devono coincidere con gli attributi name=".." del form HTML)
+            // estraggo i parametri inviati dal client 
             String nomeInserito = request.getParameter("nome");
             String descrizioneInserita = request.getParameter("descrizione");
 
@@ -49,12 +48,12 @@ public class AggiungiMezzoServlet extends HttpServlet {
                 mezzoDao.salvaNuovoMezzo(nuovoMezzo);
             }
         } catch (Exception e) {
-            // solita stampata ignorante a console
+            
             System.err.println("Panico nel controller durante l'aggiunta del mezzo...");
             e.printStackTrace();
         }
 
-        // riporto l'utente alla vista generale (PRG pattern)
+        // riporto l'utente alla vista generale
         response.sendRedirect(request.getContextPath() + "/GestioneMezzi");
     }
 }

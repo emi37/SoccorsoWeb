@@ -39,7 +39,7 @@ public class DashboardServlet extends HttpServlet {
         List<Map<String, Object>> missioni = new ArrayList<>();
 
         try {
-            // Carica il driver
+            //carica il driver
             Class.forName("com.mysql.cj.jdbc.Driver");
 
             try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS)) {
@@ -78,10 +78,10 @@ public class DashboardServlet extends HttpServlet {
                 }
                 dataModel.put("missioni", missioni);
 
-                // IL PEZZO CRUCIALE CHE MANCAVA: passiamo la request a FreeMarker per i link
+                //passiamo la request a FreeMarker
                 dataModel.put("request", request);
 
-                // Rendering con FreeMarker
+              
                 TemplateManager.process("dashboard.ftl", dataModel, response, getServletContext());
             }
 

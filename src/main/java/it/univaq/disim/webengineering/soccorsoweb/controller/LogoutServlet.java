@@ -24,11 +24,10 @@ public class LogoutServlet extends HttpServlet {
         HttpSession sessioneAttuale = request.getSession(false);
 
         if (sessioneAttuale != null) {
-            // Straccio la sessione e cancello tutti i dati
+            // cancello i dati della session
             sessioneAttuale.invalidate();
         }
 
-        // CORREZIONE: Ti rimando alla pagina di login che sappiamo esistere, evitando freeze
         response.sendRedirect(request.getContextPath() + "/login.html");
     }
 

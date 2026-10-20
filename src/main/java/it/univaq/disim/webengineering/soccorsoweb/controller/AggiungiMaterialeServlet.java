@@ -24,9 +24,9 @@ public class AggiungiMaterialeServlet extends HttpServlet {
 
         HttpSession sessioneAttuale = request.getSession(false);
 
-        // Check permessi: il vigile urbano blocca chi non è ADMIN
+        
         if (sessioneAttuale == null || !"ADMIN".equals(sessioneAttuale.getAttribute("ruolo"))) {
-            // Aggiunto getContextPath() per sicurezza
+           
             response.sendRedirect(request.getContextPath() + "/login.html");
             return;
         }
@@ -36,7 +36,7 @@ public class AggiungiMaterialeServlet extends HttpServlet {
             String nomeInserito = request.getParameter("nome");
             String descrizioneInserita = request.getParameter("descrizione");
 
-            // Check ruspante per non salvare roba vuota
+            //  non salva roba vuota
             if (nomeInserito != null && !nomeInserito.trim().isEmpty()) {
 
                 Materiale nuovoMateriale = new Materiale();
@@ -52,7 +52,7 @@ public class AggiungiMaterialeServlet extends HttpServlet {
             e.printStackTrace();
         }
 
-        // Redirect pulito verso la lista
+        // Redirect  verso la lista
         response.sendRedirect(request.getContextPath() + "/GestioneMateriali");
     }
 }

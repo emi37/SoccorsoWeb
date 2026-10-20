@@ -34,10 +34,10 @@ public class GestioneMaterialiServlet extends HttpServlet {
         }
 
         try {
-            // Evochiamo il DAO
+            // DAO
             MaterialeDAO materialeDao = new MaterialeDAO();
 
-            // 1. GESTIONE CANCELLAZIONE (Soft-Delete)
+            // 1. GESTIONE CANCELLAZIONE 
             String idDaEliminareStr = request.getParameter("elimina");
             if (idDaEliminareStr != null && !idDaEliminareStr.trim().isEmpty()) {
                 int idMateriale = Integer.parseInt(idDaEliminareStr);
@@ -46,20 +46,19 @@ public class GestioneMaterialiServlet extends HttpServlet {
                 return;
             }
 
-            // 2. LETTURA DEI DATI 
+            // 2. lettura dei dati estratti 
             List<Map<String, String>> listaMateriali = materialeDao.estraiTuttiIMaterialiConStato();
 
-            // 3. PREPARAZIONE DATI PER FREEMARKER (Come nella Dashboard)
+            // preparo i dati per il freemarker
             Map<String, Object> dataModel = new HashMap<>();
-            dataModel.put("materiali", listaMateriali); // La lista che la vista leggerà con <#list materiali as m>
-            dataModel.put("request", request); // Cruciale per i link
+            dataModel.put("materiali", listaMateriali); //è la lista che la vista leggerà con <#list materiali as m>
+            dataModel.put("request", request);
 
-            // 4. RENDERING TRAMITE TEMPLATE MANAGER
             TemplateManager.process("gestione_materiali.ftl", dataModel, response, getServletContext());
 
         } catch (Exception e) {
-            // Immancabile stampata a console se scoppia qualcosa
-            System.err.println("Errore brutto nel controller della gestione materiali...");
+            
+            System.err.println("Errore nel controller della gestione materiali...");
             e.printStackTrace();
         }
     }

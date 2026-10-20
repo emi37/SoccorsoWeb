@@ -2,13 +2,13 @@ package it.univaq.disim.webengineering.soccorsoweb.controller;
 
 import it.univaq.disim.webengineering.soccorsoweb.controller.DAO.RichiestaSoccorsoDAO;
 import it.univaq.disim.webengineering.soccorsoweb.model.RichiestaSoccorso;
-import it.univaq.disim.webengineering.soccorsoweb.util.TemplateManager; // Import aggiunto
+import it.univaq.disim.webengineering.soccorsoweb.util.TemplateManager; 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.UUID;
-import java.util.HashMap; // Import aggiunto
-import java.util.Map;     // Import aggiunto
+import java.util.HashMap; 
+import java.util.Map;    
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
@@ -45,7 +45,7 @@ public class CreaRichiestaServlet extends HttpServlet {
         String captchaInserito = request.getParameter("captcha");
         String ipOrigine = request.getRemoteAddr();
 
-        // validazione ruspante degli input obbligatori
+        // controllo sugli input obbligatori
         if (nomeInserito == null || nomeInserito.isBlank()
                 || emailInserita == null || emailInserita.isBlank()
                 || posizioneInserita == null || posizioneInserita.isBlank()
@@ -66,7 +66,7 @@ public class CreaRichiestaServlet extends HttpServlet {
             return;
         }
 
-        // verifica matematica del captcha calcolato dalla CaptchaServlet
+        // verifica del captcha calcolato dalla servlet captchaServlet
         int captchaCorretto = (int) sessioneAttuale.getAttribute("captchaRisultato");
         try {
             int valoreInserito = Integer.parseInt(captchaInserito);
@@ -79,12 +79,12 @@ public class CreaRichiestaServlet extends HttpServlet {
             return;
         }
 
-        // brucio il captcha appena usato per evitare che lo riciclino
+        // rimuovo il captcha appena usato 
         sessioneAttuale.removeAttribute("captchaRisultato");
 
         String nomeFileSalvato = null;
 
-        // gestione dell'upload file (la foto dell'emergenza)
+        // gestione dell'upload della foto/file (la foto dell'emergenza)
         try {
             Part parteFoto = request.getPart("foto");
             if (parteFoto != null && parteFoto.getSize() > 0) {
@@ -106,7 +106,7 @@ public class CreaRichiestaServlet extends HttpServlet {
             nomeFileSalvato = null;
         }
 
-        // genero un token finto e brutale per la convalida via mail
+        // genero un token finto per la convalida via mail
         String tokenConvalida = UUID.randomUUID().toString();
         boolean salvataggioRiuscito = false;
 
@@ -120,22 +120,22 @@ public class CreaRichiestaServlet extends HttpServlet {
             nuovaRichiesta.setIpOrigine(ipOrigine);
             nuovaRichiesta.setTokenConvalida(tokenConvalida);
 
-            // ECCO L'AGGIUNTA FONDAMENTALE: chiamo il DAO per scrivere davvero nel DB
+            // chiamo il DAO per scrivere sul DB
             RichiestaSoccorsoDAO richiestaDao = new RichiestaSoccorsoDAO();
             salvataggioRiuscito = richiestaDao.salvaNuovaRichiesta(nuovaRichiesta);
 
         } catch (Exception e) {
-            System.err.println("Panico nel controller durante il salvataggio della richiesta nel DB...");
+            System.err.println("Errore durante il salvataggio della richiesta nel DB...");
             e.printStackTrace();
         }
 
         if (salvataggioRiuscito) {
-            // assemblo il link di validazione per la mail finta
+            // creo il link di validazione per la mail finta
             String linkConvalida = request.getScheme() + "://" + request.getServerName() + ":"
                     + request.getServerPort() + request.getContextPath()
                     + "/ConvalidaServlet?token=" + tokenConvalida;
 
-            // log ruspante per emulare invio email come da direttive
+            // log per emulare invio email 
             System.out.println("=====================================");
             System.out.println("SIMULAZIONE EMAIL DI CONVALIDA");
             System.out.println("Destinatario: " + emailInserita);
@@ -143,15 +143,15 @@ public class CreaRichiestaServlet extends HttpServlet {
             System.out.println(linkConvalida);
             System.out.println("=====================================");
 
-            // --- MODIFICA FONDAMENTALE: Invocazione del TemplateManager ---
+            
             try {
-                // Impacchettiamo i dati (Email e Token) per FreeMarker
+                //dati per FreeMarker
                 Map<String, Object> dataModel = new HashMap<>();
                 dataModel.put("email", emailInserita);
                 dataModel.put("token", tokenConvalida);
-                dataModel.put("request", request); // Serve per il CSS
+                dataModel.put("request", request); 
                 
-                // Rimandiamo alla pagina di conferma grafica
+                // Rimandiamo alla pagina di conferma 
                 TemplateManager.process("richiesta_inviata.ftl", dataModel, response, getServletContext());
             } catch (Exception e) {
                 System.err.println("Errore durante il rendering di richiesta_inviata.ftl...");

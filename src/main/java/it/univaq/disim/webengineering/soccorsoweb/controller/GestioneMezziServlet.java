@@ -25,7 +25,7 @@ public class GestioneMezziServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // Check permessi: blocca chi non è ADMIN
+        // Check dei permessi ,blocca chi non è admin
         HttpSession sessioneAttuale = request.getSession(false);
         if (sessioneAttuale == null || !"ADMIN".equals(sessioneAttuale.getAttribute("ruolo"))) {
             response.sendRedirect(request.getContextPath() + "/login.html");
@@ -35,13 +35,13 @@ public class GestioneMezziServlet extends HttpServlet {
         try {
             MezzoDAO mezzoDao = new MezzoDAO();
 
-            // 1. GESTIONE CANCELLAZIONE (Soft-Delete)
+            // 1. GESTIONE CANCELLAZIONE 
             String idDaEliminareStr = request.getParameter("elimina");
             if (idDaEliminareStr != null && !idDaEliminareStr.trim().isEmpty()) {
                 int idMezzo = Integer.parseInt(idDaEliminareStr);
                 mezzoDao.rimuoviMezzoSeLibero(idMezzo);
 
-                // Pattern PRG: pulisco l'URL facendo un redirect pulito
+               
                 response.sendRedirect(request.getContextPath() + "/GestioneMezzi");
                 return;
             }
@@ -54,7 +54,6 @@ public class GestioneMezziServlet extends HttpServlet {
             dataModel.put("mezzi", listaMezzi); // La lista che la vista leggerà con <#list mezzi as m>
             dataModel.put("request", request);
 
-            // 4. RENDERING TRAMITE TEMPLATE MANAGER (Punta alla cartella templates in automatico)
             TemplateManager.process("gestione_mezzi.ftl", dataModel, response, getServletContext());
 
         } catch (Exception e) {
@@ -66,7 +65,6 @@ public class GestioneMezziServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // Se arriva una POST, la giriamo alla GET per sicurezza
         doGet(request, response);
     }
 }

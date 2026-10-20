@@ -16,14 +16,13 @@ public class LoginServlet extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-        // Init pulitissimo. Il DBManager carica il driver per conto suo.
         super.init();
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // Se qualcuno prova ad accedere a /LoginServlet scrivendolo nella barra dell'URL (GET), 
+        // Se si prova ad accedere a /LoginServlet scrivendolo nella barra dell'URL (GET), 
         // lo rimbalziamo brutalmente alla pagina di login HTML.
         response.sendRedirect(request.getContextPath() + "/login.html");
     }
@@ -32,7 +31,7 @@ public class LoginServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // Tiriamo giù l'input dal form HTML
+        // prendo l'input dal form html o .ftl non ricordo
         String emailInserita = request.getParameter("email");
         String passwordInserita = request.getParameter("password");
 
@@ -40,21 +39,19 @@ public class LoginServlet extends HttpServlet {
         String ruoloUtente = "";
 
         try {
-            // Niente più SQL in giro, chiamo solo il DAO!
             UtenteDAO utenteDao = new UtenteDAO();
             Utenti utenteTrovato = utenteDao.estraiUtentePerEmail(emailInserita);
 
-            // Se il DAO ha trovato qualcuno con questa email, procedo col check della password
+            // Se il DAO ha trovato qualcuno con questa email, fa il check della password
             if (utenteTrovato != null) {
 
-                // Magia di jBcrypt: confronta la password in chiaro con l'hash salvato nel DB
+                //confronta la password in chiaro con l'hash salvato nel DB con quella libreria bcrypt
                 if (BCrypt.checkpw(passwordInserita, utenteTrovato.getPassword())) {
-    // Login OK
 } {
                     loginEffettuato = true;
                     ruoloUtente = utenteTrovato.getRuolo();
 
-                    // Creiamo la sessione (passando true) e ci salviamo dentro i dati utili
+                    // Crea la sessione e ci salvo dentro i dati 
                     HttpSession sessioneAttuale = request.getSession(true);
                     sessioneAttuale.setAttribute("id_utente", utenteTrovato.getIdUtente());
                     sessioneAttuale.setAttribute("nome", utenteTrovato.getNome());
@@ -66,14 +63,12 @@ public class LoginServlet extends HttpServlet {
             e.printStackTrace();
         }
 
-        // Smistamento da vigile urbano: decido dove mandarti in base a chi sei
         if (loginEffettuato) {
             if ("ADMIN".equals(ruoloUtente)) {
                 response.sendRedirect(request.getContextPath() + "/DashboardServlet");
             } else if ("OPERATORE".equals(ruoloUtente)) {
                 response.sendRedirect(request.getContextPath() + "/DashboardOperatoreServlet");
             } else {
-                // Sicurezza: ruolo non riconosciuto
                 response.sendRedirect(request.getContextPath() + "/login.html?errore=ruolo");
             }
         } else {

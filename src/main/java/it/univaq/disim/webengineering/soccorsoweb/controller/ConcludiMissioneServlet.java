@@ -36,17 +36,17 @@ public class ConcludiMissioneServlet extends HttpServlet {
             String idMissione = request.getParameter("id_missione");
             String idRichiesta = request.getParameter("id_richiesta");
             
-            // 2. Creiamo l'oggetto "missione" esatto che il tuo file .ftl sta cercando
+            // 2. Creiamo l'oggetto "missione" esatto che il tuo file 
             Map<String, String> missioneCorrente = new HashMap<>();
             missioneCorrente.put("id_missione", idMissione);
             missioneCorrente.put("id_richiesta", idRichiesta);
             
-            // 3. Impacchettiamo tutto per FreeMarker
+            
             Map<String, Object> dataModel = new HashMap<>();
             dataModel.put("missione", missioneCorrente); 
             dataModel.put("request", request);           
             
-            // 4. Lanciamo la grafica
+            
             TemplateManager.process("concludi_missione.ftl", dataModel, response, getServletContext());
 
         } catch (Exception e) {
@@ -74,18 +74,18 @@ public class ConcludiMissioneServlet extends HttpServlet {
             int livelloSuccesso = Integer.parseInt(request.getParameter("voto_successo"));
             String commenti = request.getParameter("commenti");
             
-            // FIX CRITICO: Estrazione sicura dell'ID (nessun crash!)
+            //  Estrazione sicura dell'ID 
             Object objId = sessioneAttuale.getAttribute("id_utente");
-            int idAdminLoggato = 1; // Fallback di sicurezza
+            int idAdminLoggato = 1; 
             if (objId != null) {
                 idAdminLoggato = Integer.parseInt(objId.toString());
             }
 
-            // Deleghiamo tutta la mostruosità della transazione (update, update, insert) al DAO
+            
             MissioneDAO missioneDao = new MissioneDAO();
             boolean terminataOk = missioneDao.chiudiMissioneInTransazione(idMissione, idRichiesta, livelloSuccesso, commenti, idAdminLoggato);
 
-            // Se va a buon fine, ti sparo sulla Dashboard così vedi la tabella aggiornata!
+            
             if (terminataOk) {
                 response.sendRedirect(request.getContextPath() + "/DashboardServlet");
             } else {

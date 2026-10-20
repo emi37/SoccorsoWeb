@@ -25,7 +25,7 @@ public class DashboardOperatoreServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // 1. Controllo Sicurezza: Solo gli OPERATORI possono entrare qui
+        //   controllo che sia un operatore
         HttpSession sessioneAttuale = request.getSession(false);
         if (sessioneAttuale == null || !"OPERATORE".equals(sessioneAttuale.getAttribute("ruolo"))) {
             response.sendRedirect(request.getContextPath() + "/login.html");
@@ -33,36 +33,35 @@ public class DashboardOperatoreServlet extends HttpServlet {
         }
 
         try {
-            // FIX: Estrazione sicura dell'ID per evitare crash (ClassCastException)
             Object objId = sessioneAttuale.getAttribute("id_utente");
             long idOperatore = -1;
             if (objId != null) {
                 idOperatore = Long.parseLong(objId.toString());
             }
 
-            // 2. Chiamo i DAO per recuperare le missioni
+            // chiamo i DAO per recuperare le missioni
             MissioneDAO missioneDao = new MissioneDAO();
             List<Map<String, String>> mieMissioni = missioneDao.estraiMissioniAttivePerOperatore(idOperatore);
             
-            // 3. Prepara i dati per FreeMarker usando una Mappa (dataModel)
+            //Prepara i dati per freemarker
             Map<String, Object> dataModel = new HashMap<>();
             
-            // FIX: Passiamo la request per far caricare il CSS senza che FreeMarker esploda
+         
             dataModel.put("request", request);
             
-            // FIX: Rinominiamo la variabile nel nome esatto che il file .ftl si aspetta
+           
             dataModel.put("missioniInCorso", mieMissioni);
             
-            // FIX: Costruiamo l'oggetto "utente" per il messaggio di benvenuto e lo stato
+            // costruisce l'oggetto "utente" 
             Map<String, String> datiUtente = new HashMap<>();
             
-            // Gestione null-safe per nome e cognome
+        
             Object nomeObj = sessioneAttuale.getAttribute("nome");
             Object cognomeObj = sessioneAttuale.getAttribute("cognome");
             datiUtente.put("nome", nomeObj != null ? nomeObj.toString() : "Operatore");
             datiUtente.put("cognome", cognomeObj != null ? cognomeObj.toString() : "");
 
-            // Calcolo logico dello stato: se la lista missioni ha qualcosa, è IMPEGNATO.
+            // Calcolo logico dello stato
             if (mieMissioni != null && !mieMissioni.isEmpty()) {
                 datiUtente.put("stato_attuale", "IMPEGNATO");
             } else {
@@ -70,7 +69,7 @@ public class DashboardOperatoreServlet extends HttpServlet {
             }
             dataModel.put("utente", datiUtente);
 
-            // 4. Rendering magico con FreeMarker!
+            
             TemplateManager.process("dashboard_operatore.ftl", dataModel, response, getServletContext());
 
         } catch (Exception e) {
