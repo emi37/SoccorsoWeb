@@ -1,11 +1,7 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package it.univaq.disim.webengineering.soccorsoweb.model;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
 @Entity
 @Table(name = "richiesta_soccorso")
@@ -14,52 +10,46 @@ public class RichiestaSoccorso {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_richiesta")
-    private Long idRichiesta;
+    private int idRichiesta;
 
-    @Column(nullable = false)
+    @Column(name = "descrizione", nullable = false, columnDefinition = "TEXT")
     private String descrizione;
 
-    @Column(nullable = false)
+    @Column(name = "posizione", nullable = false)
     private String posizione;
 
-    @Column(name = "nome_segnalante", nullable = false)
+    @Column(name = "nome_segnalante", nullable = false, length = 100)
     private String nomeSegnalante;
 
-    @Column(name = "email_segnalante", nullable = false)
+    @Column(name = "email_segnalante", nullable = false, length = 150)
     private String emailSegnalante;
-
-    @Column(name = "ip_origine", nullable = false)
-    private String ipOrigine;
-
-    @Column(name = "token_convalida")
-    private String tokenConvalida;
-
-    @Column(nullable = false)
-    private String stato;
 
     @Column(name = "foto_path")
     private String fotoPath;
 
-    @Column(name = "timestamp_creazione", nullable = false)
-    private LocalDateTime timestampCreazione;
+    @Column(name = "ip_origine", length = 45)
+    private String ipOrigine;
 
-    @Column(name = "timestamp_convalida")
-    private LocalDateTime timestampConvalida;
+    @Column(name = "token_convalida", unique = true)
+    private String tokenConvalida;
 
-    // @Lob indica che questo campo contiene dati di grandi dimensioni (es. BLOB)
-    @Lob
-    private byte[] foto;
+    @Column(name = "stato", nullable = false, length = 30)
+    private String stato = "IN_ATTESA";
+
+    @Column(name = "timestamp_invio", insertable = false, updatable = false)
+    private Timestamp timestampInvio;
 
     // Costruttore vuoto obbligatorio per JPA
     public RichiestaSoccorso() {
     }
 
     // --- Getter e Setter ---
-    public Long getIdRichiesta() {
+
+    public int getIdRichiesta() {
         return idRichiesta;
     }
 
-    public void setIdRichiesta(Long idRichiesta) {
+    public void setIdRichiesta(int idRichiesta) {
         this.idRichiesta = idRichiesta;
     }
 
@@ -95,6 +85,14 @@ public class RichiestaSoccorso {
         this.emailSegnalante = emailSegnalante;
     }
 
+    public String getFotoPath() {
+        return fotoPath;
+    }
+
+    public void setFotoPath(String fotoPath) {
+        this.fotoPath = fotoPath;
+    }
+
     public String getIpOrigine() {
         return ipOrigine;
     }
@@ -119,35 +117,11 @@ public class RichiestaSoccorso {
         this.stato = stato;
     }
 
-    public String getFotoPath() {
-        return fotoPath;
+    public Timestamp getTimestampInvio() {
+        return timestampInvio;
     }
 
-    public void setFotoPath(String fotoPath) {
-        this.fotoPath = fotoPath;
-    }
-
-    public LocalDateTime getTimestampCreazione() {
-        return timestampCreazione;
-    }
-
-    public void setTimestampCreazione(LocalDateTime timestampCreazione) {
-        this.timestampCreazione = timestampCreazione;
-    }
-
-    public LocalDateTime getTimestampConvalida() {
-        return timestampConvalida;
-    }
-
-    public void setTimestampConvalida(LocalDateTime timestampConvalida) {
-        this.timestampConvalida = timestampConvalida;
-    }
-
-    public byte[] getFoto() {
-        return foto;
-    }
-
-    public void setFoto(byte[] foto) {
-        this.foto = foto;
+    public void setTimestampInvio(Timestamp timestampInvio) {
+        this.timestampInvio = timestampInvio;
     }
 }

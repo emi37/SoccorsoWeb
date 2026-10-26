@@ -9,16 +9,18 @@
         <header class="topbar">
             <div>
                 <h1>Dashboard Amministratore</h1>
-                <p class="subtitle">Gestione richieste, missioni e risorse di SoccorsoWeb</p>
+                <p class="subtitle">
+                    Gestione richieste, missioni e risorse di SoccorsoWeb
+                    <#if nome_utente??> — Benvenuto, <strong>${nome_utente} ${cognome_utente!""}</strong></#if>
+                </p>
             </div>
 
             <nav class="topbar-actions">
                 <a href="GestioneOperatori" class="btn">Gestione operatori e admin</a>
                 <a href="GestioneMezzi" class="btn">Gestione mezzi</a>
                 <a href="GestioneMateriali" class="btn">Gestione materiali</a>
-                <!-- Link verificato e blindato -->
                 <a href="StoricoMissioni" class="btn">Storico missioni</a>
-                <a href="Logout" class="btn btn-danger" style="background-color: #dc3545; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Logout</a>
+                <a href="Logout" class="btn btn-danger">Logout</a>
             </nav>
         </header>
 
@@ -28,7 +30,7 @@
                 <div class="section-header">
                     <div>
                         <h2>Richieste attive</h2>
-                        <p>Richieste confermate e pronte per essere trasformate in missioni.</p>
+                        <p>Richieste confermate via email e pronte per essere trasformate in missioni o archiviate.</p>
                     </div>
                 </div>
 
@@ -46,16 +48,18 @@
                         </thead>
                         <tbody>
                             <#list richieste as r>
+                            <#assign idRic = (r.id)!(r.idRichiesta)!(r.id_richiesta)!"" />
                             <tr>
-                                <!-- SINTASSI MULTI-FALLBACK: Trova il dato in qualsiasi modo Java lo chiami -->
-                                <td>#${(r.id)!(r.idRichiesta)!(r.id_richiesta)!""}</td>
+                                <td>#${idRic}</td>
                                 <td>${(r.segnalante)!(r.nomeSegnalante)!(r.nome_segnalante)!""}</td>
                                 <td>${(r.email)!(r.emailSegnalante)!(r.email_segnalante)!""}</td>
                                 <td>${(r.posizione)!""}</td>
                                 <td>${(r.descrizione)!""}</td>
                                 <td>
-                                    <!-- IL LINK ORA RICEVE L'ID ESATTO -->
-                                    <a href="GestioneRichiestaServletDallAdmin?id_richiesta=${(r.id)!(r.idRichiesta)!(r.id_richiesta)!}" class="btn btn-primary">Avvia Missione</a>
+                                    <a href="GestioneRichiestaServletDallAdmin?id_richiesta=${idRic}" class="btn btn-primary">Avvia Missione</a>
+                                    <a href="IgnoraRichiestaServlet?id_richiesta=${idRic}" 
+                                       class="btn btn-danger" 
+                                       onclick="return confirm('Sei sicuro di voler ignorare questa richiesta di soccorso?');">Ignora</a>
                                 </td>
                             </tr>
                             <#else>
@@ -73,7 +77,7 @@
                 <div class="section-header">
                     <div>
                         <h2>Missioni in corso</h2>
-                        <p>Missioni già create e non ancora concluse.</p>
+                        <p>Missioni attive sul territorio non ancora concluse.</p>
                     </div>
                 </div>
 
@@ -85,26 +89,26 @@
                                 <th>ID richiesta</th>
                                 <th>Obiettivo</th>
                                 <th>Posizione</th>
-                                <th>Stato</th>
+                                <th>Inizio / Stato</th>
                                 <th>Azioni</th>
                             </tr>
                         </thead>
                         <tbody>
                             <#list missioni as m>
+                            <#assign idMiss = (m.id_missione)!(m.idMissione)!"" />
+                            <#assign idRicM = (m.id_richiesta)!(m.idRichiesta)!"" />
                             <tr>
-                                <td>#${(m.id_missione)!(m.idMissione)!""}</td>
-                                <td>#${(m.id_richiesta)!(m.idRichiesta)!""}</td>
+                                <td>#${idMiss}</td>
+                                <td>#${idRicM}</td>
                                 <td>${m.obiettivo!""}</td>
                                 <td>${m.posizione!""}</td>
-                                <td><span class="badge-status in-corso">${m.stato!""}</span></td>
                                 <td>
-<a href="ConcludiMissioneServlet?id_missione=${(m.id_missione)!(m.idMissione)!""}&id_richiesta=${(m.id_richiesta)!(m.idRichiesta)!""}" class="btn btn-primary">Concludi</a>
-
-
-
-
-
-
+                                    <span class="badge-status in-corso">${(m.stato)!"IN CORSO"}</span>
+                                    <#if m.data_inizio??><br><small class="text-muted">${m.data_inizio}</small></#if>
+                                </td>
+                                <td>
+                                    <a href="DettaglioMissioneServlet?id_missione=${idMiss}" class="btn">Dettagli / Aggiorna</a>
+                                    <a href="ConcludiMissioneServlet?id_missione=${idMiss}&amp;id_richiesta=${idRicM}" class="btn btn-primary">Concludi</a>
                                 </td>
                             </tr>
                             <#else>
@@ -121,6 +125,10 @@
             <section class="card">
                 <h2>Azioni rapide</h2>
                 <div class="quick-actions">
+                    <a href="GestioneOperatori" class="action-card">
+                        <strong>Operatori e Admin</strong>
+                        <span>Registra nuovi operatori, gestisci patenti e abilità.</span>
+                    </a>
                     <a href="GestioneMezzi" class="action-card">
                         <strong>Mezzi</strong>
                         <span>Aggiungi, consulta o rimuovi mezzi disponibili.</span>
