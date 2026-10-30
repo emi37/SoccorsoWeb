@@ -1,6 +1,3 @@
-
-
-
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -9,8 +6,12 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <h1>Gestione Mezzi</h1>
-
+   <header class="topbar">
+    <h1 class="main-title">Gestione Mezzi</h1>
+    <nav class="topbar-actions">
+        <a href="DashboardServlet" class="btn btn-primary">Torna a Dashboard</a>
+    </nav>
+</header>
     <!-- Inizio Form Aggiunta Mezzo -->
     <div class="form-container" style="margin-bottom: 20px; padding: 15px; border: 1px solid #ccc;">
         <h2>Aggiungi un nuovo Mezzo</h2>
@@ -42,19 +43,12 @@
                 <td>${m.id_mezzo!}</td>
                 <td>${m.nome!}</td>
                 <td>${m.descrizione!}</td>
-                <td>${m.attivo!}</td> 
-                    <!-- <td>
-                    <a href="GestioneMezzi?elimina=${m.id_mezzo!}">Nascondi</a>
-                    <a href="StoricoMezzo?id=${m.id_mezzo!}">Vedi Storico</a>
-                </td> -->
+                <td>${m.attivo!}</td>
             </tr>
             </#list>
         <#else>
             <tr><td colspan="5">Nessun mezzo disponibile al momento.</td></tr>
         </#if>
     </table>
-    
-    <br>
-    <a href="DashboardServlet" class="btn">Torna alla Dashboard</a>
 </body>
 </html>

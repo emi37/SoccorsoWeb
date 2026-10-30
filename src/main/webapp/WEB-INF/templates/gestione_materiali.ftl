@@ -6,8 +6,12 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <h1>Gestione Materiali</h1>
-
+    <header class="topbar">
+    <h1 class="main-title">Gestione Materiale</h1>
+    <nav class="topbar-actions">
+        <a href="DashboardServlet" class="btn btn-primary">Torna a Dashboard</a>
+    </nav>
+</header>
     <!-- Inizio Form Aggiunta Materiale -->
     <div class="form-container" style="margin-bottom: 20px; padding: 15px; border: 1px solid #ccc;">
         <h2>Aggiungi un nuovo Materiale</h2>
@@ -51,8 +55,5 @@
             <tr><td colspan="5">Nessun materiale disponibile al momento.</td></tr>
         </#if>
     </table>
-    
-    <br>
-    <a href="DashboardServlet" class="btn">Torna alla Dashboard</a>
-</body>
+    </body>
 </html>

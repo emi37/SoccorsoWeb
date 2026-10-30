@@ -8,8 +8,13 @@
 <body>
 
     <main class="page-content">
-        <h1>Gestione Operatori e Amministratori</h1>
-
+        <header class="topbar">
+    <h1 class="main-title">Gestione Operatori e Amministratori</h1>
+    <nav class="topbar-actions">
+        <a href="DashboardServlet" class="btn btn-primary">Torna a Dashboard</a>
+    </nav>
+</header>
+        
         <!-- FORM CREAZIONE NUOVO UTENTE -->
         <section class="card">
             <h2>Aggiungi un nuovo Utente</h2>
@@ -34,7 +39,7 @@
                     </div>
                     <div>
                         <label for="sceltaRuolo" class="form-label">Ruolo:</label>
-                        <select name="ruolo" id="sceltaRuolo" class="form-control" required>
+                        <select name="ruolo" id="sceltaRuolo" class="form-control" required onchange="gestisciVisibilitaCompetenze()">
                             <option value="OPERATORE">Operatore</option>
                             <option value="ADMIN">Amministratore</option>
                         </select>
@@ -160,4 +165,22 @@
             </div>
         </details>
         
-        <div class
+    </main>
+<script>
+    function gestisciVisibilitaCompetenze() {
+        var tendinaRuolo = document.getElementById("sceltaRuolo");
+        var blocco = document.getElementById("sezioneCompetenze");
+        
+        // Se il valore scelto NON è Operatore, spegniamo il blocco
+        if (tendinaRuolo.value !== "OPERATORE") {
+            blocco.style.display = "none";
+        } else {
+            blocco.style.display = "block";
+        }
+    }
+
+    // Forza il controllo al primo caricamento della pagina
+    document.addEventListener("DOMContentLoaded", gestisciVisibilitaCompetenze);
+</script>
+</body>
+</html>

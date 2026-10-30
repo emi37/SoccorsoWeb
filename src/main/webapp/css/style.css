@@ -473,3 +473,23 @@ li {
         margin-bottom: 8px;
     }
 }
+
+/* Allinea il titolo a sinistra e il bottone a destra */
+.header-con-azioni {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap; 
+    gap: 15px; 
+    margin-bottom: 25px;
+    width: 100%;
+}
+
+.header-con-azioni h1 {
+    margin: 0;
+}
+
+/* Classe di utilità per nascondere elementi via JS */
+.nascosto {
+    display: none !important;
+}

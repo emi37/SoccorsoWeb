@@ -8,10 +8,12 @@
 </head>
 <body class="flex-center-body">
     <main class="card-container-form">
-        <header class="section-header text-left">
-            <h2 class="section-title">Avvio missione #${(richiesta.id_richiesta)!(richiesta.id)!}</h2>
+        <header class="topbar">
+            <h2 class="main-title">Avvio missione #${(richiesta.id_richiesta)!(richiesta.id)!}</h2>    
+            <nav class="topbar-actions">
+                <a href="DashboardServlet" class="btn btn-primary">Torna a Dashboard</a>
+            </nav>
         </header>
-
         <section class="text-left mb-24">
             <p><b>Segnalante:</b> ${(richiesta.nome)!(richiesta.nome_segnalante)!""}</p>
             <p><b>Posizione dell'emergenza:</b> ${(richiesta.posizione)!""}</p>
@@ -87,9 +89,7 @@
 
         <hr class="mt-20 mb-24">
 
-        <footer class="text-center">
-            <a href="${request.contextPath}/DashboardServlet" class="link-back">&larr; Torna alla dashboard</a>
-        </footer>
+        
     </main>
 </body>
 </html>

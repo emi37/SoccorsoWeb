@@ -16,12 +16,10 @@
 
                 <nav class="topbar-actions">
                     <#if (request.getSession().getAttribute("ruolo")!"") == "ADMIN">
-                        <a href="${request.contextPath}/DashboardServlet" class="btn">Dashboard Admin</a>
+                        <a href="${request.contextPath}/DashboardServlet" class="btn">Torna alla Dashboard</a>
                     <#else>
                         <a href="${request.contextPath}/DashboardOperatoreServlet" class="btn">Area Operativa</a>
                     </#if>
-                    <a href="${request.contextPath}/homeFinale.html" class="btn">Home</a>
-                    <a href="${request.contextPath}/Logout" class="btn btn-danger">Logout</a>
                 </nav>
             </header>
 
@@ -159,13 +157,7 @@
                 -->
 
             </main>
-
-            <footer class="message">
-                <p>SoccorsoWeb</p>
-            </footer>
-
         </div>
-        
         <script src="${request.contextPath}/js/missioni.js"></script>
     </body>
 </html>
