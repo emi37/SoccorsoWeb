@@ -1,7 +1,10 @@
 package it.univaq.disim.webengineering.soccorsoweb.controller;
 
 import it.univaq.disim.webengineering.soccorsoweb.controller.DAO.AggiornamentoMissioneDAO;
+import it.univaq.disim.webengineering.soccorsoweb.controller.DAO.MaterialeDAO;
+import it.univaq.disim.webengineering.soccorsoweb.controller.DAO.MezzoDAO;
 import it.univaq.disim.webengineering.soccorsoweb.controller.DAO.MissioneDAO;
+import it.univaq.disim.webengineering.soccorsoweb.controller.DAO.UtenteDAO;
 import it.univaq.disim.webengineering.soccorsoweb.util.TemplateManager;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
@@ -16,11 +19,6 @@ import java.util.Map;
 
 @WebServlet(name = "DettaglioMissioneServlet", urlPatterns = {"/DettaglioMissioneServlet"})
 public class DettaglioMissioneServlet extends HttpServlet {
-
-    @Override
-    public void init() throws ServletException {
-        super.init();
-    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -44,17 +42,24 @@ public class DettaglioMissioneServlet extends HttpServlet {
             int idDellaMissione = Integer.parseInt(request.getParameter("id_missione"));
 
             MissioneDAO missioneDao = new MissioneDAO();
-            AggiornamentoMissioneDAO aggiornamentoDao = new AggiornamentoMissioneDAO();
+            UtenteDAO utenteDao = new UtenteDAO();
+            MezzoDAO mezzoDao = new MezzoDAO();
+            MaterialeDAO materialeDao = new MaterialeDAO();
 
             Map<String, Object> dettagliMissione = missioneDao.estraiDettagliCompleti(idDellaMissione);
-            List<Map<String, String>> cronistoria = aggiornamentoDao.estraiCronistoria(idDellaMissione);
 
             if (dettagliMissione != null && !dettagliMissione.isEmpty()) {
 
                 Map<String, Object> dataModel = new HashMap<>();
-                dataModel.put("request", request); // Essenziale per il contextPath del CSS
+                dataModel.put("request", request);
                 dataModel.put("missione", dettagliMissione);
-                dataModel.put("timeline", cronistoria);
+                
+                // Passiamo le risorse disponibili per il form di modifica
+                dataModel.put("operatori_disponibili", utenteDao.estraiOperatoriDisponibili());
+                dataModel.put("mezzi_disponibili", mezzoDao.estraiMezziDisponibili());
+                dataModel.put("materiali_disponibili", materialeDao.estraiMaterialiDisponibili());
+                
+                dataModel.put("ruolo_utente", ruoloLoggato);
 
                 TemplateManager.process("dettaglio_missione.ftl", dataModel, response, getServletContext());
 
@@ -63,7 +68,7 @@ public class DettaglioMissioneServlet extends HttpServlet {
             }
 
         } catch (Exception e) {
-            System.err.println("errore durante la lettura dei dettagli missione...");
+            System.err.println("Errore durante la lettura dei dettagli missione...");
             e.printStackTrace();
             response.sendRedirect(request.getContextPath() + dashboardRitorno);
         }
@@ -86,26 +91,38 @@ public class DettaglioMissioneServlet extends HttpServlet {
         }
 
         String idMissioneStringa = request.getParameter("id_missione");
+        String azione = request.getParameter("azione");
 
         try {
             int idDellaMissione = Integer.parseInt(idMissioneStringa);
-            String messaggioDescrittivo = request.getParameter("testo_descrittivo");
-            int idUtenteLoggato = Integer.parseInt(sessioneAttuale.getAttribute("id_utente").toString());
-
             MissioneDAO missioneDao = new MissioneDAO();
-            AggiornamentoMissioneDAO aggiornamentoDao = new AggiornamentoMissioneDAO();
-
             String statoAttuale = missioneDao.estraiStatoMissione(idDellaMissione);
 
-            if ("IN_CORSO".equals(statoAttuale)) {
-                aggiornamentoDao.salvaNuovoAggiornamento(idDellaMissione, idUtenteLoggato, messaggioDescrittivo);
-            }
+            // Modifica permessa solo agli ADMIN e solo se la missione è IN_CORSO
+            if ("IN_CORSO".equals(statoAttuale) && "modifica_missione".equals(azione) && "ADMIN".equals(ruoloLoggato)) {
+                
+                String nuovoObiettivo = request.getParameter("obiettivo");
+                String nuovaPosizione = request.getParameter("posizione");
 
+                String[] nuoviOperatori = request.getParameterValues("id_operatore");
+                String[] nuoviMezzi = request.getParameterValues("id_mezzo");
+                String[] nuoviMateriali = request.getParameterValues("id_materiale");
+
+                boolean esitoModifica = missioneDao.modificaMissioneInCorso(
+                        idDellaMissione, nuovoObiettivo, nuovaPosizione,
+                        nuoviOperatori, nuoviMezzi, nuoviMateriali
+                );
+                
+                if(esitoModifica) {
+                     System.out.println("[SISTEMA] Missione #" + idDellaMissione + " aggiornata con successo.");
+                }
+            }
         } catch (Exception e) {
-            System.err.println("errore totale durante l'inserimento di un log missione...");
+            System.err.println("Errore durante l'elaborazione del salvataggio missione...");
             e.printStackTrace();
         }
 
+        // Pattern Post-Redirect-Get
         response.sendRedirect(request.getContextPath() + "/DettaglioMissioneServlet?id_missione=" + idMissioneStringa);
     }
 }

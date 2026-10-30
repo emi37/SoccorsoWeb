@@ -4,6 +4,7 @@ import it.univaq.disim.webengineering.soccorsoweb.util.DBManager;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -406,5 +407,76 @@ public class MissioneDAO {
         }
         
         return listaMissioni;
+    }
+    // 8. Metodo per aggiornare i missione
+    public boolean modificaMissioneInCorso(int idMissione, String nuovoObiettivo, String nuovaPosizione,
+                                           String[] nuoviOperatori, String[] nuoviMezzi, String[] nuoviMateriali) {
+        
+        String sqlUpdateMissione = "UPDATE missione SET obiettivo = ?, posizione = ? WHERE id_missione = ?";
+        
+        String sqlAddOperatore = "INSERT IGNORE INTO assegnazione_operatori_missione (id_missione, id_utente, is_caposquadra) VALUES (?, ?, 0)";
+        String sqlAddMezzo = "INSERT IGNORE INTO assegnazione_mezzi_missione (id_missione, id_mezzo) VALUES (?, ?)";
+        String sqlAddMateriale = "INSERT IGNORE INTO assegnazione_materiale_missione (id_missione, id_materiale) VALUES (?, ?)";
+
+        try (Connection con = DBManager.getConnection()) {
+           
+            con.setAutoCommit(false); 
+
+            try {
+                // 1. Aggiorniamo obiettivo e posizione
+                try (PreparedStatement ps = con.prepareStatement(sqlUpdateMissione)) {
+                    ps.setString(1, nuovoObiettivo);
+                    ps.setString(2, nuovaPosizione);
+                    ps.setInt(3, idMissione);
+                    ps.executeUpdate();
+                }
+
+                // 2. Aggiungiamo i nuovi operatori selezionati
+                if (nuoviOperatori != null) {
+                    try (PreparedStatement psOp = con.prepareStatement(sqlAddOperatore)) {
+                        for (String idOp : nuoviOperatori) {
+                            psOp.setInt(1, idMissione);
+                            psOp.setInt(2, Integer.parseInt(idOp));
+                            psOp.executeUpdate();
+                        }
+                    }
+                }
+
+                // 3. Aggiungiamo i nuovi mezzi selezionati
+                if (nuoviMezzi != null) {
+                    try (PreparedStatement psMez = con.prepareStatement(sqlAddMezzo)) {
+                        for (String idMezzo : nuoviMezzi) {
+                            psMez.setInt(1, idMissione);
+                            psMez.setInt(2, Integer.parseInt(idMezzo));
+                            psMez.executeUpdate();
+                        }
+                    }
+                }
+
+                // 4. Aggiungiamo i nuovi materiali selezionati
+                if (nuoviMateriali != null) {
+                    try (PreparedStatement psMat = con.prepareStatement(sqlAddMateriale)) {
+                        for (String idMat : nuoviMateriali) {
+                            psMat.setInt(1, idMissione);
+                            psMat.setInt(2, Integer.parseInt(idMat));
+                            psMat.executeUpdate();
+                        }
+                    }
+                }
+
+                // Se tutto è andato bene, confermiamo le modifiche
+                con.commit();
+                return true;
+
+            } catch (SQLException ex) {
+                
+                con.rollback();
+                ex.printStackTrace();
+                return false;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }
