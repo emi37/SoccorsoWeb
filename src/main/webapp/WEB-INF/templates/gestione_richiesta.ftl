@@ -41,7 +41,7 @@
                                 
                                 <!-- Radio per scegliere chi comanda la squadra -->
                                 <input type="radio" name="id_caposquadra" value="${operatore.id_utente!}" title="Nomina come Caposquadra" required>
-                                 <!--  <span>👑</span>   -->
+                                 
                             </div>
                         <#else>
                             <p class="text-muted">Nessun operatore attualmente disponibile o libero.</p>
