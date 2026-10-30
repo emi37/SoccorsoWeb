@@ -107,7 +107,8 @@
                                     <#if m.data_inizio??><br><small class="text-muted">${m.data_inizio}</small></#if>
                                 </td>
                                 <td>
-                                    <a href="DettaglioMissioneServlet?id_missione=${idMiss}" class="btn">Dettagli / Aggiorna</a>
+                                    <a href="DettaglioMissioneServlet?id_missione=${idMiss}" class="btn">Gestisci</a> 
+                                    <br> <br>
                                     <a href="ConcludiMissioneServlet?id_missione=${idMiss}&amp;id_richiesta=${idRicM}" class="btn btn-primary">Concludi</a>
                                 </td>
                             </tr>
@@ -121,7 +122,7 @@
                 </div>
             </section>
 
-            <!-- SEZIONE AZIONI RAPIDE -->
+            <!-- SEZIONE AZIONI RAPIDE 
             <section class="card">
                 <h2>Azioni rapide</h2>
                 <div class="quick-actions">
@@ -142,7 +143,7 @@
                         <span>Consulta le missioni concluse.</span>
                     </a>
                 </div>
-            </section>
+            </section> -->
         </main>
     </body>
 </html>

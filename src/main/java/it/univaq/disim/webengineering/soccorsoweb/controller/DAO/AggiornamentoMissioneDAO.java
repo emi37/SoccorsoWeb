@@ -54,7 +54,7 @@ public class AggiornamentoMissioneDAO {
 
         String queryTimeline = "SELECT am.testo_descrittivo, am.timestamp_inserimento, u.nome, u.cognome "
                 + "FROM aggiornamento_missione am "
-                + "JOIN utente u ON am.id_admin = u.id_utente "
+                + "JOIN utenti u ON am.id_admin = u.id_utente "
                 + "WHERE am.id_missione = ? "
                 + "ORDER BY am.timestamp_inserimento DESC";
 

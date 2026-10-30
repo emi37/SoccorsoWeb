@@ -11,12 +11,10 @@
         <div class="container">
             <header class="topbar">
                 <div>
-                    <h1>SoccorsoWeb</h1>
-                    <p class="subtitle">Gestione Missione e Operazioni</p>
+                    <h1>Gestione Missione</h1>
                 </div>
 
                 <nav class="topbar-actions">
-                    <!-- Navigazione Intelligente basata sul ruolo -->
                     <#if (request.getSession().getAttribute("ruolo")!"") == "ADMIN">
                         <a href="${request.contextPath}/DashboardServlet" class="btn">Dashboard Admin</a>
                     <#else>
@@ -28,14 +26,14 @@
             </header>
 
             <main>
-                <div class="card">
+                <!-- <div class="card">
                     <h2>Dettaglio missione</h2>
                     <p>In questa pagina è possibile consultare una missione e inserire un aggiornamento operativo.</p>
-                </div>
+                </div> -->
 
                 <!-- INIZIO INIEZIONE DATI FREEMARKER: Info Base -->
                 <div class="card">
-                    <h2>Informazioni missione</h2>
+                    <h2>Dettagli missione</h2>
                     <div class="table-wrapper">
                         <table>
                             <tbody>
@@ -168,7 +166,6 @@
 
         </div>
         
-        <!-- Il tuo JS -->
         <script src="${request.contextPath}/js/missioni.js"></script>
     </body>
 </html>
