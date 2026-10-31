@@ -91,8 +91,8 @@
         <!-- SEZIONE 3: MODIFICA MISSIONE E RINFORZI (Visibile solo se IN_CORSO) -->
         <#if (missione.stato!"") == "IN_CORSO">
         <section class="card">
-            <h2 class="section-title">Modifica Missione e Invia Rinforzi</h2>
-            <p class="text-muted">Aggiorna le coordinate o aggiungi risorse di supporto alla squadra già sul posto.</p>
+            <h2 class="section-title">Modifica Missione</h2>
+            <p class="text-muted">Aggiorna le informzioni della missione.</p>
             
             <form action="${(request.contextPath)!""}/DettaglioMissioneServlet" method="POST">
                 <input type="hidden" name="id_missione" value="${(missione.id_missione)!""}">
@@ -100,11 +100,11 @@
 
                 <div class="form-row-flexible mt-20">
                     <div>
-                        <label for="obiettivo" class="form-label">Aggiorna Obiettivo:</label>
+                        <label for="obiettivo" class="form-label">Aggiorna obiettivo:</label>
                         <input type="text" id="obiettivo" name="obiettivo" value="${(missione.obiettivo)!''}" class="form-control" required>
                     </div>
                     <div>
-                        <label for="posizione" class="form-label">Aggiorna Posizione:</label>
+                        <label for="posizione" class="form-label">Aggiorna posizione:</label>
                         <input type="text" id="posizione" name="posizione" value="${(missione.posizione)!''}" class="form-control" required>
                     </div>
                 </div>
@@ -112,7 +112,7 @@
                 <div class="form-row-flexible mt-20">
                     <!-- Rinforzi: Operatori -->
                     <fieldset class="fieldset-antispam">
-                        <legend class="legend-antispam">Aggiungi Operatori Liberi:</legend>
+                        <legend class="legend-antispam">Aggiungi Operatori:</legend>
                         <#if operatori_disponibili?? && (operatori_disponibili?size > 0)>
                             <#list operatori_disponibili as op>
                                 <div class="mb-24">
@@ -126,10 +126,10 @@
                             <p class="text-muted">Nessun operatore disponibile.</p>
                         </#if>
                     </fieldset>
-
+ 
                     <!-- Rinforzi: Mezzi -->
                     <fieldset class="fieldset-antispam">
-                        <legend class="legend-antispam">Aggiungi Mezzi Liberi:</legend>
+                        <legend class="legend-antispam">Aggiungi Mezzi liberi:</legend>
                         <#if mezzi_disponibili?? && (mezzi_disponibili?size > 0)>
                             <#list mezzi_disponibili as mez>
                                 <div class="mb-24">
@@ -146,7 +146,7 @@
                     
                     <!-- Rinforzi: Materiali -->
                     <fieldset class="fieldset-antispam">
-                        <legend class="legend-antispam">Aggiungi Materiali Liberi:</legend>
+                        <legend class="legend-antispam">Aggiungi Materiali liberi:</legend>
                         <#if materiali_disponibili?? && (materiali_disponibili?size > 0)>
                             <#list materiali_disponibili as mat>
                                 <div class="mb-24">
@@ -163,7 +163,7 @@
                 </div>
 
                 <div class="mt-20">
-                    <button type="submit" class="btn btn-primary">Salva Modifiche Missione</button>
+                    <button type="submit" class="btn btn-primary">Salva modifiche</button>
                 </div>
             </form>
         </section>
