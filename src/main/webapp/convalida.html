@@ -14,30 +14,27 @@
             <p>Stato attuale: <strong>ATTIVA</strong></p>
             <p class="text-muted">Stiamo preparando i soccorsi, la centrale operativa ha preso in carico la segnalazione.</p>
             
-            <!-- Feedback visivo per il redirect automatico -->
             <p class="text-muted" id="messaggioRedirect">
-                <small>Ritorno automatico alla home tra <span id="countdown" style="font-weight: bold; color: #007bff;">5</span> secondi...</small>
+                <small>Ritorno automatico alla home tra <span id="countdown">5</span> secondi...</small>
             </p>
         </section>
         <hr class="mt-20 mb-24">
         <footer>
-            <!-- Il bottone ora punta al file corretto del tuo progetto -->
             <a href="homeFinale.html" class="btn">Torna alla Home Page</a>
         </footer>
     </main>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", () => {
             let tempoRimanente = 5;
             const displayContoAllaRovescia = document.getElementById('countdown');
             
-            const intervallo = setInterval(function() {
+            const intervallo = setInterval(() => {
                 tempoRimanente--;
                 displayContoAllaRovescia.textContent = tempoRimanente;
                 
                 if (tempoRimanente <= 0) {
                     clearInterval(intervallo);
-                    // Raggiunto lo zero, reindirizza al file corretto!
                     window.location.href = "homeFinale.html";
                 }
             }, 1000);

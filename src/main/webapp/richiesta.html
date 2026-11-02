@@ -9,13 +9,13 @@
 
         <main class="card-container-form">
 
-            <a href="homeFinale.html" class="link-back">&larr; Torna alla home</a>
+            <header>
+                <a href="homeFinale.html" class="link-back">Torna alla home</a>
+                <h2 class="section-title">Richiesta di soccorso immediato</h2>
+                <p class="text-muted">Compila i campi qui sotto:</p>
+            </header>
 
-            <h2 class="section-title">Richiesta di soccorso immediato</h2>
-            <p class="text-muted">Compila i campi qui sotto:</p>
-
-            <!-- Ho aggiunto l'id="formRichiesta" per intercettare il submit -->
-            <form id="formRichiesta" action="CreaRichiestaServlet" method="POST" enctype="multipart/form-data">
+            <form id="formRichiesta" action="CreaRichiestaServlet" method="POST">
 
                 <div class="form-group">
                     <label for="nome" class="form-label">Il tuo nome:</label>
@@ -35,11 +35,6 @@
                 <div class="form-group">
                     <label for="descrizione" class="form-label">Descrivi brevemente l'emergenza:</label>
                     <textarea id="descrizione" name="descrizione" rows="4" required class="form-control"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="foto" class="form-label">Foto dell'emergenza (Opzionale):</label>
-                    <input type="file" id="foto" name="foto" accept="image/*" class="form-control-file">
                 </div>
 
                 <fieldset class="fieldset-antispam">

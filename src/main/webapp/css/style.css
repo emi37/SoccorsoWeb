@@ -511,3 +511,8 @@ li {
 .mb-5 {
     margin-bottom: 5px;
 }
+
+#countdown {
+    font-weight: bold;
+    color: #007bff;
+}

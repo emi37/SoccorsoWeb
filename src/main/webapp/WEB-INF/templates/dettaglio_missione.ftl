@@ -16,7 +16,7 @@
                 <p class="subtitle">Dettagli operativi e assegnazione rinforzi</p>
             </div>
             <nav class="topbar-actions">
-                <a href="${(request.contextPath)!""}/DashboardServlet" class="btn">&larr; Torna alla Dashboard</a>
+                <a href="${(request.contextPath)!""}/DashboardServlet" class="btn"> Torna alla Dashboard</a>
             </nav>
         </header>
 

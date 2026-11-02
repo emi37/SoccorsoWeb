@@ -46,7 +46,7 @@
         <hr class="mt-20 mb-24">
 
         <footer class="text-center">
-            <a href="${request.contextPath}/DashboardServlet" class="btn">&larr; Annulla e torna alla dashboard</a>
+            <a href="${request.contextPath}/DashboardServlet" class="btn">Annulla e torna alla dashboard</a>
         </footer>
     </main>
 </body>

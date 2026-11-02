@@ -11,19 +11,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// funzione per cercare una missione tramite fetch API
 async function gestisciRicercaMissione(event) {
-    // blocco il submit nativo sennò mi ricarica la pagina a vuoto
+    //blocca il caricamento della pagina al submit
     event.preventDefault();
 
-    // tiro fuori l'ID inserito
     const inputRicerca = document.getElementById('id_missione_cerca');
-    let idMissione = inputRicerca.value.trim();
+    const idMissione = inputRicerca.value.trim();
 
     try {
-        // preparo l'url per la GET
-        let targetUrl = 'DettaglioMissioneServlet?id_missione=' + encodeURIComponent(idMissione);
+        const targetUrl = 'DettaglioMissioneServlet?id_missione=' + encodeURIComponent(idMissione);
         
-        let response = await fetch(targetUrl, {
+        const response = await fetch(targetUrl, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json'
@@ -31,52 +30,40 @@ async function gestisciRicercaMissione(event) {
         });
 
         if (!response.ok) {
-            throw new Error("Codice anomalo dal server: " + response.status);
+            throw new Error("Errore dal server: " + response.status);
         }
-
-        // let payloadMissione = await response.json();
-        // TODO: mappare i dati sulla UI per aggiornare la tabella
         
-        console.log("Missione trovata e dati scaricati.");
     } catch (e) {
-        // classica gestione manuale dell'errore
-        console.error("Errore durante la ricerca della missione...");
-        console.error(e);
-        // non blocchiamo l'operatività ma avvisiamo l'operatore
+        console.error("errore durante la ricerca della missione:", e);
     }
 }
 
+// funzione  per inviare un aggiornamento di una missione tramite fetch API
 async function gestisciAggiornamentoMissione(event) {
-    // blocco il submit standard
+    // blocca il caricamento della pagina al submit
     event.preventDefault();
 
-    // estraggo i valori puliti dai campi del form
-    let idMissione = document.getElementById('id_missione').value.trim();
-    let testoDescrittivo = document.getElementById('testo_descrittivo').value.trim();
+    const idMissione = document.getElementById('id_missione').value.trim();
+    const testoDescrittivo = document.getElementById('testo_descrittivo').value.trim();
 
     try {
-        // assemblo il payload per la POST
-        let formData = new FormData();
+        const formData = new FormData();
         formData.append('id_missione', idMissione);
         formData.append('testo_descrittivo', testoDescrittivo);
 
-        let response = await fetch('DettaglioMissioneServlet', {
+        const response = await fetch('DettaglioMissioneServlet', {
             method: 'POST',
             body: formData
         });
 
         if (!response.ok) {
-            throw new Error("Il server ha risposto picche: " + response.status);
+            throw new Error("Errore : " + response.status);
         }
-
-        console.log("Aggiornamento salvato con successo sul DB.");
         
-        // pulisco il campo di testo per comodità dell'operatore
-        document.getElementById('testo_descrittivo').value = '';
+        // svuota il campo di testo 
+                document.getElementById('testo_descrittivo').value = '';
 
     } catch (e) {
-        // gestione errore brutale ma efficace
-        console.error("Errore in inserimento aggiornamento...");
-        console.error(e);
+        console.error("errore durante il salvataggio dell'aggiornamento:", e);
     }
 }
