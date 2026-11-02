@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package it.univaq.disim.webengineering.soccorsoweb.model;
 
 import jakarta.persistence.*;
@@ -9,12 +5,17 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+// indica che questa classe rappresenta un'entità del database
 @Entity
+// specifica il nome esatto della tabella all'interno del database
 @Table(name = "missione")
 public class Missione {
 
+    // indica che questa variabile è la chiave primaria della tabella
     @Id
+    // dice al database di autoincrementare l'id automaticamente (auto-increment)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    // collega questa variabile al nome esatto della colonna nel db
     @Column(name = "id_missione")
     private Long idMissione;
 
@@ -24,7 +25,6 @@ public class Missione {
 
     private String stato;
 
-    // Mappato esattamente come indicato nelle tue specifiche del DB
     @Column(name = "timestap_inizio")
     private LocalDateTime timestampInizio;
 
@@ -36,13 +36,15 @@ public class Missione {
 
     private String commenti;
 
-    // Relazione 1:1 con la richiesta di soccorso
+    // definisce la relazione uno a uno
     @OneToOne
+    // specifica la colonna usata come chiave esterna
     @JoinColumn(name = "id_richiesta")
     private RichiestaSoccorso richiesta;
 
-    // Specifica esatta della tabella ponte per i mezzi
+    // definisce la relazione molti a molti
     @ManyToMany
+    // specifica la tabella ponte da utilizzare nel db
     @JoinTable(
             name = "assegnazione_mezzi_missione",
             joinColumns = @JoinColumn(name = "id_missione"),
@@ -50,8 +52,9 @@ public class Missione {
     )
     private List<Mezzo> mezzi = new ArrayList<>();
 
-    // Specifica esatta della tabella ponte per i materiali
+    // definisce la relazione molti a molti
     @ManyToMany
+    // specifica la tabella ponte da utilizzare nel db
     @JoinTable(
             name = "assegnazione_materiale_missione",
             joinColumns = @JoinColumn(name = "id_missione"),
@@ -59,19 +62,17 @@ public class Missione {
     )
     private List<Materiale> materiali = new ArrayList<>();
 
-    // Relazione 1:N verso la tabella ponte complessa (che diventerà un'Entity)
+    // definisce la relazione uno a molti e indica la variabile mappata
     @OneToMany(mappedBy = "missione")
     private List<AssegnazioneOperatoreMissione> squadra = new ArrayList<>();
 
-    // Relazione 1:N verso gli aggiornamenti
+    // definisce la relazione uno a molti e indica la variabile mappata
     @OneToMany(mappedBy = "missione")
     private List<AggiornamentoMissione> aggiornamenti = new ArrayList<>();
 
-    // Costruttore vuoto obbligatorio per JPA
     public Missione() {
     }
 
-    // --- Getter e Setter ---
     public Long getIdMissione() {
         return idMissione;
     }

@@ -1,39 +1,38 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package it.univaq.disim.webengineering.soccorsoweb.model;
 
 import jakarta.persistence.*;
 
+// indica che questa classe rappresenta un'entità del database
 @Entity
+// specifica il nome esatto della tabella all'interno del database
 @Table(name = "assegnazione_operatori_missioni")
 public class AssegnazioneOperatoreMissione {
 
-   
+    // indica che questa variabile è la chiave primaria della tabella
     @Id
+    // dice al database di autoincrementare l'id automaticamente (auto-increment)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    
+    // definisce la relazione molti a uno
     @ManyToOne
+    // specifica la colonna usata come chiave esterna
     @JoinColumn(name = "id_missione", nullable = false)
     private Missione missione;
 
-    
+    // definisce la relazione molti a uno
     @ManyToOne
+    // specifica la colonna usata come chiave esterna
     @JoinColumn(name = "id_utente", nullable = false)
     private Utenti utente;
 
-    
+    // collega questa variabile al nome esatto della colonna nel db
     @Column(name = "is_caposquadra", nullable = false)
     private boolean isCaposquadra;
 
-    
     public AssegnazioneOperatoreMissione() {
     }
 
-    // --- Getter e Setter ---
     public Long getId() {
         return id;
     }

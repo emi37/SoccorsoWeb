@@ -3,12 +3,17 @@ package it.univaq.disim.webengineering.soccorsoweb.model;
 import jakarta.persistence.*;
 import java.sql.Timestamp;
 
+// indica che questa classe rappresenta un'entità del database
 @Entity
+// specifica il nome esatto della tabella all'interno del database
 @Table(name = "richiesta_soccorso")
 public class RichiestaSoccorso {
 
+    // indica che questa variabile è la chiave primaria della tabella
     @Id
+    // dice al database di autoincrementare l'id automaticamente (auto-increment)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    // collega questa variabile al nome esatto della colonna nel db
     @Column(name = "id_richiesta")
     private int idRichiesta;
 
@@ -39,11 +44,8 @@ public class RichiestaSoccorso {
     @Column(name = "timestamp_invio", insertable = false, updatable = false)
     private Timestamp timestampInvio;
 
-    // Costruttore vuoto obbligatorio per JPA
     public RichiestaSoccorso() {
     }
-
-    // --- Getter e Setter ---
 
     public int getIdRichiesta() {
         return idRichiesta;

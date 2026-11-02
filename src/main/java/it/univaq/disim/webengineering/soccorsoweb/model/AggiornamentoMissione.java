@@ -1,28 +1,31 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package it.univaq.disim.webengineering.soccorsoweb.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+// indica che questa classe rappresenta un'entità del database
 @Entity
+// specifica il nome esatto della tabella all'interno del database
 @Table(name = "aggiornamento_missione")
 public class AggiornamentoMissione {
 
+    // indica che questa variabile è la chiave primaria della tabella
     @Id
+    // dice al database di autoincrementare l'id automaticamente (auto-increment)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    // collega questa variabile al nome esatto della colonna nel db
     @Column(name = "id_aggiornamento")
     private Long idAggiornamento;
 
-    // Relazione N:1 verso la Missione (lato proprietario della relazione)
+    // definisce la relazione molti a uno
     @ManyToOne
+    // specifica la colonna usata come chiave esterna
     @JoinColumn(name = "id_missione")
     private Missione missione;
 
-    // Relazione N:1 verso l'Utente (l'admin che ha inserito l'aggiornamento)
+    // definisce la relazione molti a uno
     @ManyToOne
+    // specifica la colonna usata come chiave esterna
     @JoinColumn(name = "id_admin")
     private Utenti admin;
 
@@ -32,11 +35,9 @@ public class AggiornamentoMissione {
     @Column(name = "timestamp_inserimento")
     private LocalDateTime timestampInserimento;
 
-    // Costruttore vuoto obbligatorio per JPA
     public AggiornamentoMissione() {
     }
 
-    // --- Getter e Setter ---
     public Long getIdAggiornamento() {
         return idAggiornamento;
     }

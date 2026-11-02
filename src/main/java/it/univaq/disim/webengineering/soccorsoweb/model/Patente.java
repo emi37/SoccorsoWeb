@@ -1,28 +1,27 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package it.univaq.disim.webengineering.soccorsoweb.model;
 
 import jakarta.persistence.*;
 
+// indica che questa classe rappresenta un'entità del database
 @Entity
+// specifica il nome esatto della tabella all'interno del database
 @Table(name = "patente")
 public class Patente {
 
+    // indica che questa variabile è la chiave primaria della tabella
     @Id
+    // dice al database di autoincrementare l'id automaticamente (auto-increment)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    // collega questa variabile al nome esatto della colonna nel db
     @Column(name = "id_patente")
     private Long idPatente;
 
     @Column(nullable = false)
     private String codice;
 
-    // Costruttore vuoto obbligatorio per JPA
     public Patente() {
     }
 
-    // --- Getter e Setter ---
     public Long getIdPatente() {
         return idPatente;
     }
