@@ -12,72 +12,54 @@ import java.util.Map;
 
 public class MaterialeDAO {
 
-    // Salva un nuovo materiale (sostituisce la logica di AggiungiMaterialeServlet)
     public boolean salvaNuovoMateriale(Materiale nuovoMateriale) {
-        boolean salvataggioRiuscito = false;
+        String query = "INSERT INTO materiale (nome, descrizione, attivo) VALUES (?, ?, 1)";
 
-        // Spezzo la query a mano per tenerla pulita
-        String queryInserimento = "INSERT INTO materiale "
-                + "(nome, descrizione, attivo) "
-                + "VALUES (?, ?, 1)";
+        try (Connection connessione = DBManager.getConnection(); 
+             PreparedStatement statement = connessione.prepareStatement(query)) {
 
-        // Try-with-resources per chiudere tutto da solo, come da slide
-        try (Connection connessioneDb = DBManager.getConnection(); 
-             PreparedStatement statementInserimento = connessioneDb.prepareStatement(queryInserimento)) {
+            statement.setString(1, nuovoMateriale.getNome());
+            statement.setString(2, nuovoMateriale.getDescrizione());
 
-            // Bindo i parametri estraendoli dall'entità
-            statementInserimento.setString(1, nuovoMateriale.getNome());
-            statementInserimento.setString(2, nuovoMateriale.getDescrizione());
-
-            // Lancio l'update sul db
-            int righeAffette = statementInserimento.executeUpdate();
-            if (righeAffette > 0) {
-                salvataggioRiuscito = true;
-            }
+            return statement.executeUpdate() > 0;
 
         } catch (Exception e) {
-            // Gestione errore ruspante a console
-            System.err.println("Errore catastrofico durante l'inserimento del nuovo materiale...");
+            System.err.println("errore durante l'inserimento del nuovo materiale: " + e.getMessage());
             e.printStackTrace();
         }
 
-        return salvataggioRiuscito;
+        return false;
     }
 
-    // Soft-delete: nasconde il materiale se non è a bordo di un mezzo impegnato
     public boolean nascondiMaterialeSeLibero(int idDaCancellare) {
-        boolean eliminazioneOk = false;
-
-        String queryCancellazione = "UPDATE materiale SET attivo = 0 "
+        // eliminazione del materiale se non è attualmente in uso
+        String query = "UPDATE materiale SET attivo = 0 "
                 + "WHERE id_materiale = ? AND id_materiale NOT IN ("
                 + "    SELECT id_materiale FROM assegnazione_materiale_missione amm "
                 + "    JOIN missione mis ON amm.id_missione = mis.id_missione "
                 + "    WHERE mis.stato = 'IN_CORSO'"
                 + ")";
 
-        try (Connection connessioneDb = DBManager.getConnection(); 
-             PreparedStatement statementCanc = connessioneDb.prepareStatement(queryCancellazione)) {
+        try (Connection connessione = DBManager.getConnection(); 
+             PreparedStatement statement = connessione.prepareStatement(query)) {
 
-            statementCanc.setInt(1, idDaCancellare);
-            int righeModificate = statementCanc.executeUpdate();
-
-            if (righeModificate > 0) {
-                eliminazioneOk = true;
-            }
+            statement.setInt(1, idDaCancellare);
+            
+            return statement.executeUpdate() > 0;
 
         } catch (Exception e) {
-            System.err.println("Disastro durante l'eliminazione logica del materiale...");
+            System.err.println("errore durante l'eliminazione del materiale: " + e.getMessage());
             e.printStackTrace();
         }
 
-        return eliminazioneOk;
+        return false;
     }
 
-    // Estrae tutti i materiali calcolando al volo se sono IMPEGNATI
     public List<Map<String, String>> estraiTuttiIMaterialiConStato() {
         List<Map<String, String>> listaMateriali = new ArrayList<>();
 
-        String queryLista = "SELECT m.id_materiale, m.nome, m.descrizione, "
+        // query per trovare se lo stato del materiale è "impegnato" o "libero"
+        String query = "SELECT m.id_materiale, m.nome, m.descrizione, "
                 + "CASE WHEN EXISTS ("
                 + "    SELECT 1 FROM assegnazione_materiale_missione amm "
                 + "    JOIN missione mis ON amm.id_missione = mis.id_missione "
@@ -85,60 +67,61 @@ public class MaterialeDAO {
                 + ") THEN 'IMPEGNATO' ELSE 'LIBERO' END AS stato_attuale "
                 + "FROM materiale m WHERE m.attivo = 1";
 
-        try (Connection connessioneDb = DBManager.getConnection(); 
-             PreparedStatement statementLista = connessioneDb.prepareStatement(queryLista); 
-             ResultSet risultatiLista = statementLista.executeQuery()) {
+        try (Connection connessione = DBManager.getConnection(); 
+             PreparedStatement statement = connessione.prepareStatement(query); 
+             ResultSet resultSet = statement.executeQuery()) {
 
-            // Frulliamo i risultati
-            while (risultatiLista.next()) {
+            while (resultSet.next()) {
                 Map<String, String> mappaMateriale = new HashMap<>();
                 
-                // CORREZIONE: Ora le chiavi combaciano al 100% con FreeMarker (${m.id_materiale!} e ${m.attivo!})
-                mappaMateriale.put("id_materiale", String.valueOf(risultatiLista.getInt("id_materiale")));
-                mappaMateriale.put("nome", risultatiLista.getString("nome"));
-                mappaMateriale.put("descrizione", risultatiLista.getString("descrizione"));
-                mappaMateriale.put("attivo", risultatiLista.getString("stato_attuale"));
+                // dati per l'interfaccia freemarker
+                mappaMateriale.put("id_materiale", String.valueOf(resultSet.getInt("id_materiale")));
+                mappaMateriale.put("nome", resultSet.getString("nome"));
+                mappaMateriale.put("descrizione", resultSet.getString("descrizione"));
+                mappaMateriale.put("attivo", resultSet.getString("stato_attuale"));
 
                 listaMateriali.add(mappaMateriale);
             }
 
         } catch (Exception e) {
-            System.err.println("Errore brutto durante il fetch dei materiali...");
+            System.err.println("errore durante l'estrazione della lista dei materiali: " + e.getMessage());
             e.printStackTrace();
         }
 
         return listaMateriali;
     }
 
-    // Trova i materiali attivi e non usati in missioni in corso
     public List<Map<String, String>> estraiMaterialiDisponibili() {
         List<Map<String, String>> listaMateriali = new ArrayList<>();
         
-        String query = "SELECT id_materiale, nome, descrizione " +
-                       "FROM materiale " +
-                       "WHERE attivo = 1 " +
-                       "AND id_materiale NOT IN ( " +
-                       "    SELECT ama.id_materiale " +
-                       "    FROM assegnazione_materiale_missione ama " +
-                       "    JOIN missione m ON ama.id_missione = m.id_missione " +
-                       "    WHERE m.stato = 'IN_CORSO' " +
-                       ")";
+        //trova i materiali che non sono associati a missioni in corso(quindi liberi) 
+        String query = "SELECT id_materiale, nome, descrizione "
+                + "FROM materiale "
+                + "WHERE attivo = 1 "
+                + "AND id_materiale NOT IN ( "
+                + "    SELECT ama.id_materiale "
+                + "    FROM assegnazione_materiale_missione ama "
+                + "    JOIN missione m ON ama.id_missione = m.id_missione "
+                + "    WHERE m.stato = 'IN_CORSO' "
+                + ")";
                        
-        try (Connection connessioneDb = DBManager.getConnection();
-             PreparedStatement statement = connessioneDb.prepareStatement(query);
-             ResultSet risultati = statement.executeQuery()) {
+        try (Connection connessione = DBManager.getConnection();
+             PreparedStatement statement = connessione.prepareStatement(query);
+             ResultSet resultSet = statement.executeQuery()) {
             
-            while (risultati.next()) {
+            while (resultSet.next()) {
                 Map<String, String> materiale = new HashMap<>();
-                materiale.put("id_materiale", risultati.getString("id_materiale"));
-                materiale.put("nome", risultati.getString("nome"));
-                materiale.put("descrizione", risultati.getString("descrizione"));
+                materiale.put("id_materiale", resultSet.getString("id_materiale"));
+                materiale.put("nome", resultSet.getString("nome"));
+                materiale.put("descrizione", resultSet.getString("descrizione"));
                 listaMateriali.add(materiale);
             }
+            
         } catch (Exception e) {
-            System.err.println("Errore brutto durante la ricerca dei materiali disponibili...");
+            System.err.println("Errore durante la ricerca dei materiali disponibili: " + e.getMessage());
             e.printStackTrace();
         }
+        
         return listaMateriali;
     }
 }

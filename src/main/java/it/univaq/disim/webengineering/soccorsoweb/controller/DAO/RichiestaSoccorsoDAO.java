@@ -12,36 +12,34 @@ import java.util.Map;
 
 public class RichiestaSoccorsoDAO {
 
-    // 1. Inserisce una nuova richiesta IN_ATTESA (Serve per il form pubblico)
+    // inserisce una nuova richiesta in stato IN_ATTESA dal form di rchiesta
     public boolean salvaNuovaRichiesta(RichiestaSoccorso richiesta) {
-        boolean salvataggioOk = false;
         String query = "INSERT INTO richiesta_soccorso "
                 + "(nome_segnalante, email_segnalante, posizione, descrizione, ip_origine, token_convalida, stato, timestamp_creazione) "
                 + "VALUES (?, ?, ?, ?, ?, ?, 'IN_ATTESA', NOW())";
 
-        try (Connection conn = DBManager.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setString(1, richiesta.getNomeSegnalante());
-            stmt.setString(2, richiesta.getEmailSegnalante());
-            stmt.setString(3, richiesta.getPosizione());
-            stmt.setString(4, richiesta.getDescrizione());
-            stmt.setString(5, richiesta.getIpOrigine());
-            stmt.setString(6, richiesta.getTokenConvalida());
+        try (Connection connessione = DBManager.getConnection(); 
+             PreparedStatement statement = connessione.prepareStatement(query)) {
+             
+            statement.setString(1, richiesta.getNomeSegnalante());
+            statement.setString(2, richiesta.getEmailSegnalante());
+            statement.setString(3, richiesta.getPosizione());
+            statement.setString(4, richiesta.getDescrizione());
+            statement.setString(5, richiesta.getIpOrigine());
+            statement.setString(6, richiesta.getTokenConvalida());
 
-            int righeInserite = stmt.executeUpdate();
-            if (righeInserite > 0) {
-                salvataggioOk = true;
-            }
+            return statement.executeUpdate() > 0;
+            
         } catch (Exception e) {
-            System.err.println("Errore durante il salvataggio della richiesta pubblica...");
+            System.err.println("errore durante il salvataggio della richiesta : " + e.getMessage());
             e.printStackTrace();
         }
-        return salvataggioOk;
+        return false;
     }
 
-    // 2. Convalida il token e attiva la richiesta (Il tuo metodo con scadenza 10 min)
+    // convalida il token via email e attiva la richiesta (se non convalidi entro 10 min la richiesta rimane in stato di attesa sul DB)
     public boolean svuotaTokenConvalida(String tokenUsato) {
-        boolean tokenSvuotato = false;
-        String queryPulizia = "UPDATE richiesta_soccorso "
+        String query = "UPDATE richiesta_soccorso "
                 + "SET stato = 'ATTIVA', "
                 + "    token_convalida = NULL, "
                 + "    timestamp_convalida = CURRENT_TIMESTAMP "
@@ -49,80 +47,89 @@ public class RichiestaSoccorsoDAO {
                 + "  AND stato = 'IN_ATTESA' "
                 + "  AND timestamp_creazione >= NOW() - INTERVAL 10 MINUTE";
 
-        try (Connection connessioneDb = DBManager.getConnection(); PreparedStatement statementPulizia = connessioneDb.prepareStatement(queryPulizia)) {
-            statementPulizia.setString(1, tokenUsato);
-            int affectedRows = statementPulizia.executeUpdate();
-            if (affectedRows > 0) {
-                tokenSvuotato = true;
-            }
+        try (Connection connessione = DBManager.getConnection(); 
+             PreparedStatement statement = connessione.prepareStatement(query)) {
+             
+            statement.setString(1, tokenUsato);
+            
+            return statement.executeUpdate() > 0;
+            
         } catch (Exception e) {
-            System.err.println("Errore db durante la pulizia del token convalida...");
+            System.err.println("errore db durante la convalida del token: " + e.getMessage());
             e.printStackTrace();
         }
-        return tokenSvuotato;
+        return false;
     }
 
-    // 3. Estrae le richieste 'ATTIVE' per popolare la dashboard Admin
-    public List<Map<String, String>> estraiRichiesteAttive() {
-        List<Map<String, String>> listaRichieste = new ArrayList<>();
+    // estrae le richieste con lo stato "ATTIVA" (viene richiamato dalla dashboard dell'admin)
+    public List< Map<String, String> > estraiRichiesteAttive() {
+        List< Map<String, String> > listaRichieste = new ArrayList<>();
+        
         String query = "SELECT id_richiesta, nome_segnalante, email_segnalante, posizione, descrizione "
                 + "FROM richiesta_soccorso WHERE stato = 'ATTIVA' ORDER BY timestamp_convalida ASC";
 
-        try (Connection conn = DBManager.getConnection(); 
-             PreparedStatement stmt = conn.prepareStatement(query); 
-             ResultSet rs = stmt.executeQuery()) {
-            while (rs.next()) {
-                Map<String, String> mappaRichiesta = new HashMap<>();
-                mappaRichiesta.put("id", String.valueOf(rs.getInt("id_richiesta")));
-                mappaRichiesta.put("segnalante", rs.getString("nome_segnalante"));
-                mappaRichiesta.put("email", rs.getString("email_segnalante"));
-                mappaRichiesta.put("posizione", rs.getString("posizione"));
-                mappaRichiesta.put("descrizione", rs.getString("descrizione"));
+        try (Connection connessione = DBManager.getConnection(); 
+             PreparedStatement statement = connessione.prepareStatement(query); 
+             ResultSet resultSet = statement.executeQuery()) {
+             
+            while (resultSet.next()) {
+                Map< String, String > mappaRichiesta = new HashMap<>();
+                mappaRichiesta.put("id", String.valueOf(resultSet.getInt("id_richiesta")));
+                mappaRichiesta.put("segnalante", resultSet.getString("nome_segnalante"));
+                mappaRichiesta.put("email", resultSet.getString("email_segnalante"));
+                mappaRichiesta.put("posizione", resultSet.getString("posizione"));
+                mappaRichiesta.put("descrizione", resultSet.getString("descrizione"));
+                
                 listaRichieste.add(mappaRichiesta);
             }
         } catch (Exception e) {
+            System.err.println("errore durante l'estrazione delle richieste attive: " + e.getMessage());
             e.printStackTrace();
         }
         return listaRichieste;
     }
 
-    // 4. Scarta la richiesta (Il tuo metodo)
+    // scarta la richiesta impostandogli lo stato sul DB in "IGNORATA "
     public boolean aggiornaStatoRichiestaInIgnorata(int idRichiestaDaScartare) {
-        boolean operazioneRiuscita = false;
-        String queryAggiornamento = "UPDATE richiesta_soccorso SET stato = 'IGNORATA' WHERE id_richiesta = ?";
+        String query = "UPDATE richiesta_soccorso SET stato = 'IGNORATA' WHERE id_richiesta = ?";
 
-        try (Connection connessioneDb = DBManager.getConnection(); PreparedStatement statementUpdate = connessioneDb.prepareStatement(queryAggiornamento)) {
-            statementUpdate.setInt(1, idRichiestaDaScartare);
-            int righeAggiornate = statementUpdate.executeUpdate();
-            if (righeAggiornate > 0) {
-                operazioneRiuscita = true;
-            }
+        try (Connection connessione = DBManager.getConnection(); 
+             PreparedStatement statement = connessione.prepareStatement(query)) {
+             
+            statement.setInt(1, idRichiestaDaScartare);
+            
+            return statement.executeUpdate() > 0;
+            
         } catch (Exception e) {
-            System.err.println("Panico: Errore durante l'aggiornamento dello stato (IGNORATA)...");
+            System.err.println("errore durante l'aggiornamento dello stato ignorata: " + e.getMessage());
             e.printStackTrace();
         }
-        return operazioneRiuscita;
+        return false;
     }
 
-    // 5. Estrae i dettagli specifici (Corretto nome colonna in timestamp_creazione)
-    public Map<String, String> estraiDettagliRichiesta(int idRichiesta) {
-        Map<String, String> dettagli = new HashMap<>();
+    // estrae i dettagli di una richiesta(la richieta estratta è quella con id_richiesta = ?)
+    public Map< String, String > estraiDettagliRichiesta(int idRichiesta) {
+        Map< String, String > dettagli = new HashMap<>();
+        
         String query = "SELECT nome_segnalante, posizione, descrizione, timestamp_creazione " +
                        "FROM richiesta_soccorso WHERE id_richiesta = ?";
                        
-        try (Connection connessioneDb = DBManager.getConnection(); PreparedStatement statement = connessioneDb.prepareStatement(query)) {
+        try (Connection connessione = DBManager.getConnection(); 
+             PreparedStatement statement = connessione.prepareStatement(query)) {
+             
             statement.setInt(1, idRichiesta);
-            try (ResultSet risultati = statement.executeQuery()) {
-                if (risultati.next()) {
+            
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
                     dettagli.put("id_richiesta", String.valueOf(idRichiesta));
-                    dettagli.put("nome", risultati.getString("nome_segnalante"));
-                    dettagli.put("posizione", risultati.getString("posizione"));
-                    dettagli.put("descrizione", risultati.getString("descrizione"));
-                    dettagli.put("data_ora", risultati.getTimestamp("timestamp_creazione").toString());
+                    dettagli.put("nome", resultSet.getString("nome_segnalante"));
+                    dettagli.put("posizione", resultSet.getString("posizione"));
+                    dettagli.put("descrizione", resultSet.getString("descrizione"));
+                    dettagli.put("data_ora", resultSet.getTimestamp("timestamp_creazione").toString());
                 }
             }
         } catch (Exception e) {
-            System.err.println("Errore durante l'estrazione dei dettagli della richiesta...");
+            System.err.println("errore durante l'estrazione dei dettagli della richiesta: " + e.getMessage());
             e.printStackTrace();
         }
         return dettagli;

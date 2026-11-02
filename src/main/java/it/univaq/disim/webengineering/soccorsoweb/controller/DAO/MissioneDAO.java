@@ -13,9 +13,9 @@ import java.util.Map;
 
 public class MissioneDAO {
 
-    // 1. Estrae le missioni attive (IN_CORSO) per la tabella principale della Dashboard Admin
-    public List<Map<String, String>> estraiMissioniInCorso() {
-        List<Map<String, String>> lista = new ArrayList<>();
+    public List< Map<String, String> > estraiMissioniInCorso() {
+        List< Map<String, String> > listaMissioni = new ArrayList<>();
+        
         String query = "SELECT m.id_missione, m.id_richiesta, m.obiettivo, m.posizione, m.stato, "
                 + "u.nome AS nome_capo, u.cognome AS cognome_capo "
                 + "FROM missione m "
@@ -23,154 +23,142 @@ public class MissioneDAO {
                 + "LEFT JOIN utenti u ON aom.id_utente = u.id_utente "
                 + "WHERE m.stato = 'IN_CORSO' ORDER BY m.id_missione DESC";
 
-        try (Connection conn = DBManager.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query);
-             ResultSet rs = stmt.executeQuery()) {
+        try (Connection connessione = DBManager.getConnection();
+             PreparedStatement statement = connessione.prepareStatement(query);
+             ResultSet resultSet = statement.executeQuery()) {
 
-            while (rs.next()) {
-                Map<String, String> m = new HashMap<>();
-                m.put("id_missione", String.valueOf(rs.getInt("id_missione")));
-                m.put("id_richiesta", String.valueOf(rs.getInt("id_richiesta")));
-                m.put("obiettivo", rs.getString("obiettivo"));
-                m.put("posizione", rs.getString("posizione"));
-                m.put("stato", rs.getString("stato"));
+            while (resultSet.next()) {
+                Map< String, String > mappaMissione = new HashMap<>();
+                mappaMissione.put("id_missione", String.valueOf(resultSet.getInt("id_missione")));
+                mappaMissione.put("id_richiesta", String.valueOf(resultSet.getInt("id_richiesta")));
+                mappaMissione.put("obiettivo", resultSet.getString("obiettivo"));
+                mappaMissione.put("posizione", resultSet.getString("posizione"));
+                mappaMissione.put("stato", resultSet.getString("stato"));
                 
-                // NUOVO: Salviamo il nome del caposquadra nella mappa
-                String nomeCapo = rs.getString("nome_capo");
-                String cognomeCapo = rs.getString("cognome_capo");
+                String nomeCapo = resultSet.getString("nome_capo");
+                String cognomeCapo = resultSet.getString("cognome_capo");
+                
                 if (nomeCapo != null && cognomeCapo != null) {
-                    m.put("caposquadra", nomeCapo + " " + cognomeCapo);
+                    mappaMissione.put("caposquadra", nomeCapo + " " + cognomeCapo);
                 } else {
-                    m.put("caposquadra", "Non assegnato");
+                    mappaMissione.put("caposquadra", "Non assegnato");
                 }
                 
-                lista.add(m);
+                listaMissioni.add(mappaMissione);
             }
         } catch (Exception e) {
-            System.err.println("Errore estrazione missioni in corso...");
+            System.err.println("errore durante l'estrazione delle missioni in corso...");
             e.printStackTrace();
         }
-        return lista;
+        return listaMissioni;
     }
 
-    // 2. Transazione per creare una missione e vincolare tutte le risorse collegate
-    public boolean creaMissioneInTransazione(int idRichiesta, String obiettivo, String posizione,
-                                             int idCaposquadra, String[] idOperatori,
-                                             String[] idMezzi, String[] idMateriali,
-                                             int idAdminLoggato) {
+    public boolean creaMissioneInTransazione(int idRichiesta, String obiettivo, String posizione, int idCaposquadra, String[] idOperatori, String[] idMezzi, String[] idMateriali, int idAdminLoggato) {
         boolean successo = false;
-        Connection conn = null;
+        Connection connessione = null;
 
-        String queryMissione = "INSERT INTO missione (id_richiesta, obiettivo, posizione, stato, timestamp_inizio) "
-                + "VALUES (?, ?, ?, 'IN_CORSO', CURRENT_TIMESTAMP)";
+        String queryMissione = "INSERT INTO missione (id_richiesta, obiettivo, posizione, stato, timestamp_inizio) VALUES (?, ?, ?, 'IN_CORSO', CURRENT_TIMESTAMP)";
         String queryRichiesta = "UPDATE richiesta_soccorso SET stato = 'IN_CORSO' WHERE id_richiesta = ?";
-        String queryOp = "INSERT INTO assegnazione_operatori_missione (id_missione, id_utente, is_caposquadra) VALUES (?, ?, ?)";
+        String queryOperatore = "INSERT INTO assegnazione_operatori_missione (id_missione, id_utente, is_caposquadra) VALUES (?, ?, ?)";
         String queryMezzo = "INSERT INTO assegnazione_mezzi_missione (id_missione, id_mezzo) VALUES (?, ?)";
-        String queryMat = "INSERT INTO assegnazione_materiale_missione (id_missione, id_materiale) VALUES (?, ?)";
+        String queryMateriale = "INSERT INTO assegnazione_materiale_missione (id_missione, id_materiale) VALUES (?, ?)";
         String queryLog = "INSERT INTO aggiornamento_missione (id_missione, id_admin, testo_descrittivo) VALUES (?, ?, ?)";
 
         try {
-            conn = DBManager.getConnection();
-            conn.setAutoCommit(false);
+            connessione = DBManager.getConnection();
+            connessione.setAutoCommit(false);
 
             int idMissioneGenerato = -1;
 
-            // Step A: Creazione record missione con recupero ID generato
-            try (PreparedStatement stmtMis = conn.prepareStatement(queryMissione, Statement.RETURN_GENERATED_KEYS)) {
-                stmtMis.setInt(1, idRichiesta);
-                stmtMis.setString(2, obiettivo);
-                stmtMis.setString(3, posizione);
-                stmtMis.executeUpdate();
+            try (PreparedStatement statementMissione = connessione.prepareStatement(queryMissione, Statement.RETURN_GENERATED_KEYS)) {
+                statementMissione.setInt(1, idRichiesta);
+                statementMissione.setString(2, obiettivo);
+                statementMissione.setString(3, posizione);
+                statementMissione.executeUpdate();
 
-                try (ResultSet rsKey = stmtMis.getGeneratedKeys()) {
-                    if (rsKey.next()) {
-                        idMissioneGenerato = rsKey.getInt(1);
+                try (ResultSet resultSetChiavi = statementMissione.getGeneratedKeys()) {
+                    if (resultSetChiavi.next()) {
+                        idMissioneGenerato = resultSetChiavi.getInt(1);
                     }
                 }
             }
 
             if (idMissioneGenerato == -1) {
-                conn.rollback();
+                connessione.rollback();
                 return false;
             }
 
-            // Step B: Aggiorna stato della richiesta soccorso a IN_CORSO
-            try (PreparedStatement stmtRich = conn.prepareStatement(queryRichiesta)) {
-                stmtRich.setInt(1, idRichiesta);
-                stmtRich.executeUpdate();
+            try (PreparedStatement statementRichiesta = connessione.prepareStatement(queryRichiesta)) {
+                statementRichiesta.setInt(1, idRichiesta);
+                statementRichiesta.executeUpdate();
             }
 
-            // Step C: Assegnazione caposquadra
-            try (PreparedStatement stmtCapo = conn.prepareStatement(queryOp)) {
-                stmtCapo.setInt(1, idMissioneGenerato);
-                stmtCapo.setInt(2, idCaposquadra);
-                stmtCapo.setInt(3, 1);
-                stmtCapo.executeUpdate();
+            try (PreparedStatement statementCaposquadra = connessione.prepareStatement(queryOperatore)) {
+                statementCaposquadra.setInt(1, idMissioneGenerato);
+                statementCaposquadra.setInt(2, idCaposquadra);
+                statementCaposquadra.setInt(3, 1);
+                statementCaposquadra.executeUpdate();
             }
 
-            // Step D: Assegnazione altri operatori (is_caposquadra = 0)
             if (idOperatori != null && idOperatori.length > 0) {
-                try (PreparedStatement stmtOps = conn.prepareStatement(queryOp)) {
-                    for (String opStr : idOperatori) {
-                        int idOp = Integer.parseInt(opStr.trim());
+                try (PreparedStatement statementOperatori = connessione.prepareStatement(queryOperatore)) {
+                    for (String operatore : idOperatori) {
+                        int idOp = Integer.parseInt(operatore.trim());
                         if (idOp != idCaposquadra) {
-                            stmtOps.setInt(1, idMissioneGenerato);
-                            stmtOps.setInt(2, idOp);
-                            stmtOps.setInt(3, 0);
-                            stmtOps.executeUpdate();
+                            statementOperatori.setInt(1, idMissioneGenerato);
+                            statementOperatori.setInt(2, idOp);
+                            statementOperatori.setInt(3, 0); 
+                            statementOperatori.executeUpdate();
                         }
                     }
                 }
             }
 
-            // Step E: Assegnazione mezzi
             if (idMezzi != null && idMezzi.length > 0) {
-                try (PreparedStatement stmtMez = conn.prepareStatement(queryMezzo)) {
-                    for (String mStr : idMezzi) {
-                        stmtMez.setInt(1, idMissioneGenerato);
-                        stmtMez.setInt(2, Integer.parseInt(mStr.trim()));
-                        stmtMez.executeUpdate();
+                try (PreparedStatement statementMezzi = connessione.prepareStatement(queryMezzo)) {
+                    for (String mezzo : idMezzi) {
+                        statementMezzi.setInt(1, idMissioneGenerato);
+                        statementMezzi.setInt(2, Integer.parseInt(mezzo.trim()));
+                        statementMezzi.executeUpdate();
                     }
                 }
             }
 
-            // Step F: Assegnazione materiali
             if (idMateriali != null && idMateriali.length > 0) {
-                try (PreparedStatement stmtMat = conn.prepareStatement(queryMat)) {
-                    for (String matStr : idMateriali) {
-                        stmtMat.setInt(1, idMissioneGenerato);
-                        stmtMat.setInt(2, Integer.parseInt(matStr.trim()));
-                        stmtMat.executeUpdate();
+                try (PreparedStatement statementMateriali = connessione.prepareStatement(queryMateriale)) {
+                    for (String materiale : idMateriali) {
+                        statementMateriali.setInt(1, idMissioneGenerato);
+                        statementMateriali.setInt(2, Integer.parseInt(materiale.trim()));
+                        statementMateriali.executeUpdate();
                     }
                 }
             }
 
-            // Step G: Primo evento di audit log
-            try (PreparedStatement stmtLog = conn.prepareStatement(queryLog)) {
-                stmtLog.setInt(1, idMissioneGenerato);
-                stmtLog.setInt(2, idAdminLoggato);
-                stmtLog.setString(3, "Missione avviata con successo per l'emergenza #" + idRichiesta);
-                stmtLog.executeUpdate();
+            try (PreparedStatement statementLog = connessione.prepareStatement(queryLog)) {
+                statementLog.setInt(1, idMissioneGenerato);
+                statementLog.setInt(2, idAdminLoggato);
+                statementLog.setString(3, "Missione avviata con successo per l'emergenza #" + idRichiesta);
+                statementLog.executeUpdate();
             }
 
-            conn.commit();
+            connessione.commit();
             successo = true;
 
         } catch (Exception e) {
-            System.err.println("Errore in transazione durante la creazione missione. Rollback in corso...");
+            System.err.println("errore durante la creazione della missione");
             e.printStackTrace();
-            if (conn != null) {
+            if (connessione != null) {
                 try {
-                    conn.rollback();
+                    connessione.rollback();
                 } catch (Exception exRollback) {
                     exRollback.printStackTrace();
                 }
             }
         } finally {
-            if (conn != null) {
+            if (connessione != null) {
                 try {
-                    conn.setAutoCommit(true);
-                    conn.close();
+                    connessione.setAutoCommit(true);
+                    connessione.close();
                 } catch (Exception exClose) {
                     exClose.printStackTrace();
                 }
@@ -179,31 +167,31 @@ public class MissioneDAO {
         return successo;
     }
 
-    // 3. Estrae lo storico delle missioni chiuse
-    public List<Map<String, String>> estraiStoricoMissioni() {
-        List<Map<String, String>> storicoTrovato = new ArrayList<>();
-        String queryStorico = "SELECT m.id_missione, m.id_richiesta, m.obiettivo, m.livello_successo, m.commenti, "
+    public List< Map<String, String> > estraiStoricoMissioni() {
+        List< Map<String, String> > storicoTrovato = new ArrayList<>();
+        
+        String query = "SELECT m.id_missione, m.id_richiesta, m.obiettivo, m.livello_successo, m.commenti, "
                 + "u.nome AS nome_capo, u.cognome AS cognome_capo "
                 + "FROM missione m "
                 + "LEFT JOIN assegnazione_operatori_missione aom ON m.id_missione = aom.id_missione AND aom.is_caposquadra = 1 "
                 + "LEFT JOIN utenti u ON aom.id_utente = u.id_utente "
                 + "WHERE m.stato = 'CHIUSA' ORDER BY m.id_missione DESC";
 
-        try (Connection connessioneDb = DBManager.getConnection();
-             PreparedStatement statementStorico = connessioneDb.prepareStatement(queryStorico);
-             ResultSet risultati = statementStorico.executeQuery()) {
+        try (Connection connessione = DBManager.getConnection();
+             PreparedStatement statement = connessione.prepareStatement(query);
+             ResultSet resultSet = statement.executeQuery()) {
 
-            while (risultati.next()) {
-                Map<String, String> mappaMissione = new HashMap<>();
-                mappaMissione.put("id_missione", String.valueOf(risultati.getInt("id_missione")));
-                mappaMissione.put("id_richiesta", String.valueOf(risultati.getInt("id_richiesta")));
-                mappaMissione.put("obiettivo", risultati.getString("obiettivo"));
-                mappaMissione.put("livello_successo", String.valueOf(risultati.getInt("livello_successo")));
-                mappaMissione.put("commenti", risultati.getString("commenti"));
+            while (resultSet.next()) {
+                Map< String, String > mappaMissione = new HashMap<>();
+                mappaMissione.put("id_missione", String.valueOf(resultSet.getInt("id_missione")));
+                mappaMissione.put("id_richiesta", String.valueOf(resultSet.getInt("id_richiesta")));
+                mappaMissione.put("obiettivo", resultSet.getString("obiettivo"));
+                mappaMissione.put("livello_successo", String.valueOf(resultSet.getInt("livello_successo")));
+                mappaMissione.put("commenti", resultSet.getString("commenti"));
                 
-                // NUOVO: Salviamo il nome del caposquadra nella mappa
-                String nomeCapo = risultati.getString("nome_capo");
-                String cognomeCapo = risultati.getString("cognome_capo");
+                String nomeCapo = resultSet.getString("nome_capo");
+                String cognomeCapo = resultSet.getString("cognome_capo");
+                
                 if (nomeCapo != null && cognomeCapo != null) {
                     mappaMissione.put("caposquadra", nomeCapo + " " + cognomeCapo);
                 } else {
@@ -213,116 +201,117 @@ public class MissioneDAO {
                 storicoTrovato.add(mappaMissione);
             }
         } catch (Exception e) {
-            System.err.println("Errore estrazione storico missioni...");
+            System.err.println("errore durante l'estrazione dello storico missioni...");
             e.printStackTrace();
         }
         return storicoTrovato;
     }
 
-    // 4. Estrae le missioni per un singolo operatore
-    public List<Map<String, String>> estraiMissioniPerOperatore(int idOperatoreCercato) {
-        List<Map<String, String>> missioniPersonali = new ArrayList<>();
-        String queryMissioniOp = "SELECT m.id_missione, m.obiettivo, m.posizione, m.stato, m.livello_successo "
+    public List< Map<String, String> > estraiMissioniPerOperatore(int idOperatoreCercato) {
+        List< Map<String, String> > missioniPersonali = new ArrayList<>();
+        
+        String query = "SELECT m.id_missione, m.obiettivo, m.posizione, m.stato, m.livello_successo "
                 + "FROM missione m "
                 + "JOIN assegnazione_operatori_missione aom ON m.id_missione = aom.id_missione "
                 + "WHERE aom.id_utente = ? "
                 + "ORDER BY m.stato DESC, m.id_missione DESC";
 
-        try (Connection connessioneDb = DBManager.getConnection();
-             PreparedStatement statementMissioni = connessioneDb.prepareStatement(queryMissioniOp)) {
+        try (Connection connessione = DBManager.getConnection();
+             PreparedStatement statement = connessione.prepareStatement(query)) {
 
-            statementMissioni.setInt(1, idOperatoreCercato);
+            statement.setInt(1, idOperatoreCercato);
 
-            try (ResultSet risultati = statementMissioni.executeQuery()) {
-                while (risultati.next()) {
-                    Map<String, String> singolaMissione = new HashMap<>();
-                    singolaMissione.put("id_missione", String.valueOf(risultati.getInt("id_missione")));
-                    singolaMissione.put("obiettivo", risultati.getString("obiettivo"));
-                    singolaMissione.put("posizione", risultati.getString("posizione"));
-                    singolaMissione.put("stato", risultati.getString("stato"));
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    Map< String, String > singolaMissione = new HashMap<>();
+                    singolaMissione.put("id_missione", String.valueOf(resultSet.getInt("id_missione")));
+                    singolaMissione.put("obiettivo", resultSet.getString("obiettivo"));
+                    singolaMissione.put("posizione", resultSet.getString("posizione"));
+                    singolaMissione.put("stato", resultSet.getString("stato"));
 
-                    int livelloSuccesso = risultati.getInt("livello_successo");
-                    String votoFormattato = risultati.wasNull() ? "-" : livelloSuccesso + " / 5";
+                    int livelloSuccesso = resultSet.getInt("livello_successo");
+                    String votoFormattato = resultSet.wasNull() ? "-" : livelloSuccesso + " / 5";
                     singolaMissione.put("visualizzaVoto", votoFormattato);
 
                     missioniPersonali.add(singolaMissione);
                 }
             }
         } catch (Exception e) {
-            System.err.println("Errore estrazione missioni operatore...");
+            System.err.println("errore durante l'estrazione delle missioni per l'operatore...");
             e.printStackTrace();
         }
         return missioniPersonali;
     }
 
-    // 5. Chiusura missione con transazione
     public boolean chiudiMissioneInTransazione(int idMissione, int idRichiesta, int livelloSuccesso, String commenti, int idAdminLoggato) {
-        boolean missioneChiusa = false;
-        Connection connessioneDb = null;
+        boolean successo = false;
+        Connection connessione = null;
+
+        String queryMissione = "UPDATE missione SET stato = 'CHIUSA', livello_successo = ?, commenti = ?, timestamp_fine = CURRENT_TIMESTAMP WHERE id_missione = ?";
+        String queryRichiesta = "UPDATE richiesta_soccorso SET stato = 'CHIUSA' WHERE id_richiesta = ?";
+        String queryTimeline = "INSERT INTO aggiornamento_missione (id_missione, id_admin, testo_descrittivo) VALUES (?, ?, ?)";
 
         try {
-            connessioneDb = DBManager.getConnection();
-            connessioneDb.setAutoCommit(false);
+            connessione = DBManager.getConnection();
+            connessione.setAutoCommit(false);
 
-            String queryMissione = "UPDATE missione SET stato = 'CHIUSA', livello_successo = ?, commenti = ?, timestamp_fine = CURRENT_TIMESTAMP WHERE id_missione = ?";
-            try (PreparedStatement statementMissione = connessioneDb.prepareStatement(queryMissione)) {
+            try (PreparedStatement statementMissione = connessione.prepareStatement(queryMissione)) {
                 statementMissione.setInt(1, livelloSuccesso);
                 statementMissione.setString(2, commenti);
                 statementMissione.setInt(3, idMissione);
                 statementMissione.executeUpdate();
             }
 
-            String queryRichiesta = "UPDATE richiesta_soccorso SET stato = 'CHIUSA' WHERE id_richiesta = ?";
-            try (PreparedStatement statementRichiesta = connessioneDb.prepareStatement(queryRichiesta)) {
+            try (PreparedStatement statementRichiesta = connessione.prepareStatement(queryRichiesta)) {
                 statementRichiesta.setInt(1, idRichiesta);
                 statementRichiesta.executeUpdate();
             }
 
-            String queryTimeline = "INSERT INTO aggiornamento_missione (id_missione, id_admin, testo_descrittivo) VALUES (?, ?, ?)";
-            try (PreparedStatement statementTimeline = connessioneDb.prepareStatement(queryTimeline)) {
+            try (PreparedStatement statementTimeline = connessione.prepareStatement(queryTimeline)) {
                 statementTimeline.setInt(1, idMissione);
                 statementTimeline.setInt(2, idAdminLoggato);
                 statementTimeline.setString(3, "CHIUSURA MISSIONE. Rapporto finale: " + commenti);
                 statementTimeline.executeUpdate();
             }
 
-            connessioneDb.commit();
-            missioneChiusa = true;
+            connessione.commit();
+            successo = true;
 
         } catch (Exception e) {
-            System.err.println("Errore chiusura missione. Rollback...");
+            System.err.println("errore durante la chiusura della missione...");
             e.printStackTrace();
-            if (connessioneDb != null) {
+            if (connessione != null) {
                 try {
-                    connessioneDb.rollback();
+                    connessione.rollback();
                 } catch (Exception exRollback) {
                     exRollback.printStackTrace();
                 }
             }
         } finally {
-            if (connessioneDb != null) {
+            if (connessione != null) {
                 try {
-                    connessioneDb.setAutoCommit(true);
-                    connessioneDb.close();
+                    connessione.setAutoCommit(true);
+                    connessione.close();
                 } catch (Exception exClose) {
                     exClose.printStackTrace();
                 }
             }
         }
-        return missioneChiusa;
+        return successo;
     }
 
-    // 6. Stato rapido
     public String estraiStatoMissione(int idMissione) {
         String statoAttuale = "";
-        String queryStato = "SELECT stato FROM missione WHERE id_missione = ?";
-        try (Connection connessioneDb = DBManager.getConnection();
-             PreparedStatement statementStato = connessioneDb.prepareStatement(queryStato)) {
+        String query = "SELECT stato FROM missione WHERE id_missione = ?";
+        
+        try (Connection connessione = DBManager.getConnection();
+             PreparedStatement statement = connessione.prepareStatement(query)) {
 
-            statementStato.setInt(1, idMissione);
-            try (ResultSet risultati = statementStato.executeQuery()) {
-                if (risultati.next()) {
-                    statoAttuale = risultati.getString("stato");
+            statement.setInt(1, idMissione);
+            
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    statoAttuale = resultSet.getString("stato");
                 }
             }
         } catch (Exception e) {
@@ -331,56 +320,55 @@ public class MissioneDAO {
         return statoAttuale;
     }
 
-    // 7. Dettagli completi missione per scheda operativa
-    public Map<String, Object> estraiDettagliCompleti(int idMissione) {
-        Map<String, Object> mappaDettagli = new HashMap<>();
-        String statoDellaMissione = ""; // Aggiunta variabile d'appoggio
+    public Map< String, Object > estraiDettagliCompleti(int idMissione) {
+        Map< String, Object > mappaDettagli = new HashMap<>();
+        String statoDellaMissione = ""; 
 
-        try (Connection connessioneDb = DBManager.getConnection()) {
+        try (Connection connessione = DBManager.getConnection()) {
+            
             String queryBase = "SELECT obiettivo, posizione, stato, timestamp_inizio FROM missione WHERE id_missione = ?";
-            try (PreparedStatement stmtBase = connessioneDb.prepareStatement(queryBase)) {
-                stmtBase.setInt(1, idMissione);
-                try (ResultSet rsBase = stmtBase.executeQuery()) {
-                    if (rsBase.next()) {
-                        statoDellaMissione = rsBase.getString("stato"); // Salviamo lo stato attuale
+            try (PreparedStatement statementBase = connessione.prepareStatement(queryBase)) {
+                statementBase.setInt(1, idMissione);
+                try (ResultSet resultSetBase = statementBase.executeQuery()) {
+                    if (resultSetBase.next()) {
+                        statoDellaMissione = resultSetBase.getString("stato"); 
                         
                         mappaDettagli.put("id_missione", idMissione);
-                        mappaDettagli.put("obiettivo", rsBase.getString("obiettivo"));
-                        mappaDettagli.put("posizione", rsBase.getString("posizione"));
-                        mappaDettagli.put("stato", statoDellaMissione); // Usiamo la variabile salvata
-                        mappaDettagli.put("inizio", rsBase.getTimestamp("timestamp_inizio").toString());
+                        mappaDettagli.put("obiettivo", resultSetBase.getString("obiettivo"));
+                        mappaDettagli.put("posizione", resultSetBase.getString("posizione"));
+                        mappaDettagli.put("stato", statoDellaMissione); 
+                        mappaDettagli.put("inizio", resultSetBase.getTimestamp("timestamp_inizio").toString());
                     } else {
                         return mappaDettagli;
                     }
                 }
             }
 
-            // Logica applicata: controlliamo se lo stato è CHIUSA per cambiare il messaggio di default
             String nomeCaposquadra = "CHIUSA".equals(statoDellaMissione) ? "Dato non registrato agli atti" : "Non ancora assegnato";
-            
             String queryCapo = "SELECT u.nome, u.cognome FROM utenti u "
                     + "JOIN assegnazione_operatori_missione aom ON u.id_utente = aom.id_utente "
                     + "WHERE aom.id_missione = ? AND aom.is_caposquadra = 1";
-            try (PreparedStatement stmtCapo = connessioneDb.prepareStatement(queryCapo)) {
-                stmtCapo.setInt(1, idMissione);
-                try (ResultSet rsCapo = stmtCapo.executeQuery()) {
-                    if (rsCapo.next()) {
-                        nomeCaposquadra = rsCapo.getString("nome") + " " + rsCapo.getString("cognome");
+                    
+            try (PreparedStatement statementCapo = connessione.prepareStatement(queryCapo)) {
+                statementCapo.setInt(1, idMissione);
+                try (ResultSet resultSetCapo = statementCapo.executeQuery()) {
+                    if (resultSetCapo.next()) {
+                        nomeCaposquadra = resultSetCapo.getString("nome") + " " + resultSetCapo.getString("cognome");
                     }
                 }
             }
             mappaDettagli.put("caposquadra", nomeCaposquadra);
             
-            
             List<String> listaMezzi = new ArrayList<>();
             String queryMezzi = "SELECT m.nome, m.descrizione FROM mezzo m "
                     + "JOIN assegnazione_mezzi_missione amm ON m.id_mezzo = amm.id_mezzo "
                     + "WHERE amm.id_missione = ?";
-            try (PreparedStatement stmtMezzi = connessioneDb.prepareStatement(queryMezzi)) {
-                stmtMezzi.setInt(1, idMissione);
-                try (ResultSet rsMezzi = stmtMezzi.executeQuery()) {
-                    while (rsMezzi.next()) {
-                        listaMezzi.add(rsMezzi.getString("nome") + " (" + rsMezzi.getString("descrizione") + ")");
+                    
+            try (PreparedStatement statementMezzi = connessione.prepareStatement(queryMezzi)) {
+                statementMezzi.setInt(1, idMissione);
+                try (ResultSet resultSetMezzi = statementMezzi.executeQuery()) {
+                    while (resultSetMezzi.next()) {
+                        listaMezzi.add(resultSetMezzi.getString("nome") + " (" + resultSetMezzi.getString("descrizione") + ")");
                     }
                 }
             }
@@ -390,127 +378,134 @@ public class MissioneDAO {
             String queryMateriali = "SELECT mat.nome, mat.descrizione FROM materiale mat "
                     + "JOIN assegnazione_materiale_missione ama ON mat.id_materiale = ama.id_materiale "
                     + "WHERE ama.id_missione = ?";
-            try (PreparedStatement stmtMat = connessioneDb.prepareStatement(queryMateriali)) {
-                stmtMat.setInt(1, idMissione);
-                try (ResultSet rsMat = stmtMat.executeQuery()) {
-                    while (rsMat.next()) {
-                        listaMateriali.add(rsMat.getString("nome") + " - " + rsMat.getString("descrizione"));
+                    
+            try (PreparedStatement statementMateriali = connessione.prepareStatement(queryMateriali)) {
+                statementMateriali.setInt(1, idMissione);
+                try (ResultSet resultSetMateriali = statementMateriali.executeQuery()) {
+                    while (resultSetMateriali.next()) {
+                        listaMateriali.add(resultSetMateriali.getString("nome") + " - " + resultSetMateriali.getString("descrizione"));
                     }
                 }
             }
             mappaDettagli.put("materiali", listaMateriali);
 
         } catch (Exception e) {
-            System.err.println("Errore estrazione dettagli completi missione...");
+            System.err.println("errore durante l'estrazione dei dettagli completi della missione...");
             e.printStackTrace();
         }
 
         return mappaDettagli;
     }
-    // Estrae le missioni attualmente IN_CORSO a cui è stato assegnato uno specifico operatore
-    public List<Map<String, String>> estraiMissioniAttivePerOperatore(long idOperatore) {
-        List<Map<String, String>> listaMissioni = new ArrayList<>();
+
+    public List< Map<String, String> > estraiMissioniAttivePerOperatore(long idOperatore) {
+        List< Map<String, String> > listaMissioni = new ArrayList<>();
         
-        // La query fa una JOIN tra le missioni e la tabella delle assegnazioni
         String query = "SELECT m.id_missione, m.id_richiesta, m.obiettivo, m.posizione, m.stato " +
                        "FROM missione m " +
                        "JOIN assegnazione_operatori_missione aom ON m.id_missione = aom.id_missione " +
                        "WHERE aom.id_utente = ? AND m.stato = 'IN_CORSO'";
                        
-        try (Connection connessioneDb = DBManager.getConnection();
-             PreparedStatement statement = connessioneDb.prepareStatement(query)) {
+        try (Connection connessione = DBManager.getConnection();
+             PreparedStatement statement = connessione.prepareStatement(query)) {
              
-            // Inseriamo l'ID dell'operatore al posto del punto interrogativo
             statement.setLong(1, idOperatore);
             
-            try (ResultSet risultati = statement.executeQuery()) {
-                while (risultati.next()) {
-                    Map<String, String> missione = new HashMap<>();
-                    missione.put("id_missione", String.valueOf(risultati.getInt("id_missione")));
-                    missione.put("id_richiesta", String.valueOf(risultati.getInt("id_richiesta")));
-                    missione.put("obiettivo", risultati.getString("obiettivo"));
-                    missione.put("posizione", risultati.getString("posizione"));
-                    missione.put("stato", risultati.getString("stato"));
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    Map< String, String > mappaMissione = new HashMap<>();
+                    mappaMissione.put("id_missione", String.valueOf(resultSet.getInt("id_missione")));
+                    mappaMissione.put("id_richiesta", String.valueOf(resultSet.getInt("id_richiesta")));
+                    mappaMissione.put("obiettivo", resultSet.getString("obiettivo"));
+                    mappaMissione.put("posizione", resultSet.getString("posizione"));
+                    mappaMissione.put("stato", resultSet.getString("stato"));
                     
-                    listaMissioni.add(missione);
+                    listaMissioni.add(mappaMissione);
                 }
             }
         } catch (Exception e) {
-            System.err.println("Errore nell'estrazione delle missioni per l'operatore ID: " + idOperatore);
+            System.err.println("errore nell'estrazione delle missioni attive per l'operatore...");
             e.printStackTrace();
         }
         
         return listaMissioni;
     }
-    // 8. Metodo per aggiornare i missione
+
     public boolean modificaMissioneInCorso(int idMissione, String nuovoObiettivo, String nuovaPosizione,
                                            String[] nuoviOperatori, String[] nuoviMezzi, String[] nuoviMateriali) {
         
-        String sqlUpdateMissione = "UPDATE missione SET obiettivo = ?, posizione = ? WHERE id_missione = ?";
+        boolean successo = false;
+        Connection connessione = null;
         
-        String sqlAddOperatore = "INSERT IGNORE INTO assegnazione_operatori_missione (id_missione, id_utente, is_caposquadra) VALUES (?, ?, 0)";
-        String sqlAddMezzo = "INSERT IGNORE INTO assegnazione_mezzi_missione (id_missione, id_mezzo) VALUES (?, ?)";
-        String sqlAddMateriale = "INSERT IGNORE INTO assegnazione_materiale_missione (id_missione, id_materiale) VALUES (?, ?)";
+        String queryMissione = "UPDATE missione SET obiettivo = ?, posizione = ? WHERE id_missione = ?";
+        String queryOperatore = "INSERT IGNORE INTO assegnazione_operatori_missione (id_missione, id_utente, is_caposquadra) VALUES (?, ?, 0)";
+        String queryMezzo = "INSERT IGNORE INTO assegnazione_mezzi_missione (id_missione, id_mezzo) VALUES (?, ?)";
+        String queryMateriale = "INSERT IGNORE INTO assegnazione_materiale_missione (id_missione, id_materiale) VALUES (?, ?)";
 
-        try (Connection con = DBManager.getConnection()) {
-           
-            con.setAutoCommit(false); 
+        try {
+            connessione = DBManager.getConnection();
+            connessione.setAutoCommit(false); 
 
-            try {
-                // 1. Aggiorniamo obiettivo e posizione
-                try (PreparedStatement ps = con.prepareStatement(sqlUpdateMissione)) {
-                    ps.setString(1, nuovoObiettivo);
-                    ps.setString(2, nuovaPosizione);
-                    ps.setInt(3, idMissione);
-                    ps.executeUpdate();
-                }
-
-                // 2. Aggiungiamo i nuovi operatori selezionati
-                if (nuoviOperatori != null) {
-                    try (PreparedStatement psOp = con.prepareStatement(sqlAddOperatore)) {
-                        for (String idOp : nuoviOperatori) {
-                            psOp.setInt(1, idMissione);
-                            psOp.setInt(2, Integer.parseInt(idOp));
-                            psOp.executeUpdate();
-                        }
-                    }
-                }
-
-                // 3. Aggiungiamo i nuovi mezzi selezionati
-                if (nuoviMezzi != null) {
-                    try (PreparedStatement psMez = con.prepareStatement(sqlAddMezzo)) {
-                        for (String idMezzo : nuoviMezzi) {
-                            psMez.setInt(1, idMissione);
-                            psMez.setInt(2, Integer.parseInt(idMezzo));
-                            psMez.executeUpdate();
-                        }
-                    }
-                }
-
-                // 4. Aggiungiamo i nuovi materiali selezionati
-                if (nuoviMateriali != null) {
-                    try (PreparedStatement psMat = con.prepareStatement(sqlAddMateriale)) {
-                        for (String idMat : nuoviMateriali) {
-                            psMat.setInt(1, idMissione);
-                            psMat.setInt(2, Integer.parseInt(idMat));
-                            psMat.executeUpdate();
-                        }
-                    }
-                }
-
-                // Se tutto è andato bene, confermiamo le modifiche
-                con.commit();
-                return true;
-
-            } catch (SQLException ex) {
-                
-                con.rollback();
-                ex.printStackTrace();
-                return false;
+            try (PreparedStatement statementMissione = connessione.prepareStatement(queryMissione)) {
+                statementMissione.setString(1, nuovoObiettivo);
+                statementMissione.setString(2, nuovaPosizione);
+                statementMissione.setInt(3, idMissione);
+                statementMissione.executeUpdate();
             }
-        } catch (SQLException e) {
+
+            if (nuoviOperatori != null) {
+                try (PreparedStatement statementOperatori = connessione.prepareStatement(queryOperatore)) {
+                    for (String operatore : nuoviOperatori) {
+                        statementOperatori.setInt(1, idMissione);
+                        statementOperatori.setInt(2, Integer.parseInt(operatore.trim()));
+                        statementOperatori.executeUpdate();
+                    }
+                }
+            }
+
+            if (nuoviMezzi != null) {
+                try (PreparedStatement statementMezzi = connessione.prepareStatement(queryMezzo)) {
+                    for (String mezzo : nuoviMezzi) {
+                        statementMezzi.setInt(1, idMissione);
+                        statementMezzi.setInt(2, Integer.parseInt(mezzo.trim()));
+                        statementMezzi.executeUpdate();
+                    }
+                }
+            }
+
+            if (nuoviMateriali != null) {
+                try (PreparedStatement statementMateriali = connessione.prepareStatement(queryMateriale)) {
+                    for (String materiale : nuoviMateriali) {
+                        statementMateriali.setInt(1, idMissione);
+                        statementMateriali.setInt(2, Integer.parseInt(materiale.trim()));
+                        statementMateriali.executeUpdate();
+                    }
+                }
+            }
+
+            connessione.commit();
+            successo = true;
+
+        } catch (Exception e) {
+            System.err.println("errore durante la modifica della missione.");
             e.printStackTrace();
-            return false;
+            if (connessione != null) {
+                try {
+                    connessione.rollback();
+                } catch (Exception exRollback) {
+                    exRollback.printStackTrace();
+                }
+            }
+        } finally {
+            if (connessione != null) {
+                try {
+                    connessione.setAutoCommit(true);
+                    connessione.close();
+                } catch (Exception exClose) {
+                    exClose.printStackTrace();
+                }
+            }
         }
+        
+        return successo;
     }
 }
