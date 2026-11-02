@@ -26,12 +26,12 @@ public class ConcludiMissioneServlet extends HttpServlet {
         }
 
         try {
-            String idMissione = request.getParameter("id_missione");
+            int idMissione = Integer.parseInt(request.getParameter("id_missione"));
             String idRichiesta = request.getParameter("id_richiesta");
             
-            // Preparazione dei dati per il template FreeMarker
-            Map<String, String> missioneCorrente = new HashMap<>();
-            missioneCorrente.put("id_missione", idMissione);
+            MissioneDAO missioneDao = new MissioneDAO();
+            Map<String, Object> missioneCorrente = missioneDao.estraiDettagliCompleti(idMissione);
+            
             missioneCorrente.put("id_richiesta", idRichiesta);
             
             Map<String, Object> dataModel = new HashMap<>();

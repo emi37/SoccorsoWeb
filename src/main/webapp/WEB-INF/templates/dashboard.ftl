@@ -114,8 +114,7 @@
                             </td>
                             <td>
                                 <a href="DettaglioMissioneServlet?id_missione=${idMiss}" class="btn btn-primary d-block mb-5">Gestisci</a>
-                                <a href="ConcludiMissioneServlet?id_missione=${idMiss}" class="btn btn-primary d-block">Concludi</a>
-                            </td>
+                                <a href="ConcludiMissioneServlet?id_missione=${m.id_missione}&id_richiesta=${m.id_richiesta}" class="btn btn-primary">Concludi</a>                            </td>
                         </tr>
                     </#list>
                 <#else>

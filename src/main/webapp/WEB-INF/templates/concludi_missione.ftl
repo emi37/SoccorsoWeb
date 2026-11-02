@@ -23,7 +23,6 @@
             <h3 class="section-title">Compila Relazione Finale</h3>
             
             <form action="${request.contextPath}/ConcludiMissioneServlet" method="POST">
-                <!-- ID Nascosti che servono alla Servlet per chiudere la missione nel DB -->
                 <input type="hidden" name="id_missione" value="${(missione.id_missione)!""}">
                 <input type="hidden" name="id_richiesta" value="${(missione.id_richiesta)!""}">
                 
