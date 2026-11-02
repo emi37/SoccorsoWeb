@@ -47,7 +47,7 @@ public class LoginServlet extends HttpServlet {
 
                 //confronta la password in chiaro con l'hash salvato nel DB con quella libreria bcrypt
                 if (BCrypt.checkpw(passwordInserita, utenteTrovato.getPassword())) {
-} {
+
                     loginEffettuato = true;
                     ruoloUtente = utenteTrovato.getRuolo();
 
