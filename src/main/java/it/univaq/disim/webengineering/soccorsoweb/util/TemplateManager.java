@@ -11,25 +11,24 @@ public class TemplateManager {
 
     private static Configuration cfg;
 
-    // inizializzazione lazy della configurazione di freemarker
+    // inizializzazione della configurazione di freemarker
     private static void init(ServletContext context) {
         if (cfg == null) {
-            // imposto la versione (usa quella del jar che metterai in WEB-INF/lib)
+            // imposto la versione (usa quella del jar in WEB-INF/lib)
             cfg = new Configuration(Configuration.VERSION_2_3_32);
             
             try {
-                // dico a freemarker di pescare i template dalla cartella /WEB-INF/templates
-                // CORRETTO: qui ora c'è 'context', come richiede il parametro!
+                // dico a freemarker che i template stanno nella cartella /WEB-INF/templates
                 java.io.File directoryTemplate = new java.io.File(context.getRealPath("/WEB-INF/templates"));
                 cfg.setDirectoryForTemplateLoading(directoryTemplate);
             } catch (Exception e) {
                 e.printStackTrace();
             }
             
-            // standard encoding
+            // standard serve sempre di dafault
             cfg.setDefaultEncoding("UTF-8");
             
-            // gestione errori: in dev sputa l'errore nell'html, in prod andrebbe cambiato in RETHROW_HANDLER
+            // gestione errori
             cfg.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
             cfg.setLogTemplateExceptions(false);
             cfg.setWrapUncheckedExceptions(true);
@@ -38,7 +37,7 @@ public class TemplateManager {
 
     // metodo principale da chiamare nelle Servlet
     public static void process(String templateName, Map<String, Object> data, HttpServletResponse response, ServletContext context) {
-        // se è la prima chiamata, inizializzo il motore
+        // se è la prima chiamata, inizializzo tutto 
         if (cfg == null) {
             init(context);
         }
@@ -46,14 +45,14 @@ public class TemplateManager {
         response.setContentType("text/html;charset=UTF-8");
         
         try {
-            // pesco il file .ftl
+            // prende il file .ftl
             Template template = cfg.getTemplate(templateName);
             
-            // unisco il data model al template e lo sparo direttamente nell'output stream della response
+            // unisco il data model al template e stampo nell'output 
             template.process(data, response.getWriter());
             
         } catch (Exception e) {
-            System.err.println("Errore grave durante il parsing del template: " + templateName);
+            System.err.println("Errore: " + templateName);
             e.printStackTrace();
         }
     }

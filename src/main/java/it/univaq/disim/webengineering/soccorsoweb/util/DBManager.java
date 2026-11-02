@@ -6,10 +6,10 @@ import java.sql.SQLException;
 
 public class DBManager {
     
-    // Stringa di connessione al database che abbiamo appena creato
+    //stringa per connettere Net al db
     private static final String URL = "jdbc:mysql://localhost:3306/soccorsoweb_db";
     
-    // IMPORTANTISSIMO: Se su MySQL Workbench hai impostato una password per 'root', 
+    // IMPORTANTISSIMO: password di MySQL Workbench per l'user 'root' è 12345, 
     private static final String USER = "root"; 
     private static final String PASSWORD = "12345"; 
 
@@ -18,7 +18,7 @@ public class DBManager {
             // Carica il driver di MySQL
             Class.forName("com.mysql.cj.jdbc.Driver");
         } catch (ClassNotFoundException e) {
-            System.err.println("ERRORE: Driver MySQL non trovato.");
+            System.err.println("Errore: driver MySQL non trovato");
             e.printStackTrace();
         }
         
