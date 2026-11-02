@@ -31,7 +31,7 @@ public class LoginServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // prendo l'input dal form html o .ftl non ricordo
+        // prendo l'input dal form html del login
         String emailInserita = request.getParameter("email");
         String passwordInserita = request.getParameter("password");
 
