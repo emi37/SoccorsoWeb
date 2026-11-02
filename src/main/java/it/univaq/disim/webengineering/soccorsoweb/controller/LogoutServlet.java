@@ -11,10 +11,7 @@ import jakarta.servlet.http.HttpSession;
 @WebServlet(name = "Logout", urlPatterns = {"/Logout"})
 public class LogoutServlet extends HttpServlet {
 
-    @Override
-    public void init() throws ServletException {
-        super.init();
-    }
+   
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -34,6 +31,6 @@ public class LogoutServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        doGet(request, response);
+        doGet(request, response); 
     }
-}
+} 

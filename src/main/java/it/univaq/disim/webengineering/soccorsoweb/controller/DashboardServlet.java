@@ -35,24 +35,23 @@ public class DashboardServlet extends HttpServlet {
             return;
         }
 
-        // 2. Recupero dei dati tramite i DAO (niente più SQL dentro la Servlet!)
+        // 2. Recupero dei dati tramite i DAO e li metto in una lista
         RichiestaSoccorsoDAO richiestaDao = new RichiestaSoccorsoDAO();
         MissioneDAO missioneDao = new MissioneDAO();
 
         List<Map<String, String>> listaRichiesteAttive = richiestaDao.estraiRichiesteAttive();
         List<Map<String, String>> listaMissioniInCorso = missioneDao.estraiMissioniInCorso();
 
-        // 3. Preparazione del dataModel per FreeMarker
+        // 3. Preparazione del datamodel per freeMarker
         Map<String, Object> dataModel = new HashMap<>();
         dataModel.put("richieste", listaRichiesteAttive);
         dataModel.put("missioni", listaMissioniInCorso);
         dataModel.put("request", request);
 
-        // Passiamo anche i dati dell'amministratore loggato per eventuale saluto nell'header
+        // Passiamo anche i dati dell'amministratore loggato s
         dataModel.put("nome_utente", session.getAttribute("nome"));
         dataModel.put("cognome_utente", session.getAttribute("cognome"));
 
-        // 4. Rendering del template FreeMarker
         TemplateManager.process("dashboard.ftl", dataModel, response, getServletContext());
     }
 

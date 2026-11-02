@@ -13,50 +13,34 @@ import jakarta.servlet.http.HttpSession;
 @WebServlet(name = "CaptchaServlet", urlPatterns = {"/CaptchaServlet"})
 public class CaptchaServlet extends HttpServlet {
 
-    // Usiamo SecureRandom come da manuale per evitare che i bot indovinino la sequenza
-    private SecureRandom generatoreCasuale;
+    // inizializzazione standard del generatore random all'interno della classe
+    private final SecureRandom generatoreCasuale = new SecureRandom();
 
     @Override
-    public void init() throws ServletException {
-        super.init();
-        try {
-            // Inizializziamo il motore random una volta sola all'avvio della servlet
-            generatoreCasuale = new SecureRandom();
-        } catch (Exception e) {
-            System.err.println("Panico: Impossibile inizializzare il generatore random per il Captcha!");
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
         try {
-            // Generiamo due numeri a caso da 1 a 10 per fare una somma semplicissima
+            //generazione di due numeri casuali da 1 a 10
             int primoNumero = generatoreCasuale.nextInt(10) + 1;
             int secondoNumero = generatoreCasuale.nextInt(10) + 1;
             int risultatoAtteso = primoNumero + secondoNumero;
 
-            // Salviamo il risultato in sessione così quando il form viene spedito 
-            // possiamo controllare se l'utente ha risposto giusto
+            // salvataggio del risultato atteso nella sessione dell'utente
             HttpSession sessioneAttuale = request.getSession(true);
             sessioneAttuale.setAttribute("captchaRisultato", risultatoAtteso);
 
-            // Diciamo al browser che gli stiamo per mandare un payload JSON puro
             response.setContentType("application/json;charset=UTF-8");
 
-            
+            // costruzione e invio della risposta in formato json
             String stringaJson = "{ \"domanda\": \"Quanto fa " + primoNumero + " + " + secondoNumero + "?\" }";
 
-           
             try (PrintWriter stampante = response.getWriter()) {
                 stampante.write(stringaJson);
             }
 
         } catch (Exception e) {
             
-            System.err.println("Disastro durante la generazione o l'invio del Captcha in JSON...");
+            System.err.println("errore durante la generazione del captcha : " + e.getMessage());
             e.printStackTrace();
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }

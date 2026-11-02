@@ -19,12 +19,7 @@ import jakarta.servlet.http.HttpSession;
 
 @WebServlet(name = "GestioneRichiestaServletDallAdmin", urlPatterns = {"/GestioneRichiestaServletDallAdmin"})
 public class GestioneRichiestaServletDallAdmin extends HttpServlet {
-
-    @Override
-    public void init() throws ServletException {
-        super.init();
-    }
-
+     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -91,7 +86,7 @@ public class GestioneRichiestaServletDallAdmin extends HttpServlet {
                 String obiettivo = dettagliRichiesta.getOrDefault("descrizione", "Intervento di soccorso");
                 String posizione = dettagliRichiesta.getOrDefault("posizione", "Posizione sconosciuta");
 
-                //estrazione dell'ID Admin
+                //estrazione dell'ID dell'admin
                 Object objId = sessioneAttuale.getAttribute("id_utente");
                 int idAdmin = 1; // ID di default 
                 if (objId != null) {
@@ -120,7 +115,7 @@ public class GestioneRichiestaServletDallAdmin extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/GestioneRichiestaServletDallAdmin?id_richiesta=" + idRichiesta + "&errore=dati_mancanti");
 
         } catch (Exception e) {
-            System.err.println("errore durante ill POST per avviare la missione...");
+            System.err.println("errore durante il POST per avviare la missione...");
             e.printStackTrace();
             response.sendRedirect(request.getContextPath() + "/DashboardServlet?errore=critico");
         }

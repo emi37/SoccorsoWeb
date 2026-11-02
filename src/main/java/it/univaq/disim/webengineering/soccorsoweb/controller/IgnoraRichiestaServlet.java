@@ -11,13 +11,7 @@ import jakarta.servlet.http.HttpSession;
 
 @WebServlet(name = "IgnoraRichiestaServlet", urlPatterns = {"/IgnoraRichiestaServlet"})
 public class IgnoraRichiestaServlet extends HttpServlet {
-
-    @Override
-    public void init() throws ServletException {
-        // chiamata al padre. 
-        super.init();
-    }
-
+    
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

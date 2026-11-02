@@ -14,11 +14,7 @@ import org.mindrot.jbcrypt.BCrypt;
 @WebServlet(name = "LoginServlet", urlPatterns = {"/LoginServlet"})
 public class LoginServlet extends HttpServlet {
 
-    @Override
-    public void init() throws ServletException {
-        super.init();
-    }
-
+   
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -72,8 +68,9 @@ public class LoginServlet extends HttpServlet {
                 response.sendRedirect(request.getContextPath() + "/login.html?errore=ruolo");
             }
         } else {
-            // Se fallisce (email o pass sbagliate), rimando alla login con errore
-            response.sendRedirect(request.getContextPath() + "/login.html?errore=credenziali");
+            // Se fallisce (email o pass sbagliate), rimando al login con errore
+            response.sendRedirect(request.getContextPath() + "/login.html?errore=credenziali") ;
         }
     }
 }
+  

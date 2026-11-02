@@ -16,75 +16,61 @@ import java.util.Map;
 public class ConcludiMissioneServlet extends HttpServlet {
 
     @Override
-    public void init() throws ServletException {
-        super.init();
-    }
-
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-
-        // Check permessi Admin
-        HttpSession sessioneAttuale = request.getSession(false);
-        if (sessioneAttuale == null || !"ADMIN".equals(sessioneAttuale.getAttribute("ruolo"))) {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        
+        // Verifica dei permessi di amministratore
+        HttpSession session = request.getSession(false);
+        if (session == null || !"ADMIN".equals(session.getAttribute("ruolo"))) {
             response.sendRedirect(request.getContextPath() + "/login.html");
             return;
         }
 
         try {
-            // 1. Prendiamo ENTRAMBI gli ID passati dal bottone blu della dashboard
             String idMissione = request.getParameter("id_missione");
             String idRichiesta = request.getParameter("id_richiesta");
             
-            // 2. Creiamo l'oggetto "missione" esatto che il tuo file 
+            // Preparazione dei dati per il template FreeMarker
             Map<String, String> missioneCorrente = new HashMap<>();
             missioneCorrente.put("id_missione", idMissione);
             missioneCorrente.put("id_richiesta", idRichiesta);
             
-            
             Map<String, Object> dataModel = new HashMap<>();
             dataModel.put("missione", missioneCorrente); 
-            dataModel.put("request", request);           
-            
+            dataModel.put("request", request);            
             
             TemplateManager.process("concludi_missione.ftl", dataModel, response, getServletContext());
 
         } catch (Exception e) {
-            System.err.println("Errore nel caricamento del form di conclusione missione...");
+            System.err.println("Errore nel caricamento del form di conclusione missione: " + e.getMessage());
             e.printStackTrace();
             response.sendRedirect(request.getContextPath() + "/DashboardServlet");
         }
     }
     
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-        // check permessi
-        HttpSession sessioneAttuale = request.getSession(false);
-        if (sessioneAttuale == null || !"ADMIN".equals(sessioneAttuale.getAttribute("ruolo"))) {
+        HttpSession session = request.getSession(false);
+        if (session == null || !"ADMIN".equals(session.getAttribute("ruolo"))) {
             response.sendRedirect(request.getContextPath() + "/login.html");
             return;
         }
 
         try {
-            // prelevo i dati dal post inviato dal form HTML
             int idMissione = Integer.parseInt(request.getParameter("id_missione"));
             int idRichiesta = Integer.parseInt(request.getParameter("id_richiesta"));
             int livelloSuccesso = Integer.parseInt(request.getParameter("voto_successo"));
             String commenti = request.getParameter("commenti");
             
-            //  Estrazione sicura dell'ID 
-            Object objId = sessioneAttuale.getAttribute("id_utente");
+            //estrae l'ide dell'utente della sessione
             int idAdminLoggato = 1; 
+            Object objId = session.getAttribute("id_utente");
             if (objId != null) {
                 idAdminLoggato = Integer.parseInt(objId.toString());
             }
 
-            
             MissioneDAO missioneDao = new MissioneDAO();
             boolean terminataOk = missioneDao.chiudiMissioneInTransazione(idMissione, idRichiesta, livelloSuccesso, commenti, idAdminLoggato);
-
             
             if (terminataOk) {
                 response.sendRedirect(request.getContextPath() + "/DashboardServlet");
@@ -93,7 +79,7 @@ public class ConcludiMissioneServlet extends HttpServlet {
             }
 
         } catch (Exception e) {
-            System.err.println("Errore ruspante durante l'elaborazione della chiusura missione...");
+            System.err.println("Errore durante l'elaborazione della chiusura missione: " + e.getMessage());
             e.printStackTrace();
             response.sendRedirect(request.getContextPath() + "/DashboardServlet?errore=eccezione_chiusura");
         }

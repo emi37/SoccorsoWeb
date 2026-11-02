@@ -16,17 +16,12 @@ import jakarta.servlet.http.HttpSession;
 @WebServlet(name = "GestioneMaterialiServlet", urlPatterns = {"/GestioneMateriali"})
 public class GestioneMaterialiServlet extends HttpServlet {
 
-    @Override
-    public void init() throws ServletException {
-        // Solita prassi: chiamiamo il padre
-        super.init();
-    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // Il nostro solito buttafuori: check permessi ruspante per bloccare i non-admin
+        // controllo se sei admin
         HttpSession sessioneAttuale = request.getSession(false);
         if (sessioneAttuale == null || !"ADMIN".equals(sessioneAttuale.getAttribute("ruolo"))) {
             response.sendRedirect(request.getContextPath() + "/login.html");
@@ -58,7 +53,7 @@ public class GestioneMaterialiServlet extends HttpServlet {
 
         } catch (Exception e) {
             
-            System.err.println("Errore nel controller della gestione materiali...");
+            System.err.println("Errore della gestione materiali...");
             e.printStackTrace();
         }
     }
@@ -68,4 +63,4 @@ public class GestioneMaterialiServlet extends HttpServlet {
             throws ServletException, IOException {
         doGet(request, response);
     }
-}
+}  

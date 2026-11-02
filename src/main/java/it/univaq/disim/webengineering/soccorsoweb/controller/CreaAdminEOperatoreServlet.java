@@ -14,15 +14,8 @@ import jakarta.servlet.http.HttpSession;
 @WebServlet(name = "CreaAdminEOperatoreServlet", urlPatterns = {"/CreaAdminEOperatoreServlet"})
 public class CreaAdminEOperatoreServlet extends HttpServlet {
 
-    @Override
-    public void init() throws ServletException {
-        super.init();
-    }
-
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-
+        @Override    // controllo classico per vedere se è admin
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession sessioneAttuale = request.getSession(false);
         if (sessioneAttuale == null || !"ADMIN".equals(sessioneAttuale.getAttribute("ruolo"))) {
             response.sendRedirect(request.getContextPath() + "/login.html");
@@ -39,7 +32,6 @@ public class CreaAdminEOperatoreServlet extends HttpServlet {
             String ruoloScelto = request.getParameter("ruolo");
 
             if (emailInserita != null && passwordInserita != null && ruoloScelto != null) {
-
                 String passwordCifrata = BCrypt.hashpw(passwordInserita, BCrypt.gensalt());
 
                 Utenti nuovoUtente = new Utenti();
@@ -50,16 +42,12 @@ public class CreaAdminEOperatoreServlet extends HttpServlet {
                 nuovoUtente.setRuolo(ruoloScelto);
 
                 UtenteDAO utenteDao = new UtenteDAO();
-
                 long idNuovoUtente = utenteDao.salvaNuovoUtente(nuovoUtente);
 
                 if (idNuovoUtente > 0) {
                     inserimentoRiuscito = true;
 
-                    // Se è un operatore, allora salva sia le sue patenti che le abilità
                     if ("OPERATORE".equals(ruoloScelto)) {
-
-                        // Estre gli array di checkbox dal form html
                         String[] patentiSelezionate = request.getParameterValues("patenti");
                         if (patentiSelezionate != null) {
                             for (String idPatenteStr : patentiSelezionate) {
@@ -78,11 +66,9 @@ public class CreaAdminEOperatoreServlet extends HttpServlet {
             }
 
         } catch (Exception e) {
-            System.err.println("Panico nel controller durante la creazione del nuovo utente...");
             e.printStackTrace();
         }
 
-        //redirect alla dashboard degli operatori
         if (inserimentoRiuscito) {
             response.sendRedirect(request.getContextPath() + "/GestioneOperatori");
         } else {

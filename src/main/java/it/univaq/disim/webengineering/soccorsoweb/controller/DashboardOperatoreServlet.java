@@ -17,13 +17,7 @@ import java.util.Map;
 public class DashboardOperatoreServlet extends HttpServlet {
 
     @Override
-    public void init() throws ServletException {
-        super.init();
-    }
-
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
         //   controllo che sia un operatore
         HttpSession sessioneAttuale = request.getSession(false);
@@ -31,59 +25,45 @@ public class DashboardOperatoreServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/login.html");
             return;
         }
- 
+
         try {
-            Object objId = sessioneAttuale.getAttribute("id_utente");
-            long idOperatore = -1;
-            if (objId != null) {
-                idOperatore = Long.parseLong(objId.toString());
-            }
+            int idOperatore = Integer.parseInt(sessioneAttuale.getAttribute("id_utente").toString());
 
             // chiamo i DAO per recuperare le missioni
             MissioneDAO missioneDao = new MissioneDAO();
             List<Map<String, String>> mieMissioni = missioneDao.estraiMissioniAttivePerOperatore(idOperatore);
             // Recupero anche lo storico completo dell'operatore
-            List<Map<String,String>> mioStorico = missioneDao.estraiMissioniPerOperatore((int) idOperatore);            
+            List<Map<String,String>> mioStorico = missioneDao.estraiMissioniPerOperatore((int) idOperatore);
+            
             //Prepara i dati per freemarker
             Map<String, Object> dataModel = new HashMap<>();
-            
-         
             dataModel.put("request", request);
-            
-           
             dataModel.put("missioniInCorso", mieMissioni);
             dataModel.put("storicoMissioni", mioStorico);
             
             // costruisce l'oggetto "utente" 
             Map<String, String> datiUtente = new HashMap<>();
-            
-        
             Object nomeObj = sessioneAttuale.getAttribute("nome");
             Object cognomeObj = sessioneAttuale.getAttribute("cognome");
             datiUtente.put("nome", nomeObj != null ? nomeObj.toString() : "Operatore");
             datiUtente.put("cognome", cognomeObj != null ? cognomeObj.toString() : "");
 
-            // Calcolo logico dello stato
-            if (mieMissioni != null && !mieMissioni.isEmpty()) {
-                datiUtente.put("stato_attuale", "IMPEGNATO");
-            } else {
-                datiUtente.put("stato_attuale", "LIBERO");
-            }
+            //calcolo dello stato
+            datiUtente.put("stato_attuale", (mieMissioni != null && !mieMissioni.isEmpty()) ? "IMPEGNATO" : "LIBERO");
+            
             dataModel.put("utente", datiUtente);
 
-            
             TemplateManager.process("dashboard_operatore.ftl", dataModel, response, getServletContext());
 
         } catch (Exception e) {
-            System.err.println("Errore nel caricamento della dashboard operatore...");
             e.printStackTrace();
             response.sendRedirect(request.getContextPath() + "/login.html");
         }
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         doGet(request, response);
     }
 }
+

@@ -14,18 +14,13 @@ import jakarta.servlet.http.HttpSession;
 public class AggiungiMezzoServlet extends HttpServlet {
 
     @Override
-    public void init() throws ServletException {
-        super.init();
-    }
-
-    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         // recupero la sessione senza crearne di nuove a vuoto
         HttpSession sessioneAttuale = request.getSession(false);
 
-        // check permessi
+        // check permessi dell admin
         if (sessioneAttuale == null || !"ADMIN".equals(sessioneAttuale.getAttribute("ruolo"))) {
             response.sendRedirect(request.getContextPath() + "/login.html");
             return;
@@ -38,22 +33,21 @@ public class AggiungiMezzoServlet extends HttpServlet {
 
             if (nomeInserito != null && !nomeInserito.trim().isEmpty()) {
 
-                // Assemblo l'entità
+                // metto i dati al mezzo 
                 Mezzo nuovoMezzo = new Mezzo();
                 nuovoMezzo.setNome(nomeInserito);
                 nuovoMezzo.setDescrizione(descrizioneInserita);
 
-                // Chiamo il DAO che fa il lavoro sporco col database
+                
                 MezzoDAO mezzoDao = new MezzoDAO();
                 mezzoDao.salvaNuovoMezzo(nuovoMezzo);
             }
         } catch (Exception e) {
             
-            System.err.println("Panico nel controller durante l'aggiunta del mezzo...");
+            System.err.println("Errore durante l'aggiunta del mezzo");
             e.printStackTrace();
         }
 
-        // riporto l'utente alla vista generale
         response.sendRedirect(request.getContextPath() + "/GestioneMezzi");
     }
 }

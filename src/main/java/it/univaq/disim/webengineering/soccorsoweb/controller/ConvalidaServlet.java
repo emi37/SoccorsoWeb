@@ -12,35 +12,27 @@ import java.io.IOException;
 public class ConvalidaServlet extends HttpServlet {
 
     @Override
-    public void init() throws ServletException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         
-        super.init();
-    }
-
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-
-        
+        // prendo il token dall'URL
         String tokenRicevuto = request.getParameter("token");
         boolean convalidaOk = false;
 
         try {
-           
+            // verifico che il token esista e non sia una stringa vuota
             if (tokenRicevuto != null && !tokenRicevuto.trim().isEmpty()) {
-
-                //  richiesta al DAO
                 RichiestaSoccorsoDAO richiestaDao = new RichiestaSoccorsoDAO();
+                
+                // faccio la convalida del token tramite il DAO
                 convalidaOk = richiestaDao.svuotaTokenConvalida(tokenRicevuto);
             }
         } catch (Exception e) {
-            // Stampata per verificare
-            System.err.println("Panico nel controller durante il check della convalida...");
+            // In caso di problemi col database o altro, stampo l'errore per il debug
+            System.err.println("Errore durante la convalida del token: " + e.getMessage());
             e.printStackTrace();
         }
 
-        
-        // Se la convalida è andata a buon fine, il DAO ha già impostato la richiesta su 'ATTIVA'
+        //reindirizzo l'utente alla pagina corretta in base all'esito
         if (convalidaOk) {
             response.sendRedirect(request.getContextPath() + "/convalida.html");
         } else {

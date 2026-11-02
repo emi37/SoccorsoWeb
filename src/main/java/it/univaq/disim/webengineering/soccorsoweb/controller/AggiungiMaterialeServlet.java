@@ -14,11 +14,6 @@ import jakarta.servlet.http.HttpSession;
 public class AggiungiMaterialeServlet extends HttpServlet {
 
     @Override
-    public void init() throws ServletException {
-        super.init();
-    }
-
-    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
@@ -32,27 +27,26 @@ public class AggiungiMaterialeServlet extends HttpServlet {
         }
 
         try {
-            // Estraiamo i parametri che ci ha spedito il form HTML
+            //prendo i parametri inseriti nel form 
             String nomeInserito = request.getParameter("nome");
             String descrizioneInserita = request.getParameter("descrizione");
-
-            //  non salva roba vuota
+            
             if (nomeInserito != null && !nomeInserito.trim().isEmpty()) {
-
+                
+                //creo il nuovo materiale e ci metto i dati messi nel form 
                 Materiale nuovoMateriale = new Materiale();
                 nuovoMateriale.setNome(nomeInserito);
                 nuovoMateriale.setDescrizione(descrizioneInserita);
 
-                // Salvataggio tramite DAO
+                // prendo il nuovo materiale inserito e tramite il metodo salvaNuovoMateriale del DAO lo salvo nel db
                 MaterialeDAO materialeDao = new MaterialeDAO();
                 materialeDao.salvaNuovoMateriale(nuovoMateriale);
             }
         } catch (Exception e) {
-            System.err.println("Panico nel controller durante l'aggiunta del materiale...");
+            System.err.println("Errore durante l'aggiunta del nuovo materiale, riprovare");
             e.printStackTrace();
         }
-
-        // Redirect  verso la lista
+        
         response.sendRedirect(request.getContextPath() + "/GestioneMateriali");
     }
 }

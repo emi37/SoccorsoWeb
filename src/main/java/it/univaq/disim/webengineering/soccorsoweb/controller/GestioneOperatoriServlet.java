@@ -52,4 +52,4 @@ public class GestioneOperatoriServlet extends HttpServlet {
             e.printStackTrace();
         }
     }
-}
+}    

@@ -15,18 +15,12 @@ import jakarta.servlet.http.HttpSession;
 
 @WebServlet(name = "StoricoMissioniServlet", urlPatterns = {"/StoricoMissioni"})
 public class StoricoMissioniServlet extends HttpServlet {
-
-    @Override
-    public void init() throws ServletException {
-        // chiamiamo il padre 
-        super.init();
-    }
-
+    // la logica è: controlla se sei Admin -> prende i dati dal DAO -> li passa al file .ftl cosi li mostriamo in front-end 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        //sicurezza: lo storico lo facciamo vedere solo all'admin
+        //lo storico lo facciamo vedere solo all'admin
         HttpSession sessioneAttuale = request.getSession(false);
         if (sessioneAttuale == null || !"ADMIN".equals(sessioneAttuale.getAttribute("ruolo"))) {
             response.sendRedirect(request.getContextPath() + "/login.html");
@@ -35,9 +29,9 @@ public class StoricoMissioniServlet extends HttpServlet {
 
         try {
             // creo il  DAO
-            MissioneDAO missioneDao = new MissioneDAO();
+            MissioneDAO missioneDao = new MissioneDAO(); // prendo i dati estratti dalla query del DAO
 
-            // prendo la lista di tutte le missioni finite/concluse
+            // prendo la lista di tutte di tutti i dati di tutte le missioni finite/concluse richiamando il metodo del DAO: estraiStoricoMissioni
             List<Map<String, String>> listaStorico = missioneDao.estraiStoricoMissioni();
 
             // prendo i dati nella request per freeMarker

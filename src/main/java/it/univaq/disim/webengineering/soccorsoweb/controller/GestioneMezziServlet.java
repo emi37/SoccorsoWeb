@@ -17,19 +17,14 @@ import jakarta.servlet.http.HttpSession;
 public class GestioneMezziServlet extends HttpServlet {
 
     @Override
-    public void init() throws ServletException {
-        super.init();
-    }
-
-    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // Check dei permessi ,blocca chi non è admin
+        // blocca chi non è admin
         HttpSession sessioneAttuale = request.getSession(false);
         if (sessioneAttuale == null || !"ADMIN".equals(sessioneAttuale.getAttribute("ruolo"))) {
             response.sendRedirect(request.getContextPath() + "/login.html");
-            return;
+            return;  
         }
 
         try {
@@ -57,7 +52,7 @@ public class GestioneMezziServlet extends HttpServlet {
             TemplateManager.process("gestione_mezzi.ftl", dataModel, response, getServletContext());
 
         } catch (Exception e) {
-            System.err.println("Errore brutto nel controller della gestione mezzi...");
+            System.err.println("Errore della gestione mezzi...");
             e.printStackTrace();
         }
     }
