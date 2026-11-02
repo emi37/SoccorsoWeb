@@ -31,7 +31,7 @@ public class DashboardOperatoreServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/login.html");
             return;
         }
-
+ 
         try {
             Object objId = sessioneAttuale.getAttribute("id_utente");
             long idOperatore = -1;
@@ -42,7 +42,8 @@ public class DashboardOperatoreServlet extends HttpServlet {
             // chiamo i DAO per recuperare le missioni
             MissioneDAO missioneDao = new MissioneDAO();
             List<Map<String, String>> mieMissioni = missioneDao.estraiMissioniAttivePerOperatore(idOperatore);
-            
+            // Recupero anche lo storico completo dell'operatore
+            List<Map<String,String>> mioStorico = missioneDao.estraiMissioniPerOperatore((int) idOperatore);            
             //Prepara i dati per freemarker
             Map<String, Object> dataModel = new HashMap<>();
             
@@ -51,6 +52,7 @@ public class DashboardOperatoreServlet extends HttpServlet {
             
            
             dataModel.put("missioniInCorso", mieMissioni);
+            dataModel.put("storicoMissioni", mioStorico);
             
             // costruisce l'oggetto "utente" 
             Map<String, String> datiUtente = new HashMap<>();

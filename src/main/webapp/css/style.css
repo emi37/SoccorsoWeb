@@ -493,3 +493,12 @@ li {
 .nascosto {
     display: none !important;
 }
+
+/* Aggiungi queste due classi in fondo al tuo file style.css */
+.mb-15 {
+    margin-bottom: 15px;
+}
+
+.pd-20 {
+    padding: 20px;
+}
