@@ -22,6 +22,7 @@
                         <tr>
                             <th class="col-id">ID missione</th>
                             <th class="col-id">ID richiesta</th>
+                            <th>Caposquadra</th>
                             <th class="col-dettagli">Dettagli operazione</th>
                             <th class="col-voto">Valutazione (0-5)</th>
                             <th>Relazione finale</th>
@@ -33,6 +34,7 @@
                             <tr>
                                 <td>#${m.id_missione!}</td>
                                 <td>#${m.id_richiesta!}</td>
+                                <td>${m.caposquadra!"Nessuno"}</td>
                                 <td>${m.obiettivo!""}</td>
                                 <td>${m.livello_successo!"-"} / 5</td>
                                 <td>${m.commenti!""}</td>
@@ -40,7 +42,7 @@
                             </#list>
                         <#else>
                             <tr>
-                                <td colspan="5" class="text-center text-muted">Nessuna missione in storico al momento. L'archivio è vuoto.</td>
+                                <td colspan="6" class="text-center text-muted">Nessuna missione in storico al momento. L'archivio è vuoto.</td>
                             </tr>
                         </#if>
                     </tbody>

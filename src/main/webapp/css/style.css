@@ -502,3 +502,12 @@ li {
 .pd-20 {
     padding: 20px;
 }
+
+/* Bottoni in colonna per le tabelle */
+.d-block {
+    display: block;
+}
+
+.mb-5 {
+    margin-bottom: 5px;
+}

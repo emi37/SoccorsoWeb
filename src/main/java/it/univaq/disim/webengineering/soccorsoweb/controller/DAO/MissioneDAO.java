@@ -16,8 +16,12 @@ public class MissioneDAO {
     // 1. Estrae le missioni attive (IN_CORSO) per la tabella principale della Dashboard Admin
     public List<Map<String, String>> estraiMissioniInCorso() {
         List<Map<String, String>> lista = new ArrayList<>();
-        String query = "SELECT id_missione, id_richiesta, obiettivo, posizione, stato "
-                + "FROM missione WHERE stato = 'IN_CORSO' ORDER BY id_missione DESC";
+        String query = "SELECT m.id_missione, m.id_richiesta, m.obiettivo, m.posizione, m.stato, "
+                + "u.nome AS nome_capo, u.cognome AS cognome_capo "
+                + "FROM missione m "
+                + "LEFT JOIN assegnazione_operatori_missione aom ON m.id_missione = aom.id_missione AND aom.is_caposquadra = 1 "
+                + "LEFT JOIN utenti u ON aom.id_utente = u.id_utente "
+                + "WHERE m.stato = 'IN_CORSO' ORDER BY m.id_missione DESC";
 
         try (Connection conn = DBManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query);
@@ -30,6 +34,16 @@ public class MissioneDAO {
                 m.put("obiettivo", rs.getString("obiettivo"));
                 m.put("posizione", rs.getString("posizione"));
                 m.put("stato", rs.getString("stato"));
+                
+                // NUOVO: Salviamo il nome del caposquadra nella mappa
+                String nomeCapo = rs.getString("nome_capo");
+                String cognomeCapo = rs.getString("cognome_capo");
+                if (nomeCapo != null && cognomeCapo != null) {
+                    m.put("caposquadra", nomeCapo + " " + cognomeCapo);
+                } else {
+                    m.put("caposquadra", "Non assegnato");
+                }
+                
                 lista.add(m);
             }
         } catch (Exception e) {
@@ -168,8 +182,12 @@ public class MissioneDAO {
     // 3. Estrae lo storico delle missioni chiuse
     public List<Map<String, String>> estraiStoricoMissioni() {
         List<Map<String, String>> storicoTrovato = new ArrayList<>();
-        String queryStorico = "SELECT id_missione, id_richiesta, obiettivo, livello_successo, commenti "
-                + "FROM missione WHERE stato = 'CHIUSA' ORDER BY id_missione DESC";
+        String queryStorico = "SELECT m.id_missione, m.id_richiesta, m.obiettivo, m.livello_successo, m.commenti, "
+                + "u.nome AS nome_capo, u.cognome AS cognome_capo "
+                + "FROM missione m "
+                + "LEFT JOIN assegnazione_operatori_missione aom ON m.id_missione = aom.id_missione AND aom.is_caposquadra = 1 "
+                + "LEFT JOIN utenti u ON aom.id_utente = u.id_utente "
+                + "WHERE m.stato = 'CHIUSA' ORDER BY m.id_missione DESC";
 
         try (Connection connessioneDb = DBManager.getConnection();
              PreparedStatement statementStorico = connessioneDb.prepareStatement(queryStorico);
@@ -182,6 +200,16 @@ public class MissioneDAO {
                 mappaMissione.put("obiettivo", risultati.getString("obiettivo"));
                 mappaMissione.put("livello_successo", String.valueOf(risultati.getInt("livello_successo")));
                 mappaMissione.put("commenti", risultati.getString("commenti"));
+                
+                // NUOVO: Salviamo il nome del caposquadra nella mappa
+                String nomeCapo = risultati.getString("nome_capo");
+                String cognomeCapo = risultati.getString("cognome_capo");
+                if (nomeCapo != null && cognomeCapo != null) {
+                    mappaMissione.put("caposquadra", nomeCapo + " " + cognomeCapo);
+                } else {
+                    mappaMissione.put("caposquadra", "Nessuno");
+                }
+                
                 storicoTrovato.add(mappaMissione);
             }
         } catch (Exception e) {
@@ -306,6 +334,7 @@ public class MissioneDAO {
     // 7. Dettagli completi missione per scheda operativa
     public Map<String, Object> estraiDettagliCompleti(int idMissione) {
         Map<String, Object> mappaDettagli = new HashMap<>();
+        String statoDellaMissione = ""; // Aggiunta variabile d'appoggio
 
         try (Connection connessioneDb = DBManager.getConnection()) {
             String queryBase = "SELECT obiettivo, posizione, stato, timestamp_inizio FROM missione WHERE id_missione = ?";
@@ -313,10 +342,12 @@ public class MissioneDAO {
                 stmtBase.setInt(1, idMissione);
                 try (ResultSet rsBase = stmtBase.executeQuery()) {
                     if (rsBase.next()) {
+                        statoDellaMissione = rsBase.getString("stato"); // Salviamo lo stato attuale
+                        
                         mappaDettagli.put("id_missione", idMissione);
                         mappaDettagli.put("obiettivo", rsBase.getString("obiettivo"));
                         mappaDettagli.put("posizione", rsBase.getString("posizione"));
-                        mappaDettagli.put("stato", rsBase.getString("stato"));
+                        mappaDettagli.put("stato", statoDellaMissione); // Usiamo la variabile salvata
                         mappaDettagli.put("inizio", rsBase.getTimestamp("timestamp_inizio").toString());
                     } else {
                         return mappaDettagli;
@@ -324,7 +355,9 @@ public class MissioneDAO {
                 }
             }
 
-            String nomeCaposquadra = "Non ancora assegnato";
+            // Logica applicata: controlliamo se lo stato è CHIUSA per cambiare il messaggio di default
+            String nomeCaposquadra = "CHIUSA".equals(statoDellaMissione) ? "Dato non registrato agli atti" : "Non ancora assegnato";
+            
             String queryCapo = "SELECT u.nome, u.cognome FROM utenti u "
                     + "JOIN assegnazione_operatori_missione aom ON u.id_utente = aom.id_utente "
                     + "WHERE aom.id_missione = ? AND aom.is_caposquadra = 1";
@@ -337,7 +370,8 @@ public class MissioneDAO {
                 }
             }
             mappaDettagli.put("caposquadra", nomeCaposquadra);
-
+            
+            
             List<String> listaMezzi = new ArrayList<>();
             String queryMezzi = "SELECT m.nome, m.descrizione FROM mezzo m "
                     + "JOIN assegnazione_mezzi_missione amm ON m.id_mezzo = amm.id_mezzo "
