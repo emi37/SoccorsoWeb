@@ -29,7 +29,10 @@ public class MissioneDAO {
 
             while (resultSet.next()) {
                 Map< String, String > mappaMissione = new HashMap<>();
+                // variabile per il file .ftl(l'etichetta front'end)           ,  variabile del DB
                 mappaMissione.put("id_missione", String.valueOf(resultSet.getInt("id_missione")));
+                //in pratica la CHIAVE (a sinistra) è il parametro nel file FTL
+                //invece il VALORE (a destra) è il dato vero e proprio che resultSet sta estraendo in questo istante dalla tabella del db
                 mappaMissione.put("id_richiesta", String.valueOf(resultSet.getInt("id_richiesta")));
                 mappaMissione.put("obiettivo", resultSet.getString("obiettivo"));
                 mappaMissione.put("posizione", resultSet.getString("posizione"));

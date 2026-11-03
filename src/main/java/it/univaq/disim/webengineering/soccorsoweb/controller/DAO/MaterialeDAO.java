@@ -32,7 +32,8 @@ public class MaterialeDAO {
     }
 
     public boolean nascondiMaterialeSeLibero(int idDaCancellare) {
-        // quando clicco " elimina " in GestioneMaterialiServlet , non elimino effettivamente il materiale dal db, ma non viene semplicemente piu mosrtato nei materiali disponibili nella tabella all'admin
+        // quando clicco " elimina " in GestioneMaterialiServlet , non elimino effettivamente il materiale dal db,
+        // ma non viene semplicemente piu mostrato nei materiali disponibili nella tabella all'admin
         String query = "UPDATE materiale SET attivo = 0 "  //settando a 0 , non posso + vederlo nei materiali disponibili
                 + " WHERE id_materiale = ? AND id_materiale NOT IN ("
                 + "    SELECT id_materiale FROM assegnazione_materiale_missione amm "

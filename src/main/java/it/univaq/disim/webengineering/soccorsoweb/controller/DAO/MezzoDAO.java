@@ -34,11 +34,13 @@ public class MezzoDAO {
 
     // nasconde un mezzo solo se non è impegnato in missione
     public boolean rimuoviMezzoSeLibero(int idDaCancellare) {
-        String query = "UPDATE mezzo SET attivo = 0 "
+                // quando clicco " elimina " in GestioneMezziServlet , non elimino effettivamente il mezzo dal db, 
+                // ma non viene semplicemente piu mosrtato nei materiali disponibili nella tabella all'admin
+        String query = "UPDATE mezzo SET attivo = 0 " //settando a 0 , non posso + vederlo nei mezzi disponibili
                 + "WHERE id_mezzo = ? AND id_mezzo NOT IN ("
                 + "    SELECT id_mezzo FROM assegnazione_mezzi_missione amm "
                 + "    JOIN missione mis ON amm.id_missione = mis.id_missione "
-                + "    WHERE mis.stato = 'IN_CORSO'"
+                + "    WHERE mis.stato = 'IN_CORSO'" // se il mezzo è utilizzato in una missione in corso allora non posso eliminarlo
                 + ")";
 
         try (Connection connessione = DBManager.getConnection(); 
@@ -64,9 +66,9 @@ public class MezzoDAO {
                 + "CASE WHEN EXISTS ("
                 + "    SELECT 1 FROM assegnazione_mezzi_missione amm "
                 + "    JOIN missione mis ON amm.id_missione = mis.id_missione "
-                + "    WHERE amm.id_mezzo = m.id_mezzo AND mis.stato = 'IN_CORSO'"
+                + "    WHERE amm.id_mezzo = m.id_mezzo AND mis.stato = 'IN_CORSO'" //semplicemente dico che se quell'id mezzo è associato ad una missione, allora dico IMPEGNATO, altrimenti se non lo è, dico che è LIBERO
                 + ") THEN 'IMPEGNATO' ELSE 'LIBERO' END AS stato_attuale "
-                + "FROM mezzo m WHERE m.attivo = 1";
+                + "FROM mezzo m WHERE m.attivo = 1"; 
 
         try (Connection connessione = DBManager.getConnection(); 
              PreparedStatement statement = connessione.prepareStatement(query); 
@@ -90,7 +92,7 @@ public class MezzoDAO {
         return listaMezzi;
     }
 
-    // trova i mezzi attivi e non assegnati a missioni
+    // trova i mezzi non assegnati a missioni(quindi attivi)
     public List<Map<String, String>> estraiMezziDisponibili() {
         List<Map<String, String>> listaMezzi = new ArrayList<>();
         
@@ -123,20 +125,5 @@ public class MezzoDAO {
         
         return listaMezzi;
     }
-    
-    public boolean eliminaMezzo(int idMezzo) {
-    String query = "DELETE FROM mezzo WHERE id_mezzo = ?";
-    try (Connection connessione = DBManager.getConnection();
-         PreparedStatement statement = connessione.prepareStatement(query)) {
-        
-        statement.setInt(1, idMezzo);
-        return statement.executeUpdate() > 0;
-        
-    } catch (Exception e) {
-        System.err.println("Errore durante l'eliminazione del mezzo: " + e.getMessage());
-        e.printStackTrace();
-    }
-    return false;
-}
     
 }
