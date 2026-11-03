@@ -235,7 +235,8 @@ public class MissioneDAO {
                     int livelloSuccesso = resultSet.getInt("livello_successo");
                     String votoFormattato = resultSet.wasNull() ? "-" : livelloSuccesso + " / 5";
                     singolaMissione.put("visualizzaVoto", votoFormattato);
-
+            //se una miss. è ancora in corso, sul db ha livello_successo impostato a null, ma un intero come livello_successo non puo avere null ovviamente
+            //quindi uso coem controllo di sicurezza wasNull, se la missione è ancora in corso, sostiotuisco NULL con un trattino, altriemnt se non lo è, ci metto la sua votazione, in pratica
                     missioniPersonali.add(singolaMissione);
                 }
             }
@@ -245,24 +246,26 @@ public class MissioneDAO {
         }
         return missioniPersonali;
     }
-
+        //qua ancziche' passare i parametri modoficati tramite i java bean, li passo direttamente dal metodo questo perche' vado a modificare 3 tabelle diverse sul DB missione , richiesta_soccorso , aggiornamento_missione
+        //quindi anziche fare new nella servlet di tre oggetti diversi per passare 5 parametri, li passo direttamente qui nel metodo per comodità e tenere il codice+pulito
     public boolean chiudiMissioneInTransazione(int idMissione, int idRichiesta, int livelloSuccesso, String commenti, int idAdminLoggato) {
-        boolean successo = false;
+        boolean successo = false; //diventa true solo se tutte e 3 le query vanno a buon fine
         Connection connessione = null;
-
+        //faccio 3 query perche cliccando il bottone " concludi " , succedono 2 update e 1 insert nel DB                           //time stamp salva l orario e la data di conclusione della missione 
         String queryMissione = "UPDATE missione SET stato = 'CHIUSA', livello_successo = ?, commenti = ?, timestamp_fine = CURRENT_TIMESTAMP WHERE id_missione = ?";
         String queryRichiesta = "UPDATE richiesta_soccorso SET stato = 'CHIUSA' WHERE id_richiesta = ?";
         String queryTimeline = "INSERT INTO aggiornamento_missione (id_missione, id_admin, testo_descrittivo) VALUES (?, ?, ?)";
 
         try {
             connessione = DBManager.getConnection();
-            connessione.setAutoCommit(false);
-
+            connessione.setAutoCommit(false); // non salva le modifiche fatte dalla prima query sul DB appena viene eseguita, ma lo fa solo quando tutte e 3 le query sono state eseguite
+            //quindi fa il commit in locale sul DB solo quando tutte e 3 le queery vanno a buon fine
             try (PreparedStatement statementMissione = connessione.prepareStatement(queryMissione)) {
                 statementMissione.setInt(1, livelloSuccesso);
                 statementMissione.setString(2, commenti);
                 statementMissione.setInt(3, idMissione);
-                statementMissione.executeUpdate();
+                statementMissione.executeUpdate(); //qui esegue la prima query, non la va a committare subito sul db, ma committa solo alla fine
+                                                   //  quando tutte e 3 le query sono state eseguite
             }
 
             try (PreparedStatement statementRichiesta = connessione.prepareStatement(queryRichiesta)) {
