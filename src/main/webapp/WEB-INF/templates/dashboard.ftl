@@ -45,27 +45,25 @@
                                 <th>Azioni</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <#list richieste as r>
-                            <tr>
-                                <td>#${(r.id_richiesta)!""}</td>
-                                <td>${(r.nome_segnalante)!""}</td>
-                                <td>${(r.email_segnalante)!""}</td>
-                                <td>${(r.posizione)!""}</td>
-                                <td>${(r.descrizione)!""}</td>
-                                <td>
-                                    <a href="GestioneRichiestaServletDallAdmin?id_richiesta=${(r.id_richiesta)!""}" class="btn btn-primary">Avvia Missione</a>
-                                    <a href="IgnoraRichiestaServlet?id_richiesta=${(r.id_richiesta)!""}" 
-                                       class="btn btn-danger" 
-                                       onclick="return confirm('Sei sicuro di voler ignorare questa richiesta di soccorso?');">Ignora</a>
-                                </td>
-                            </tr>
-                            <#else>
-                            <tr>
-                                <td colspan="6" class="text-center text-muted">Nessuna richiesta di soccorso in attesa. Ottimo lavoro!</td>
-                            </tr>
-                            </#list>
-                        </tbody>
+                       <tbody>
+    <#list richieste![] as r>
+    <tr>
+        <td>#${r.id!}</td>
+        <td>${r.segnalante!}</td>
+        <td>${r.email!}</td>
+        <td>${r.posizione!}</td>
+        <td>${r.descrizione!}</td>
+        <td>
+            <a href="GestioneRichiestaServletDallAdmin?id_richiesta=${r.id!}" class="btn btn-primary">Avvia</a>
+            <a href="IgnoraRichiestaServlet?id_richiesta=${r.id!}" class="btn btn-danger" onclick="return confirm('Sicuro di voler ignorare la richiesta?');">Ignora</a>
+        </td>
+    </tr>
+    <#else>
+    <tr>
+        <td colspan="6" class="text-center text-muted">Nessuna richiesta di soccorso in attesa.</td>
+    </tr>
+    </#list>
+</tbody>
                     </table>
                 </div>
             </section>

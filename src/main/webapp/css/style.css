@@ -516,3 +516,25 @@ li {
     font-weight: bold;
     color: #007bff;
 }
+
+.status-text {
+    font-size: 16px;
+}
+
+.badge-success {
+    background-color: #28a745;
+    color: white;
+}
+
+.pd-20 {
+    padding: 20px;
+}
+.form-container-box {
+    margin-bottom: 20px; 
+    padding: 15px; 
+    border: 1px solid #ccc;
+}
+.btn-large {
+    padding: 15px 30px;
+    font-size: 18px;
+}

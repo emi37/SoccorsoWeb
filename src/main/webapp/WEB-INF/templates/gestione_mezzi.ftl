@@ -2,53 +2,57 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Gestione Mezzi</title>
+    <title>Gestione mezzi</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-   <header class="topbar">
-    <h1 class="main-title">Gestione Mezzi</h1>
-    <nav class="topbar-actions">
-        <a href="DashboardServlet" class="btn btn-primary">Torna a Dashboard</a>
-    </nav>
-</header>
-    <!-- Inizio Form Aggiunta Mezzo -->
-    <div class="form-container" style="margin-bottom: 20px; padding: 15px; border: 1px solid #ccc;">
-        <h2>Aggiungi un nuovo Mezzo</h2>
+    <header class="topbar">
+        <h1 class="main-title">Gestione mezzi</h1>
+        <nav class="topbar-actions">
+            <a href="DashboardServlet" class="btn btn-primary">Torna alla dashboard</a>
+        </nav>
+    </header>
+    
+    <div class="form-container form-container-box">
+        <h2>Aggiungi un nuovo mezzo</h2>
         <form action="AggiungiMezzo" method="POST">
-            <label for="nome">Nome Mezzo (es. Ambulanza A1):</label>
+            <label for="nome">Nome mezzo (es. Ambulanza A1):</label>
             <input type="text" id="nome" name="nome" required>
             
             <label for="descrizione">Descrizione:</label>
             <input type="text" id="descrizione" name="descrizione" required>
             
-            <button type="submit" class="btn">Aggiungi Mezzo</button>
+            <button type="submit" class="btn">Aggiungi mezzo</button>
         </form>
     </div>
-    <br>
-    <!-- Fine Form Aggiunta Mezzo -->
     
-    <table border="1">
-        <tr>
-            <th>ID</th>
-            <th>Nome</th>
-            <th>Descrizione</th>
-            <th>Stato (Attivo)</th>
-           <!--  <th>Azioni</th>-->
-        </tr>
-        
-        <#if mezzi?? && mezzi?size &gt; 0>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Descrizione</th>
+                <th>Stato (Attivo)</th>
+                <th>Azioni</th>
+            </tr>
+        </thead>
+        <tbody>
             <#list mezzi as m>
             <tr>
                 <td>${m.id_mezzo!}</td>
                 <td>${m.nome!}</td>
                 <td>${m.descrizione!}</td>
                 <td>${m.attivo!}</td>
+                <td>
+                        <a href="GestioneMezzi?elimina=${m.id_mezzo!}" class="btn btn-danger" onclick="return confirm('Sei sicuro di voler eliminare definitivamente questo mezzo?');">Elimina</a>
+                </td>
+            </tr>
+            <#else>
+            <tr>
+                <td colspan="4" class="text-center text-muted">Nessun mezzo disponibile al momento.</td>
             </tr>
             </#list>
-        <#else>
-            <tr><td colspan="5">Nessun mezzo disponibile al momento.</td></tr>
-        </#if>
+        </tbody>
     </table>
 </body>
 </html>

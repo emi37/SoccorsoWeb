@@ -29,22 +29,20 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <#if missioni_archiviate?? && missioni_archiviate?size &gt; 0>
-                            <#list missioni_archiviate as m>
+                        <#list missioni_archiviate![] as lista>
                             <tr>
-                                <td>#${m.id_missione!}</td>
-                                <td>#${m.id_richiesta!}</td>
-                                <td>${m.caposquadra!"Nessuno"}</td>
-                                <td>${m.obiettivo!""}</td>
-                                <td>${m.livello_successo!"-"} / 5</td>
-                                <td>${m.commenti!""}</td>
+                                <td>#${lista.id_missione!}</td>
+                                <td>#${lista.id_richiesta!}</td>
+                                <td>${lista.caposquadra!"Nessuno"}</td>
+                                <td>${lista.obiettivo!""}</td>
+                                <td>${lista.livello_successo!"-"} / 5</td>
+                                <td>${lista.commenti!""}</td>
                             </tr>
-                            </#list>
                         <#else>
                             <tr>
-                                <td colspan="6" class="text-center text-muted">Nessuna missione in storico al momento. L'archivio è vuoto.</td>
+                                <td colspan="6" class="text-center text-muted">L'archivio/lo storico delle missioni è vuoto.</td>
                             </tr>
-                        </#if>
+                        </#list>
                     </tbody>
                 </table>
             </div>

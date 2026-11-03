@@ -123,4 +123,20 @@ public class MezzoDAO {
         
         return listaMezzi;
     }
+    
+    public boolean eliminaMezzo(int idMezzo) {
+    String query = "DELETE FROM mezzo WHERE id_mezzo = ?";
+    try (Connection connessione = DBManager.getConnection();
+         PreparedStatement statement = connessione.prepareStatement(query)) {
+        
+        statement.setInt(1, idMezzo);
+        return statement.executeUpdate() > 0;
+        
+    } catch (Exception e) {
+        System.err.println("Errore durante l'eliminazione del mezzo: " + e.getMessage());
+        e.printStackTrace();
+    }
+    return false;
+}
+    
 }

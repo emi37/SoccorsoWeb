@@ -3,13 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <title>Dettaglio Missione - SoccorsoWeb</title>
-    <!-- Collegamento al foglio di stile esterno -->
     <link rel="stylesheet" type="text/css" href="${(request.contextPath)!""}/css/style.css">
 </head>
 <body class="flex-center-body">
 
     <main class="page-content">
-        <!-- INTESTAZIONE -->
         <header class="topbar">
             <div>
                 <h1 class="main-title">Gestione Missione #${(missione.id_missione)!""}</h1>
@@ -20,7 +18,6 @@
             </nav>
         </header>
 
-        <!-- SEZIONE 1: DETTAGLI MISSIONE -->
         <section class="card">
             <h2 class="section-title">Dettagli missione</h2>
             <div class="table-wrapper">
@@ -61,38 +58,32 @@
             </div>
         </section>
 
-        <!-- SEZIONE 2: RISORSE ASSEGNATE -->
         <section class="card">
             <h2 class="section-title">Risorse assegnate</h2>
             
             <h3>Automezzi sul posto</h3>
-            <#if missione.mezzi?? && (missione.mezzi?size > 0)>
-                <ul>
-                    <#list missione.mezzi as mezzo>
-                        <li>${mezzo}</li>
-                    </#list>
-                </ul>
-            <#else>
-                <p class="text-muted">Nessun mezzo registrato.</p>
-            </#if>
+            <ul>
+                <#list missione.mezzi as mezzo>
+                    <li>${mezzo}</li>
+                <#else>
+                    <li class="text-muted">Nessun mezzo registrato.</li>
+                </#list>
+            </ul>
 
             <h3>Materiali impiegati</h3>
-            <#if missione.materiali?? && (missione.materiali?size > 0)>
-                <ul>
-                    <#list missione.materiali as mat>
-                        <li>${mat}</li>
-                    </#list>
-                </ul>
-            <#else>
-                <p class="text-muted">Nessun materiale registrato.</p>
-            </#if>
+            <ul>
+                <#list missione.materiali as mat>
+                    <li>${mat}</li>
+                <#else>
+                    <li class="text-muted">Nessun materiale registrato.</li>
+                </#list>
+            </ul>
         </section>
 
-        <!-- SEZIONE 3: MODIFICA MISSIONE E RINFORZI (Visibile solo se IN_CORSO) -->
         <#if (missione.stato!"") == "IN_CORSO">
         <section class="card">
             <h2 class="section-title">Modifica Missione</h2>
-            <p class="text-muted">Aggiorna le informzioni della missione.</p>
+            <p class="text-muted">Aggiorna le informazioni della missione.</p>
             
             <form action="${(request.contextPath)!""}/DettaglioMissioneServlet" method="POST">
                 <input type="hidden" name="id_missione" value="${(missione.id_missione)!""}">
@@ -110,55 +101,47 @@
                 </div>
 
                 <div class="form-row-flexible mt-20">
-                    <!-- Rinforzi: Operatori -->
+                    
                     <fieldset class="fieldset-antispam">
                         <legend class="legend-antispam">Aggiungi Operatori:</legend>
-                        <#if operatori_disponibili?? && (operatori_disponibili?size > 0)>
-                            <#list operatori_disponibili as op>
-                                <div class="mb-24">
-                                    <label>
-                                        <input type="checkbox" name="id_operatore" value="${(op.id_utente)!(op.id)!""}"> 
-                                        ${(op.nome_completo)!(op.nome)!""} ${(op.cognome)!""}
-                                    </label>
-                                </div>
-                            </#list>
+                        <#list operatori_disponibili as op>
+                            <div class="mb-24">
+                                <label>
+                                    <input type="checkbox" name="id_operatore" value="${op.id_utente}"> 
+                                    ${(op.nome_completo)!(op.nome)!""} ${(op.cognome)!""}
+                                </label>
+                            </div>
                         <#else>
                             <p class="text-muted">Nessun operatore disponibile.</p>
-                        </#if>
+                        </#list>
                     </fieldset>
  
-                    <!-- Rinforzi: Mezzi -->
                     <fieldset class="fieldset-antispam">
                         <legend class="legend-antispam">Aggiungi Mezzi liberi:</legend>
-                        <#if mezzi_disponibili?? && (mezzi_disponibili?size > 0)>
-                            <#list mezzi_disponibili as mez>
-                                <div class="mb-24">
-                                    <label>
-                                        <input type="checkbox" name="id_mezzo" value="${(mez.id_mezzo)!(mez.id)!""}"> 
-                                        ${(mez.nome)!""}
-                                    </label>
-                                </div>
-                            </#list>
+                        <#list mezzi_disponibili as mez>
+                            <div class="mb-24">
+                                <label>
+                                    <input type="checkbox" name="id_mezzo" value="${mez.id_mezzo}"> 
+                                    ${(mez.nome)!""}
+                                </label>
+                            </div>
                         <#else>
                             <p class="text-muted">Nessun mezzo disponibile.</p>
-                        </#if>
+                        </#list>
                     </fieldset>
                     
-                    <!-- Rinforzi: Materiali -->
                     <fieldset class="fieldset-antispam">
                         <legend class="legend-antispam">Aggiungi Materiali liberi:</legend>
-                        <#if materiali_disponibili?? && (materiali_disponibili?size > 0)>
-                            <#list materiali_disponibili as mat>
-                                <div class="mb-24">
-                                    <label>
-                                        <input type="checkbox" name="id_materiale" value="${(mat.id_materiale)!(mat.id)!""}"> 
-                                        ${(mat.nome)!""}
-                                    </label>
-                                </div>
-                            </#list>
+                        <#list materiali_disponibili as mat>
+                            <div class="mb-24">
+                                <label>
+                                    <input type="checkbox" name="id_materiale" value="${mat.id_materiale}"> 
+                                    ${(mat.nome)!""}
+                                </label>
+                            </div>
                         <#else>
                             <p class="text-muted">Nessun materiale disponibile.</p>
-                        </#if>
+                        </#list>
                     </fieldset>
                 </div>
 

@@ -74,7 +74,7 @@ public class MaterialeDAO {
             while (resultSet.next()) {
                 Map<String, String> mappaMateriale = new HashMap<>();
                 
-                // dati per l'interfaccia freemarker
+                // dati per l'interfaccia di freemarker
                 mappaMateriale.put("id_materiale", String.valueOf(resultSet.getInt("id_materiale")));
                 mappaMateriale.put("nome", resultSet.getString("nome"));
                 mappaMateriale.put("descrizione", resultSet.getString("descrizione"));
@@ -124,4 +124,20 @@ public class MaterialeDAO {
         
         return listaMateriali;
     }
+    
+    public boolean eliminaMateriale(int idMateriale) {
+    String query = "DELETE FROM materiale WHERE id_materiale = ?";
+    try (Connection connessione = DBManager.getConnection();
+         PreparedStatement statement = connessione.prepareStatement(query)) {
+        
+        statement.setInt(1, idMateriale);
+        return statement.executeUpdate() > 0;
+        
+    } catch (Exception e) {
+        System.err.println("Errore durante l'eliminazione del materiale: " + e.getMessage());
+        e.printStackTrace();
+    }
+    return false;
+  }
+    
 }

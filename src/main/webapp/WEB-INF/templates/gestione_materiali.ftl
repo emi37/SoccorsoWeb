@@ -2,58 +2,57 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Gestione Materiali</title>
+    <title>Gestione materiale</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <header class="topbar">
-    <h1 class="main-title">Gestione Materiale</h1>
-    <nav class="topbar-actions">
-        <a href="DashboardServlet" class="btn btn-primary">Torna a Dashboard</a>
-    </nav>
-</header>
-    <!-- Inizio Form Aggiunta Materiale -->
-    <div class="form-container" style="margin-bottom: 20px; padding: 15px; border: 1px solid #ccc;">
-        <h2>Aggiungi un nuovo Materiale</h2>
+        <h1 class="main-title">Gestione materiale</h1>
+        <nav class="topbar-actions">
+            <a href="DashboardServlet" class="btn btn-primary">Torna alla Dashboard</a>
+        </nav>
+    </header>
+    
+    <div class="form-container form-container-box">
+        <h2>Aggiungi un nuovo materiale</h2>
         <form action="AggiungiMateriale" method="POST">
-            <label for="nome">Nome Materiale:</label>
+            <label for="nome">Nome materiale:</label>
             <input type="text" id="nome" name="nome" required>
             
             <label for="descrizione">Descrizione:</label>
             <input type="text" id="descrizione" name="descrizione" required>
             
-            <button type="submit" class="btn">Aggiungi Materiale</button>
+            <button type="submit" class="btn">Aggiungi materiale</button>
         </form>
     </div>
-    <br>
-    <!-- Fine Form Aggiunta Materiale -->
     
-    <table border="1">
-        <tr>
-            <th>ID</th>
-            <th>Nome</th>
-            <th>Descrizione</th>
-            <th>Stato (Attivo)</th>
-           <!--   <th>Azioni</th>  -->
-        </tr>
-        
-        <#if materiali?? && materiali?size &gt; 0>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Descrizione</th>
+                <th>Stato (Attivo)</th>
+                <th>Azioni</th>
+            </tr>
+        </thead>
+        <tbody>
             <#list materiali as m>
             <tr>
                 <td>${m.id_materiale!}</td>
                 <td>${m.nome!}</td>
                 <td>${m.descrizione!}</td>
-                <td>${m.attivo!}</td> 
-                <!--  <td>
-                    <a href="GestioneMateriali?elimina=${m.id_materiale!}">Nascondi</a>
-                    <!-- Bottone per lo storico (richiesto dalle specifiche)
-                    <a href="StoricoMateriale?id=${m.id_materiale!}">Vedi Storico</a>
-                </td>    -->
+                <td>${m.attivo!}</td>
+                <td>          
+                    <a href="GestioneMateriali?elimina=${(m.id_materiale)!}" class="btn btn-danger" onclick="return confirm('Sei sicuro di voler eliminare definitivamente questo materiale?');">Elimina</a>
+                </td>
+            </tr>
+            <#else>
+            <tr>
+                <td colspan="5" class="text-center text-muted">Nessun materiale disponibile al momento.</td>
             </tr>
             </#list>
-        <#else>
-            <tr><td colspan="5">Nessun materiale disponibile al momento.</td></tr>
-        </#if>
+        </tbody>
     </table>
-    </body>
+</body>
 </html>
