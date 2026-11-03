@@ -53,6 +53,19 @@ public class DashboardOperatoreServlet extends HttpServlet {
             
             dataModel.put("utente", datiUtente);
 
+            //estare le patenti e le abilità dell'operatore + quelle disponibili per le 2 tendine
+            List<String> miePatenti = missioneDao.estraiPatentiOperatore(idOperatore);
+            List<Map<String, String>> tutteLePatenti = missioneDao.estraiPatentiMancanti(idOperatore);
+            dataModel.put("miePatenti", miePatenti);
+            dataModel.put("tutteLePatenti", tutteLePatenti);
+
+            List<String> mieAbilita = missioneDao.estraiAbilitaOperatore(idOperatore);
+            List<Map<String, String>> tutteLeAbilita = missioneDao.estraiAbilitaMancanti(idOperatore);
+            dataModel.put("mieAbilita", mieAbilita);
+            dataModel.put("tutteLeAbilita", tutteLeAbilita);
+            
+            
+            
             TemplateManager.process("dashboard_operatore.ftl", dataModel, response, getServletContext());
 
         } catch (Exception e) {
@@ -63,7 +76,35 @@ public class DashboardOperatoreServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        doGet(request, response);
+        HttpSession sessioneAttuale = request.getSession(false);
+        if (sessioneAttuale == null || !"OPERATORE".equals(sessioneAttuale.getAttribute("ruolo"))) {
+            response.sendRedirect(request.getContextPath() + "/login.html");
+            return;
+        }
+
+        try {
+            int idOperatore = Integer.parseInt(sessioneAttuale.getAttribute("id_utente").toString());
+            MissioneDAO missioneDao = new MissioneDAO();
+
+            // Se l'operatore ha inviato il form della patente
+            String idPatenteStr = request.getParameter("id_patente");
+            if (idPatenteStr != null && !idPatenteStr.isEmpty()) {
+                int idPatente = Integer.parseInt(idPatenteStr);
+                missioneDao.aggiungiPatenteOperatore(idOperatore, idPatente);
+            }
+
+            // Se l'operatore ha inviato il form dell'abilità
+            String idAbilitaStr = request.getParameter("id_abilita");
+            if (idAbilitaStr != null && !idAbilitaStr.isEmpty()) {
+                int idAbilita = Integer.parseInt(idAbilitaStr);
+                missioneDao.aggiungiAbilitaOperatore(idOperatore, idAbilita);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        response.sendRedirect(request.getContextPath() + "/DashboardOperatoreServlet");
     }
 }
 

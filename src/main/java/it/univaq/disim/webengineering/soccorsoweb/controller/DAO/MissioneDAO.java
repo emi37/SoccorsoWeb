@@ -288,12 +288,12 @@ public class MissioneDAO {
             e.printStackTrace();
             if (connessione != null) {
                 try {
-                    connessione.rollback();
-                } catch (Exception exRollback) {
+                    connessione.rollback(); // rollback parte quando anche 1 sola query fallisce e dice al DB, elimina tutte le modoficeh che stavi per fare date lealtre query gia eseguiti, ripulisce le modofiche che stavano per essere fatte falle query quando faccio connessione.commit();
+                } catch (Exception exRollback) { 
                     exRollback.printStackTrace();
                 }
             }
-        } finally {
+        } finally { //ci entri sempre, sta fuori da try e catch
             if (connessione != null) {
                 try {
                     connessione.setAutoCommit(true);
@@ -514,4 +514,139 @@ public class MissioneDAO {
         
         return successo;
     }
+    
+    
+    public List<String> estraiPatentiOperatore(int idOperatore) {
+        List<String> miePatenti = new ArrayList<>();
+        String query = "SELECT p.codice FROM patente p " +
+                       "JOIN utente_patente up ON p.id_patente = up.id_patente " +
+                       "WHERE up.id_utente = ?";
+
+        try (Connection connessione = DBManager.getConnection();
+             PreparedStatement statement = connessione.prepareStatement(query)) {
+
+            statement.setInt(1, idOperatore);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    miePatenti.add(resultSet.getString("codice"));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return miePatenti;
+    }
+
+    public List<Map<String, String>> estraiPatentiMancanti(int idOperatore) {
+        List<Map<String, String>> listaPatenti = new ArrayList<>();
+        
+        String query = "SELECT id_patente, codice FROM patente " +
+                       "WHERE id_patente NOT IN (SELECT id_patente FROM utente_patente WHERE id_utente = ?) " +
+                       "ORDER BY codice ASC";
+
+        try (Connection connessione = DBManager.getConnection();
+             PreparedStatement statement = connessione.prepareStatement(query)) {
+
+            statement.setInt(1, idOperatore);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    Map<String, String> mappaPatente = new HashMap<>();
+                    mappaPatente.put("id_patente", String.valueOf(resultSet.getInt("id_patente")));
+                    mappaPatente.put("codice", resultSet.getString("codice"));
+                    listaPatenti.add(mappaPatente);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return listaPatenti;
+    }
+
+    public boolean aggiungiPatenteOperatore(int idOperatore, int idPatente) {
+        String query = "INSERT IGNORE INTO utente_patente (id_utente, id_patente) VALUES (?, ?)";
+
+        try (Connection connessione = DBManager.getConnection();
+             PreparedStatement statement = connessione.prepareStatement(query)) {
+
+            statement.setInt(1, idOperatore);
+            statement.setInt(2, idPatente);
+            statement.executeUpdate();
+            return true;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    
+    
+    
+    public List<String> estraiAbilitaOperatore(int idOperatore) {
+        List<String> mieAbilita = new ArrayList<>();
+        String query = "SELECT a.nome FROM abilita a " +
+                       "JOIN utente_abilita ua ON a.id_abilita = ua.id_abilita " +
+                       "WHERE ua.id_utente = ?";
+
+        try (Connection connessione = DBManager.getConnection();
+             PreparedStatement statement = connessione.prepareStatement(query)) {
+
+            statement.setInt(1, idOperatore);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    mieAbilita.add(resultSet.getString("nome"));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return mieAbilita;
+    }
+
+    public List<Map<String, String>> estraiAbilitaMancanti(int idOperatore) {
+        List<Map<String, String>> listaAbilita = new ArrayList<>();
+        
+        String query = "SELECT id_abilita, nome FROM abilita " +
+                       "WHERE id_abilita NOT IN (SELECT id_abilita FROM utente_abilita WHERE id_utente = ?) " +
+                       "ORDER BY nome ASC";
+
+        try (Connection connessione = DBManager.getConnection();
+             PreparedStatement statement = connessione.prepareStatement(query)) {
+
+            statement.setInt(1, idOperatore);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    Map<String, String> mappaAbilita = new HashMap<>();
+                    mappaAbilita.put("id_abilita", String.valueOf(resultSet.getInt("id_abilita")));
+                    mappaAbilita.put("nome", resultSet.getString("nome"));
+                    listaAbilita.add(mappaAbilita);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return listaAbilita;
+    }
+
+    public boolean aggiungiAbilitaOperatore(int idOperatore, int idAbilita) {
+        String query = "INSERT IGNORE INTO utente_abilita (id_utente, id_abilita) VALUES (?, ?)";
+
+        try (Connection connessione = DBManager.getConnection();
+             PreparedStatement statement = connessione.prepareStatement(query)) {
+
+            statement.setInt(1, idOperatore);
+            statement.setInt(2, idAbilita);
+            statement.executeUpdate();
+            return true;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
 }

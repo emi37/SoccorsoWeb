@@ -19,17 +19,81 @@
         </header>
 
         <section class="card">
-            <h2 class="section-title">Il tuo Stato attuale</h2>
-            <p class="status-text">
-                Attualmente il tuo stato è: 
-                <#if (utente.stato_attuale!"") == "LIBERO">
-                    <span class="badge badge-success">LIBERO</span>
-                    <br><br><span class="text-muted">Sei a disposizione della centrale.</span>
-                <#else>
-                    <span class="badge badge-danger">IMPEGNATO</span>
-                    <br><br><span class="text-muted">Sei assegnato a un intervento in corso.</span>
-                </#if>
-            </p>
+            <div class="stato-header-block">
+                <h2 class="section-title">Il tuo Stato attuale</h2>
+                <p class="status-text">
+                    Attualmente il tuo stato è: 
+                    <#if (utente.stato_attuale!"") == "LIBERO">
+                        <span class="badge badge-success">LIBERO</span>
+                        <br><br><span class="text-muted">Sei a disposizione della centrale.</span>
+                    <#else>
+                        <span class="badge badge-danger">IMPEGNATO</span>
+                        <br><br><span class="text-muted">Sei assegnato a un intervento in corso.</span>
+                    </#if>
+                </p>
+            </div>
+
+            <!-- RIGA 1: Patenti a sinistra | Form Aggiungi Patente a destra -->
+            <div class="riga-competenza">
+                <div class="patenti-attuali-wrapper">
+                    <span class="patenti-label">Le tue patenti:</span>
+                    <#list miePatenti![] as codicePatente>
+                        <span class="badge badge-secondary">${codicePatente}</span>
+                    <#else>
+                        <span class="text-muted">Nessuna patente registrata.</span>
+                    </#list>
+                </div>
+
+                <div class="patente-action-right">
+                    <#if tutteLePatenti?has_content>
+                        <form action="${request.contextPath}/DashboardOperatoreServlet" method="POST" class="patente-form">
+                            <label for="id_patente" class="patente-form-title">Aggiungi una nuova patente</label>
+                            <div class="patente-input-group">
+                                <select name="id_patente" id="id_patente" class="select-patente" required>
+                                    <option value="" disabled selected>Seleziona patente...</option>
+                                    <#list tutteLePatenti as p>
+                                        <option value="${p.id_patente}">${p.codice}</option>
+                                    </#list>
+                                </select>
+                                <button type="submit" class="btn btn-primary">Aggiungi</button>
+                            </div>
+                        </form>
+                    <#else>
+                        <span class="text-muted">Hai tutte le patenti!</span>
+                    </#if>
+                </div>
+            </div>
+
+            <!-- RIGA 2: Abilità a sinistra | Form Aggiungi Abilità a destra -->
+            <div class="riga-competenza">
+                <div class="patenti-attuali-wrapper">
+                    <span class="patenti-label">Le tue abilità:</span>
+                    <#list mieAbilita![] as nomeAbilita>
+                        <span class="badge badge-secondary">${nomeAbilita}</span>
+                    <#else>
+                        <span class="text-muted">Nessuna abilità registrata.</span>
+                    </#list>
+                </div>
+
+                <div class="patente-action-right">
+                    <#if tutteLeAbilita?has_content>
+                        <form action="${request.contextPath}/DashboardOperatoreServlet" method="POST" class="patente-form">
+                            <label for="id_abilita" class="patente-form-title">Aggiungi una nuova abilità</label>
+                            <div class="patente-input-group">
+                                <select name="id_abilita" id="id_abilita" class="select-patente" required>
+                                    <option value="" disabled selected>Seleziona abilità...</option>
+                                    <#list tutteLeAbilita as a>
+                                        <option value="${a.id_abilita}">${a.nome}</option>
+                                    </#list>
+                                </select>
+                                <button type="submit" class="btn btn-primary">Aggiungi</button>
+                            </div>
+                        </form>
+                    <#else>
+                        <span class="text-muted">Hai tutte le abilità!</span>
+                    </#if>
+                </div>
+            </div>
         </section>
 
         <section class="card">
