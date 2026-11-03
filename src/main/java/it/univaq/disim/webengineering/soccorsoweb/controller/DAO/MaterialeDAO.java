@@ -21,7 +21,7 @@ public class MaterialeDAO {
             statement.setString(1, nuovoMateriale.getNome());
             statement.setString(2, nuovoMateriale.getDescrizione());
 
-            return statement.executeUpdate() > 0;
+            return statement.executeUpdate() > 0; // se nel db viene inserito 1 nuovo materiale(quindi ...> 0) torna true, altrimenti false
 
         } catch (Exception e) {
             System.err.println("errore durante l'inserimento del nuovo materiale: " + e.getMessage());
@@ -32,12 +32,12 @@ public class MaterialeDAO {
     }
 
     public boolean nascondiMaterialeSeLibero(int idDaCancellare) {
-        // eliminazione del materiale se non è attualmente in uso
-        String query = "UPDATE materiale SET attivo = 0 "
-                + "WHERE id_materiale = ? AND id_materiale NOT IN ("
+        // quando clicco " elimina " in GestioneMaterialiServlet , non elimino effettivamente il materiale dal db, ma non viene semplicemente piu mosrtato nei materiali disponibili nella tabella all'admin
+        String query = "UPDATE materiale SET attivo = 0 "  //settando a 0 , non posso + vederlo nei materiali disponibili
+                + " WHERE id_materiale = ? AND id_materiale NOT IN ("
                 + "    SELECT id_materiale FROM assegnazione_materiale_missione amm "
                 + "    JOIN missione mis ON amm.id_missione = mis.id_missione "
-                + "    WHERE mis.stato = 'IN_CORSO'"
+                + "    WHERE mis.stato = 'IN_CORSO'" // se il materiale è utilizzato in una missione in corso allora non posso eliminarlo
                 + ")";
 
         try (Connection connessione = DBManager.getConnection(); 
@@ -63,7 +63,7 @@ public class MaterialeDAO {
                 + "CASE WHEN EXISTS ("
                 + "    SELECT 1 FROM assegnazione_materiale_missione amm "
                 + "    JOIN missione mis ON amm.id_missione = mis.id_missione "
-                + "    WHERE amm.id_materiale = m.id_materiale AND mis.stato = 'IN_CORSO'"
+                + "    WHERE amm.id_materiale = m.id_materiale AND mis.stato = 'IN_CORSO'"  //semplicemente dico che se quell'id materiale è associato ad una missione, allora dico IMPEGNATO, altrimenti se non lo è, dico che è LIBERO
                 + ") THEN 'IMPEGNATO' ELSE 'LIBERO' END AS stato_attuale "
                 + "FROM materiale m WHERE m.attivo = 1";
 
@@ -124,20 +124,5 @@ public class MaterialeDAO {
         
         return listaMateriali;
     }
-    
-    public boolean eliminaMateriale(int idMateriale) {
-    String query = "DELETE FROM materiale WHERE id_materiale = ?";
-    try (Connection connessione = DBManager.getConnection();
-         PreparedStatement statement = connessione.prepareStatement(query)) {
-        
-        statement.setInt(1, idMateriale);
-        return statement.executeUpdate() > 0;
-        
-    } catch (Exception e) {
-        System.err.println("Errore durante l'eliminazione del materiale: " + e.getMessage());
-        e.printStackTrace();
-    }
-    return false;
-  }
     
 }

@@ -1,6 +1,9 @@
 package it.univaq.disim.webengineering.soccorsoweb.model;
 
 import jakarta.persistence.*;
+// Le @ sono annotazioni di JPA (Jakarta Persistence API) che trasformano 
+// gli oggetti Java in righe di una tabella del database relazionale.
+
 
 // indica che questa classe rappresenta un'entità del database
 @Entity
@@ -16,7 +19,7 @@ public class Materiale {
     @Column(name = "id_materiale")
     private Long idMateriale;
 
-    @Column(nullable = false)
+    @Column(nullable = false) // semplicemente significa NOT NULL
     private String nome;
 
     private String descrizione;
@@ -24,7 +27,7 @@ public class Materiale {
     @Column(nullable = false)
     private boolean attivo;
 
-    public Materiale() {
+    public Materiale() { // costruttore 
     }
 
     public Long getIdMateriale() {
