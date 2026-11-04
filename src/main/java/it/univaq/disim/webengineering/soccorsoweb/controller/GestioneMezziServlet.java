@@ -13,7 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-@WebServlet(name = "GestioneMezziServlet", urlPatterns = {"/GestioneMezzi"})
+@WebServlet(name = "GestioneMezziServlet", urlPatterns = {"/GestioneMezzi"}) //intercetta la richiesta qui
 public class GestioneMezziServlet extends HttpServlet {
 
     @Override
@@ -49,7 +49,7 @@ public class GestioneMezziServlet extends HttpServlet {
             dataModel.put("mezzi", listaMezzi); // La lista che la vista leggerà con <#list mezzi as m>
             dataModel.put("request", request);
 
-            TemplateManager.process("gestione_mezzi.ftl", dataModel, response, getServletContext());
+            TemplateManager.process("gestione_mezzi.ftl", dataModel, response, getServletContext()); //carica la risposta(la responde)i dati qui
 
         } catch (Exception e) {
             System.err.println("Errore della gestione mezzi...");
