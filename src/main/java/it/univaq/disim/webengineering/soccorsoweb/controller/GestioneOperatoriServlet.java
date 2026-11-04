@@ -29,9 +29,10 @@ public class GestioneOperatoriServlet extends HttpServlet {
             throws ServletException, IOException {
 
         // Blocco sicurezza ADMIN
-        HttpSession sessioneAttuale = request.getSession(false); //serve a dire di cercare se la sessione attuale ha un admin logato o meno, se rimango a false,non sono admin e non posso entrare
+        HttpSession sessioneAttuale = request.getSession(false); 
+        //request.getSession(false); chiede la sessione dell utente al server, che inizia in login servlet e dice: se c'e' allora dammela, se non c'è allora restituisci null e basta, in questo caso false (e true) è un'istruzione che dice cosa deve fare e basta
         if (sessioneAttuale == null || !"ADMIN".equals(sessioneAttuale.getAttribute("ruolo"))) {
-            response.sendRedirect(request.getContextPath() + "/login.html"); //la session o è null o piena cioe è admin
+            response.sendRedirect(request.getContextPath() + "/login.html"); //se non esiste la sessione oppure non è admin, reindirizzo alla pagina di login, in oratica non seiin grado di accedere a questa pagina  per amministratori
             return;
         }
 

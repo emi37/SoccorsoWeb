@@ -49,6 +49,9 @@ public class LoginServlet extends HttpServlet {
 
                     // Crea la sessione e ci salvo dentro i dati 
                     HttpSession sessioneAttuale = request.getSession(true);
+                            //request.getSession(true); chiede la sessione dell utente al server, che viene inizializzata in questo file servlet e dice: 
+                            //se non c'e' allora creala, metto true solo nella servlet del login perche se non esiste la devo creare, invece in tutte le altre servlet devo
+                            // false perceh se non esite non la vadomamcreare, ma semplicemente restituisco null e l utente non puo entrare nella pagina perceh non ha i permessi
                     sessioneAttuale.setAttribute("id_utente", utenteTrovato.getIdUtente());
                     sessioneAttuale.setAttribute("nome", utenteTrovato.getNome());
                     sessioneAttuale.setAttribute("ruolo", ruoloUtente);
