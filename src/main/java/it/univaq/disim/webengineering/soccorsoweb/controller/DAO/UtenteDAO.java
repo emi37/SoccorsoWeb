@@ -106,8 +106,8 @@ public class UtenteDAO {
     }
 
     // estrae tutti gli operatori e mostra se sono liberi o impegnati
-    public List< Map<String, String> > estraiTuttiGliOperatoriConStato() {
-        List< Map<String, String> > listaOperatori = new ArrayList<>();
+    public List<Map<String, String>> estraiTuttiGliOperatoriConStato() {
+        List<Map<String, String>> listaOperatori = new ArrayList<>();
         
         String query = "SELECT u.id_utente, u.nome, u.cognome, u.email, u.ruolo, "
                 + " CASE "

@@ -55,7 +55,7 @@ public class LoginServlet extends HttpServlet {
                 }
             }
         } catch (Exception e) {
-            System.err.println("Panico nel controller durante la fase di login...");
+            System.err.println("errore durante la fase di login...");
             e.printStackTrace();
         }
 
