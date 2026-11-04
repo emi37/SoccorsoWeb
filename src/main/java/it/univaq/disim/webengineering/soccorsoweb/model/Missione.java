@@ -44,7 +44,7 @@ public class Missione {
 
     // definisce la relazione molti a molti
     @ManyToMany
-    // specifica la tabella ponte da utilizzare nel db
+    // specifica la tabella da utilizzare nel db per fare la join
     @JoinTable(
             name = "assegnazione_mezzi_missione",
             joinColumns = @JoinColumn(name = "id_missione"),
@@ -54,7 +54,7 @@ public class Missione {
 
     // definisce la relazione molti a molti
     @ManyToMany
-    // specifica la tabella ponte da utilizzare nel db
+    // specifica la tabella da utilizzare nel db per fare la join
     @JoinTable(
             name = "assegnazione_materiale_missione",
             joinColumns = @JoinColumn(name = "id_missione"),

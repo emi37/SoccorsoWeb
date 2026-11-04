@@ -68,26 +68,26 @@ public class MissioneDAO {
         String queryLog = "INSERT INTO aggiornamento_missione (id_missione, id_admin, testo_descrittivo) VALUES (?, ?, ?)";
 
         try {
-            connessione = DBManager.getConnection();
-            connessione.setAutoCommit(false);
+            connessione = DBManager.getConnection(); //in ogni caso sotto di qualsiasi try, catch e finally, la connessione è sempre diversa da null, solo se non sei connesso al wifi di casa allora la connessione sarà null, altriment la connessionen al db da qui in poi sarà sempre diversa da null
+            connessione.setAutoCommit(false);//cioe per capire meglio, connessione diversa da null vuol dire che la connessione da netbeans al DB esiste e sono effettivamente collegati e possono scambiarsi dati e informazioni 
 
-            int idMissioneGenerato = -1;
+            int idMissioneGenerato = -1; // perche' non so ancora che valore il db darà a questo id di questa missione, quindi gliene do io uno fittizzio, poi verra modificato
 
-            try (PreparedStatement statementMissione = connessione.prepareStatement(queryMissione, Statement.RETURN_GENERATED_KEYS)) {
+            try (PreparedStatement statementMissione = connessione.prepareStatement(queryMissione, Statement.RETURN_GENERATED_KEYS)) {//dico al db che mi serve l'id della missione che verra creata
                 statementMissione.setInt(1, idRichiesta);
                 statementMissione.setString(2, obiettivo);
                 statementMissione.setString(3, posizione);
-                statementMissione.executeUpdate();
-
+                statementMissione.executeUpdate(); // qui ho eseguito la qwuery quindi il DB salva l'id della missione e lo vado a prendere facendo statementMissione.getGeneratedKeys qui sotto
+                                            
                 try (ResultSet resultSetChiavi = statementMissione.getGeneratedKeys()) {
                     if (resultSetChiavi.next()) {
-                        idMissioneGenerato = resultSetChiavi.getInt(1);
-                    }
+                        idMissioneGenerato = resultSetChiavi.getInt(1); // qui viene modificato il meno 1 con il vero valore dell id missione appena generata/fatta partire sul campo 
+                    }                                   //legge (1) la prima riga del resultSetChiavi che ha salvato in quella nica riga, il valore vero dell'id della missione appena creata, che avevo fatto ricordare al DB prima  
                 }
             }
 
-            if (idMissioneGenerato == -1) {
-                connessione.rollback();
+            if (idMissioneGenerato == -1) { // se non dovesse cambiare da meno 1 al valore vero per ualche motivo, allora devo annullare tute le modifche dfatte al DB fin ora
+                connessione.rollback();     // facendo rollback
                 return false;
             }
 
@@ -158,7 +158,7 @@ public class MissioneDAO {
                 }
             }
         } finally {
-            if (connessione != null) {
+            if (connessione != null) { 
                 try {
                     connessione.setAutoCommit(true);
                     connessione.close();
@@ -170,8 +170,8 @@ public class MissioneDAO {
         return successo;
     }
 
-    public List< Map<String, String> > estraiStoricoMissioni() {
-        List< Map<String, String> > storicoTrovato = new ArrayList<>();
+    public List<Map<String, String>> estraiStoricoMissioni() {
+        List<Map<String, String>> storicoTrovato = new ArrayList<>();
         
         String query = "SELECT m.id_missione, m.id_richiesta, m.obiettivo, m.livello_successo, m.commenti, "
                 + "u.nome AS nome_capo, u.cognome AS cognome_capo "
@@ -185,7 +185,7 @@ public class MissioneDAO {
              ResultSet resultSet = statement.executeQuery()) {
 
             while (resultSet.next()) {
-                Map< String, String > mappaMissione = new HashMap<>();
+                Map<String, String> mappaMissione = new HashMap<>();
                 mappaMissione.put("id_missione", String.valueOf(resultSet.getInt("id_missione")));
                 mappaMissione.put("id_richiesta", String.valueOf(resultSet.getInt("id_richiesta")));
                 mappaMissione.put("obiettivo", resultSet.getString("obiettivo"));
@@ -210,8 +210,8 @@ public class MissioneDAO {
         return storicoTrovato;
     }
 
-    public List< Map<String, String> > estraiMissioniPerOperatore(int idOperatoreCercato) {
-        List< Map<String, String> > missioniPersonali = new ArrayList<>();
+    public List<Map<String, String>> estraiMissioniPerOperatore(int idOperatoreCercato) {
+        List<Map<String, String>> missioniPersonali = new ArrayList<>();
         
         String query = "SELECT m.id_missione, m.obiettivo, m.posizione, m.stato, m.livello_successo "
                 + "FROM missione m "
@@ -226,7 +226,7 @@ public class MissioneDAO {
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
-                    Map< String, String > singolaMissione = new HashMap<>();
+                    Map<String, String> singolaMissione = new HashMap<>();
                     singolaMissione.put("id_missione", String.valueOf(resultSet.getInt("id_missione")));
                     singolaMissione.put("obiettivo", resultSet.getString("obiettivo"));
                     singolaMissione.put("posizione", resultSet.getString("posizione"));
@@ -326,8 +326,8 @@ public class MissioneDAO {
         return statoAttuale;
     }
 
-    public Map< String, Object > estraiDettagliCompleti(int idMissione) {
-        Map< String, Object > mappaDettagli = new HashMap<>();
+    public Map<String, Object> estraiDettagliCompleti(int idMissione) {
+        Map<String, Object> mappaDettagli = new HashMap<>();
         String statoDellaMissione = ""; 
 
         try (Connection connessione = DBManager.getConnection()) {
@@ -403,8 +403,8 @@ public class MissioneDAO {
         return mappaDettagli;
     }
 
-    public List< Map<String, String> > estraiMissioniAttivePerOperatore(long idOperatore) {
-        List< Map<String, String> > listaMissioni = new ArrayList<>();
+    public List<Map<String, String>> estraiMissioniAttivePerOperatore(long idOperatore) {
+        List<Map<String, String>> listaMissioni = new ArrayList<>();
         
         String query = "SELECT m.id_missione, m.id_richiesta, m.obiettivo, m.posizione, m.stato " +
                        "FROM missione m " +
@@ -418,7 +418,7 @@ public class MissioneDAO {
             
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
-                    Map< String, String > mappaMissione = new HashMap<>();
+                    Map<String, String> mappaMissione = new HashMap<>();
                     mappaMissione.put("id_missione", String.valueOf(resultSet.getInt("id_missione")));
                     mappaMissione.put("id_richiesta", String.valueOf(resultSet.getInt("id_richiesta")));
                     mappaMissione.put("obiettivo", resultSet.getString("obiettivo"));
