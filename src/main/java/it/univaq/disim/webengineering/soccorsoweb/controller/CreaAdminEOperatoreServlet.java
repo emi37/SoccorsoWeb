@@ -60,7 +60,7 @@ public class CreaAdminEOperatoreServlet extends HttpServlet {
                             for (String idAbilitaStr : abilitaSelezionate) {
                                 utenteDao.collegaAbilita(idNuovoUtente, Integer.parseInt(idAbilitaStr));
                             }
-                        }
+                            }
                     }
                 }
             }

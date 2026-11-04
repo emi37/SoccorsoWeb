@@ -94,10 +94,10 @@ public class DashboardOperatoreServlet extends HttpServlet {
             }
 
             // Se l'operatore ha inviato il form dell'abilità
-            String idAbilitaStr = request.getParameter("id_abilita");
+            String idAbilitaStr = request.getParameter("id_abilita"); //gli passo l'etichetta e gli dico estrai il valore con getParameter
             if (idAbilitaStr != null && !idAbilitaStr.isEmpty()) {
                 int idAbilita = Integer.parseInt(idAbilitaStr);
-                missioneDao.aggiungiAbilitaOperatore(idOperatore, idAbilita);
+                missioneDao.aggiungiAbilitaOperatore(idOperatore, idAbilita); //gli passo il valore
             }
 
         } catch (Exception e) {
