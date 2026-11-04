@@ -608,7 +608,7 @@ public class MissioneDAO {
 
     public List<Map<String, String>> estraiAbilitaMancanti(int idOperatore) {
         List<Map<String, String>> listaAbilita = new ArrayList<>();
-        
+        //estrae dal database SOLO le abilità che l'operatore NON possiede ancora 
         String query = "SELECT id_abilita, nome FROM abilita " +
                        "WHERE id_abilita NOT IN (SELECT id_abilita FROM utente_abilita WHERE id_utente = ?) " +
                        "ORDER BY nome ASC";

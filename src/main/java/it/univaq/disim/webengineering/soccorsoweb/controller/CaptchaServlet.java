@@ -9,14 +9,14 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-
-@WebServlet(name = "CaptchaServlet", urlPatterns = {"/CaptchaServlet"})
-public class CaptchaServlet extends HttpServlet {
+// @WebServlet è uno standard di Java che serve per creare applicazioni web(fa parte di è di Jakarta EE)
+@WebServlet(name = "CaptchaServlet", urlPatterns = {"/CaptchaServlet"})// quando l utente riempie il captcha e preme invio, la richieta viene intercettata da questa classe qui
+public class CaptchaServlet extends HttpServlet {//l'estensione dice che quesat classe è ijn grado di ricevere richieste http e indirizzare dati sul browser
 
     // inizializzazione standard del generatore random all'interno della classe
     private final SecureRandom generatoreCasuale = new SecureRandom();
 
-    @Override
+    @Override //il doGet: Gestisce le richieste HTTP di tipo GET, quindi richieste di lettura dati, come le SELECT(non salva nulla sul DB)
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
         try {

@@ -32,6 +32,8 @@ public class GestioneRichiestaServletDallAdmin extends HttpServlet {
 
         try {
             int idRichiesta = Integer.parseInt(request.getParameter("id_richiesta"));
+            // questo e' l'id della richiesta dove l utente ha cliccato, posso vedere questo id 
+            // anche nella barra dell' URL in alto 
 
             RichiestaSoccorsoDAO richiestaDao = new RichiestaSoccorsoDAO();
             UtenteDAO utenteDao = new UtenteDAO();
@@ -50,10 +52,12 @@ public class GestioneRichiestaServletDallAdmin extends HttpServlet {
             dataModel.put("materiali", materialiLiberi);
             dataModel.put("request", request);
 
+                        //il data model è il contenitore grosso che contiene tutte le liste dei dati da mostrare tramite " gestione_richiesta.ftl "
+                        //cosi' da mostrare tutti i dati estratti all'utente finale 
             TemplateManager.process("gestione_richiesta.ftl", dataModel, response, getServletContext());
 
         } catch (Exception e) {
-            System.err.println("Errore catastrofico durante il caricamento della pagina di assegnazione...");
+            System.err.println("Errore durante il caricamento della pagina ...");
             e.printStackTrace();
             response.sendRedirect(request.getContextPath() + "/DashboardServlet");
         }
@@ -82,11 +86,11 @@ public class GestioneRichiestaServletDallAdmin extends HttpServlet {
                 
                 RichiestaSoccorsoDAO richiestaDao = new RichiestaSoccorsoDAO();
                 Map<String, String> dettagliRichiesta = richiestaDao.estraiDettagliRichiesta(idRichiesta);
-                
+                                                    //se trova la descrizione dentro la mappa mostra quella, altriement dice di default"Intervento di soccorso"                 
                 String obiettivo = dettagliRichiesta.getOrDefault("descrizione", "Intervento di soccorso");
                 String posizione = dettagliRichiesta.getOrDefault("posizione", "Posizione sconosciuta");
 
-                //estrazione dell'ID dell'admin
+                //estrazione dell'ID dell'admin, la servlet salva l'id dell'admin una volta che fail login cosi da sapere che è lui
                 Object objId = sessioneAttuale.getAttribute("id_utente");
                 int idAdmin = 1; // ID di default 
                 if (objId != null) {
@@ -102,7 +106,7 @@ public class GestioneRichiestaServletDallAdmin extends HttpServlet {
                         operatoriScelti, 
                         mezziScelti, 
                         materialiScelti, 
-                        idAdmin
+                        idAdmin //passo tutti i parametri che la servlet ha ricevuto dal file ftl, al metodo creaMissioneInTransazione... 
                 );
                 
                 if (avvioOk) {
