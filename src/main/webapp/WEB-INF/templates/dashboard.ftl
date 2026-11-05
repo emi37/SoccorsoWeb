@@ -9,7 +9,7 @@
         <header class="topbar">
             <div>
                 <h1>Dashboard Amministratore</h1>
-                <p class="subtitle">
+                <p class="subtitle">  
                     Gestione richieste, missioni e risorse di SoccorsoWeb
                     <#if nome_utente??> - Benvenuto, <strong>${nome_utente} ${cognome_utente!""}</strong></#if>
                 </p>
