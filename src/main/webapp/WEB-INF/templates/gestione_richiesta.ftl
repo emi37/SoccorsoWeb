@@ -27,6 +27,15 @@
             
             <form action="GestioneRichiestaServletDallAdmin" method="POST">
                 <input type="hidden" name="id_richiesta" value="${richiesta.id_richiesta!}">
+
+                <#if errore??>
+                    <p class="messaggio-errore" role="alert">${errore}</p>
+                </#if>
+
+                <label for="obiettivo" class="form-label">Obiettivo della missione (modificabile):</label>
+                <input type="text" id="obiettivo" name="obiettivo" maxlength="255" class="form-control" value="${(richiesta.descrizione)!""}">
+                <label for="posizione" class="form-label">Posizione (modificabile):</label>
+                <input type="text" id="posizione" name="posizione" maxlength="255" class="form-control" value="${(richiesta.posizione)!""}">
                 
                 <fieldset class="fieldset-antispam">
     <legend class="legend-antispam">Seleziona gli operatori (e nomina un Caposquadra col pallino):</legend>

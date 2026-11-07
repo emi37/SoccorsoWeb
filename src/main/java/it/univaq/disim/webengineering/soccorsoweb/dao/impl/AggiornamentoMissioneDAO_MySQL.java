@@ -47,7 +47,7 @@ public class AggiornamentoMissioneDAO_MySQL implements AggiornamentoMissioneDAO 
                 + "FROM aggiornamento_missione am "
                 + "JOIN utenti u ON am.id_admin = u.id_utente "
                 + "WHERE am.id_missione = ? "
-                + "ORDER BY am.timestamp_inserimento DESC";
+                + "ORDER BY am.timestamp_inserimento ASC";
 
         try (Connection connessione = DBManager.getConnection(); 
              PreparedStatement statement = connessione.prepareStatement(query)) {
@@ -58,7 +58,8 @@ public class AggiornamentoMissioneDAO_MySQL implements AggiornamentoMissioneDAO 
                 while (resultSet.next()) {
                     Map< String, String > singoloUpdate = new HashMap<>();
                     singoloUpdate.put("messaggio", resultSet.getString("testo_descrittivo"));
-                    singoloUpdate.put("data_ora", resultSet.getTimestamp("timestamp_inserimento").toString());
+                    singoloUpdate.put("data_ora", resultSet.getTimestamp("timestamp_inserimento").toLocalDateTime()
+                            .format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
                     singoloUpdate.put("operatore", resultSet.getString("nome") + " " + resultSet.getString("cognome"));
 
                     cronistoria.add(singoloUpdate);

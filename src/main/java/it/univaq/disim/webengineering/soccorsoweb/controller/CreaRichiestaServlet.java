@@ -5,6 +5,7 @@ import java.util.logging.Logger;
 import it.univaq.disim.webengineering.soccorsoweb.dao.SoccorsoDataLayer;
 import it.univaq.disim.webengineering.soccorsoweb.dao.RichiestaSoccorsoDAO;
 import it.univaq.disim.webengineering.soccorsoweb.model.RichiestaSoccorso;
+import it.univaq.disim.webengineering.soccorsoweb.util.NotificaService;
 import it.univaq.disim.webengineering.soccorsoweb.util.TemplateManager; 
 import java.io.IOException;
 import java.security.SecureRandom;
@@ -137,12 +138,8 @@ public class CreaRichiestaServlet extends HttpServlet {
                     + request.getServerPort() + request.getContextPath()
                     + "/ConvalidaServlet?token=" + tokenConvalida;
 
-            System.out.println("=====================================");
-            System.out.println("SIMULAZIONE EMAIL DI CONVALIDA");
-            System.out.println("Destinatario: " + emailInserita);
-            System.out.println("Ciao " + nomeInserito + ", conferma la richiesta cliccando qui:");
-            System.out.println(linkConvalida);
-            System.out.println("=====================================");
+            NotificaService.inviaEmail(emailInserita, "Conferma la tua richiesta di soccorso",
+                    "Ciao " + nomeInserito + ", conferma la richiesta cliccando qui:\n" + linkConvalida);
 
             try {
                 Map<String, Object> dataModel = new HashMap<>();

@@ -17,4 +17,7 @@ public interface MaterialeDAO {
 
     List<Map<String, String>> estraiMaterialiDisponibili();
 
+    // aggiorna nome e descrizione di un elemento ancora attivo
+    boolean modificaMateriale(int id, String nome, String descrizione);
+
 }

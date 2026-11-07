@@ -131,5 +131,20 @@ public class MaterialeDAO_MySQL implements MaterialeDAO {
         
         return listaMateriali;
     }
-    
+
+    @Override
+    public boolean modificaMateriale(int id, String nome, String descrizione) {
+        String query = "UPDATE materiale SET nome = ?, descrizione = ? WHERE id_materiale = ? AND attivo = 1";
+        try (Connection connessione = DBManager.getConnection();
+             PreparedStatement statement = connessione.prepareStatement(query)) {
+            statement.setString(1, nome);
+            statement.setString(2, descrizione);
+            statement.setInt(3, id);
+            return statement.executeUpdate() > 0;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "errore durante la modifica (materiale)", e);
+        }
+        return false;
+    }
+
 }

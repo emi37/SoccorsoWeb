@@ -27,4 +27,12 @@ public interface RichiestaSoccorsoDAO {
     // estrae i dettagli di una richiesta(la richieta estratta è quella con id_richiesta = ?)
     Map< String, String > estraiDettagliRichiesta(int idRichiesta);
 
+    // elimina le richieste IN_ATTESA (mai convalidate via email) piu' vecchie di N minuti; ritorna quante ne ha eliminate
+    int eliminaRichiesteNonConvalidate(int minuti);
+
+    // archivio richieste per stato (ATTIVA, IN_CORSO, CHIUSA, IGNORATA), con filtro date (estremi inclusi, anche null) e paginazione (pagina da 1)
+    List<Map<String, String>> cercaRichieste(String stato, java.time.LocalDate da, java.time.LocalDate a, int pagina, int perPagina);
+
+    int contaRichieste(String stato, java.time.LocalDate da, java.time.LocalDate a);
+
 }

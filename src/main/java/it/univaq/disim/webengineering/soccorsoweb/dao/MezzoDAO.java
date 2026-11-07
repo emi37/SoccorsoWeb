@@ -21,4 +21,7 @@ public interface MezzoDAO {
     // trova i mezzi non assegnati a missioni(quindi attivi)
     List<Map<String, String>> estraiMezziDisponibili();
 
+    // aggiorna nome e descrizione di un elemento ancora attivo
+    boolean modificaMezzo(int id, String nome, String descrizione);
+
 }

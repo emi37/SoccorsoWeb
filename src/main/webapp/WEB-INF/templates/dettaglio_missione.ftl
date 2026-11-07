@@ -14,9 +14,16 @@
                 <p class="subtitle">Dettagli operativi e assegnazione rinforzi</p>
             </div>
             <nav class="topbar-actions">
-                <a href="${(request.contextPath)!""}/DashboardServlet" class="btn"> Torna alla Dashboard</a>
+                <a href="${(request.contextPath)!""}${dashboard_ritorno!"/DashboardServlet"}" class="btn"> Torna alla Dashboard</a>
             </nav>
         </header>
+
+        <#if errore??>
+            <p class="messaggio-errore" role="alert">${errore}</p>
+        </#if>
+        <#if messaggio??>
+            <p class="text-muted" role="status">${messaggio}</p>
+        </#if>
 
         <section class="card">
             <h2 class="section-title">Dettagli missione</h2>
@@ -53,6 +60,20 @@
                             <th>Caposquadra</th>
                             <td>${(missione.caposquadra)!"Non specificato"}</td>
                         </tr>
+                        <#if (missione.stato!"") != "IN_CORSO">
+                        <tr>
+                            <th>Fine intervento</th>
+                            <td>${(missione.fine)!""}</td>
+                        </tr>
+                        <tr>
+                            <th>Livello di successo</th>
+                            <td>${(missione.livello_successo)!""} / 5</td>
+                        </tr>
+                        <tr>
+                            <th>Rapporto finale</th>
+                            <td>${(missione.commenti)!"(nessun commento)"}</td>
+                        </tr>
+                        </#if>
                     </tbody>
                 </table>
             </div>
@@ -61,6 +82,15 @@
         <section class="card">
             <h2 class="section-title">Risorse assegnate</h2>
             
+            <h3>Squadra</h3>
+            <ul>
+                <#list (missione.squadra)![] as membro>
+                    <li>${(membro.nome)!""}<#if membro.caposquadra!false> (caposquadra)</#if></li>
+                <#else>
+                    <li class="text-muted">Nessun operatore registrato.</li>
+                </#list>
+            </ul>
+
             <h3>Automezzi sul posto</h3>
             <ul>
                 <#list missione.mezzi as mezzo>
@@ -80,7 +110,30 @@
             </ul>
         </section>
 
-        <#if (missione.stato!"") == "IN_CORSO">
+        <section class="card">
+            <h2 class="section-title">Cronistoria aggiornamenti</h2>
+            <ul>
+                <#list aggiornamenti![] as agg>
+                    <li><strong>${(agg.data_ora)!""}</strong> - ${(agg.operatore)!""}: ${(agg.messaggio)!""}</li>
+                <#else>
+                    <li class="text-muted">Nessun aggiornamento registrato.</li>
+                </#list>
+            </ul>
+
+            <#if ruolo_utente == "ADMIN" && (missione.stato!"") == "IN_CORSO">
+            <form action="${(request.contextPath)!""}/DettaglioMissioneServlet" method="POST" class="mt-20">
+                <input type="hidden" name="id_missione" value="${(missione.id_missione)!""}">
+                <input type="hidden" name="azione" value="aggiungi_aggiornamento">
+                <label for="testo" class="form-label">Nuovo aggiornamento:</label>
+                <textarea id="testo" name="testo" class="form-control" rows="3" maxlength="1000" required></textarea>
+                <div class="mt-20">
+                    <button type="submit" class="btn btn-primary">Aggiungi aggiornamento</button>
+                </div>
+            </form>
+            </#if>
+        </section>
+
+        <#if ruolo_utente == "ADMIN" && (missione.stato!"") == "IN_CORSO">
         <section class="card">
             <h2 class="section-title">Modifica Missione</h2>
             <p class="text-muted">Aggiorna le informazioni della missione.</p>

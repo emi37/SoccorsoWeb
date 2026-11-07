@@ -19,6 +19,8 @@ public class MissioneDAO_MySQL implements MissioneDAO {
 
     private static final Logger LOGGER = Logger.getLogger(MissioneDAO_MySQL.class.getName());
 
+    private static final java.time.format.DateTimeFormatter FORMATO_DATA = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
     @Override
     public List< Map<String, String> > estraiMissioniInCorso() {
         List< Map<String, String> > listaMissioni = new ArrayList<>();
@@ -63,12 +65,12 @@ public class MissioneDAO_MySQL implements MissioneDAO {
     }
 
     @Override
-    public boolean creaMissioneInTransazione(int idRichiesta, String obiettivo, String posizione, int idCaposquadra, String[] idOperatori, String[] idMezzi, String[] idMateriali, int idAdminLoggato) {
-        boolean successo = false;
+    public int creaMissioneInTransazione(int idRichiesta, String obiettivo, String posizione, int idCaposquadra, String[] idOperatori, String[] idMezzi, String[] idMateriali, int idAdminLoggato) {
+        int idMissioneCreata = 0; // 0 = missione non creata
         Connection connessione = null;
 
         String queryMissione = "INSERT INTO missione (id_richiesta, obiettivo, posizione, stato, timestamp_inizio) VALUES (?, ?, ?, 'IN_CORSO', CURRENT_TIMESTAMP)";
-        String queryRichiesta = "UPDATE richiesta_soccorso SET stato = 'IN_CORSO' WHERE id_richiesta = ?";
+        String queryRichiesta = "UPDATE richiesta_soccorso SET stato = 'IN_CORSO' WHERE id_richiesta = ? AND stato = 'ATTIVA'";
         String queryOperatore = "INSERT INTO assegnazione_operatori_missione (id_missione, id_utente, is_caposquadra) VALUES (?, ?, ?)";
         String queryMezzo = "INSERT INTO assegnazione_mezzi_missione (id_missione, id_mezzo) VALUES (?, ?)";
         String queryMateriale = "INSERT INTO assegnazione_materiale_missione (id_missione, id_materiale) VALUES (?, ?)";
@@ -77,6 +79,16 @@ public class MissioneDAO_MySQL implements MissioneDAO {
         try {
             connessione = DBManager.getConnection(); //in ogni caso sotto di qualsiasi try, catch e finally, la connessione è sempre diversa da null, solo se non sei connesso al wifi di casa allora la connessione sarà null, altriment la connessionen al db da qui in poi sarà sempre diversa da null
             connessione.setAutoCommit(false);//cioe per capire meglio, connessione diversa da null vuol dire che la connessione da netbeans al DB esiste e sono effettivamente collegati e possono scambiarsi dati e informazioni 
+
+            // la richiesta passa da ATTIVA a IN_CORSO in modo atomico: se qualcuno l'ha gia' presa in carico
+            // (o ignorata) l'UPDATE non tocca nessuna riga e la missione NON viene creata
+            try (PreparedStatement statementRichiesta = connessione.prepareStatement(queryRichiesta)) {
+                statementRichiesta.setInt(1, idRichiesta);
+                if (statementRichiesta.executeUpdate() != 1) {
+                    connessione.rollback();
+                    return 0;
+                }
+            }
 
             int idMissioneGenerato = -1; // perche' non so ancora che valore il db darà a questo id di questa missione, quindi gliene do io uno fittizzio, poi verra modificato
 
@@ -95,12 +107,13 @@ public class MissioneDAO_MySQL implements MissioneDAO {
 
             if (idMissioneGenerato == -1) { // se non dovesse cambiare da meno 1 al valore vero per ualche motivo, allora devo annullare tute le modifche dfatte al DB fin ora
                 connessione.rollback();     // facendo rollback
-                return false;
+                return 0;
             }
 
-            try (PreparedStatement statementRichiesta = connessione.prepareStatement(queryRichiesta)) {
-                statementRichiesta.setInt(1, idRichiesta);
-                statementRichiesta.executeUpdate();
+            // il caposquadra deve essere un operatore attivo e libero
+            if (!operatoreLibero(connessione, idCaposquadra, idMissioneGenerato)) {
+                connessione.rollback();
+                return 0;
             }
 
             try (PreparedStatement statementCaposquadra = connessione.prepareStatement(queryOperatore)) {
@@ -115,6 +128,10 @@ public class MissioneDAO_MySQL implements MissioneDAO {
                     for (String operatore : idOperatori) {
                         int idOp = Integer.parseInt(operatore.trim());
                         if (idOp != idCaposquadra) {
+                            if (!operatoreLibero(connessione, idOp, idMissioneGenerato)) {
+                                connessione.rollback();
+                                return 0;
+                            }
                             statementOperatori.setInt(1, idMissioneGenerato);
                             statementOperatori.setInt(2, idOp);
                             statementOperatori.setInt(3, 0); 
@@ -127,8 +144,13 @@ public class MissioneDAO_MySQL implements MissioneDAO {
             if (idMezzi != null && idMezzi.length > 0) {
                 try (PreparedStatement statementMezzi = connessione.prepareStatement(queryMezzo)) {
                     for (String mezzo : idMezzi) {
+                        int idMezzo = Integer.parseInt(mezzo.trim());
+                        if (!mezzoLibero(connessione, idMezzo, idMissioneGenerato)) {
+                            connessione.rollback();
+                            return 0;
+                        }
                         statementMezzi.setInt(1, idMissioneGenerato);
-                        statementMezzi.setInt(2, Integer.parseInt(mezzo.trim()));
+                        statementMezzi.setInt(2, idMezzo);
                         statementMezzi.executeUpdate();
                     }
                 }
@@ -137,8 +159,13 @@ public class MissioneDAO_MySQL implements MissioneDAO {
             if (idMateriali != null && idMateriali.length > 0) {
                 try (PreparedStatement statementMateriali = connessione.prepareStatement(queryMateriale)) {
                     for (String materiale : idMateriali) {
+                        int idMateriale = Integer.parseInt(materiale.trim());
+                        if (!materialeLibero(connessione, idMateriale, idMissioneGenerato)) {
+                            connessione.rollback();
+                            return 0;
+                        }
                         statementMateriali.setInt(1, idMissioneGenerato);
-                        statementMateriali.setInt(2, Integer.parseInt(materiale.trim()));
+                        statementMateriali.setInt(2, idMateriale);
                         statementMateriali.executeUpdate();
                     }
                 }
@@ -152,7 +179,7 @@ public class MissioneDAO_MySQL implements MissioneDAO {
             }
 
             connessione.commit();
-            successo = true;
+            idMissioneCreata = idMissioneGenerato;
 
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "errore durante la creazione della missione", e);
@@ -175,7 +202,7 @@ public class MissioneDAO_MySQL implements MissioneDAO {
                 }
             }
         }
-        return successo;
+        return idMissioneCreata;
     }
 
     @Override
@@ -257,35 +284,49 @@ public class MissioneDAO_MySQL implements MissioneDAO {
         //qua ancziche' passare i parametri modoficati tramite i java bean, li passo direttamente dal metodo questo perche' vado a modificare 3 tabelle diverse sul DB missione , richiesta_soccorso , aggiornamento_missione
         //quindi anziche fare new nella servlet di tre oggetti diversi per passare 5 parametri, li passo direttamente qui nel metodo per comodità e tenere il codice+pulito
     @Override
-    public boolean chiudiMissioneInTransazione(int idMissione, int idRichiesta, int livelloSuccesso, String commenti, int idAdminLoggato) {
-        boolean successo = false; //diventa true solo se tutte e 3 le query vanno a buon fine
+    public boolean chiudiMissioneInTransazione(int idMissione, int livelloSuccesso, String commenti, int idAdminLoggato) {
+        boolean successo = false;
         Connection connessione = null;
-        //faccio 3 query perche cliccando il bottone " concludi " , succedono 2 update e 1 insert nel DB                           //time stamp salva l orario e la data di conclusione della missione 
-        String queryMissione = "UPDATE missione SET stato = 'CHIUSA', livello_successo = ?, commenti = ?, timestamp_fine = CURRENT_TIMESTAMP WHERE id_missione = ?";
-        String queryRichiesta = "UPDATE richiesta_soccorso SET stato = 'CHIUSA' WHERE id_richiesta = ?";
+
+        // il rapporto finale e' facoltativo: se manca non deve comparire "null" nel testo
+        String rapporto = (commenti == null) ? "" : commenti.trim();
+
+        // la missione si chiude solo se e' ancora IN_CORSO: niente doppie chiusure (doppio click, pagina riaperta)
+        String queryMissione = "UPDATE missione SET stato = 'CHIUSA', livello_successo = ?, commenti = ?, timestamp_fine = CURRENT_TIMESTAMP "
+                + "WHERE id_missione = ? AND stato = 'IN_CORSO'";
+        // la richiesta da chiudere si ricava dalla missione stessa e NON da un campo del form,
+        // altrimenti chi manomette il form potrebbe chiudere la richiesta di un'altra missione
+        String queryRichiesta = "UPDATE richiesta_soccorso r JOIN missione m ON m.id_richiesta = r.id_richiesta "
+                + "SET r.stato = 'CHIUSA' WHERE m.id_missione = ?";
         String queryTimeline = "INSERT INTO aggiornamento_missione (id_missione, id_admin, testo_descrittivo) VALUES (?, ?, ?)";
 
         try {
             connessione = DBManager.getConnection();
-            connessione.setAutoCommit(false); // non salva le modifiche fatte dalla prima query sul DB appena viene eseguita, ma lo fa solo quando tutte e 3 le query sono state eseguite
-            //quindi fa il commit in locale sul DB solo quando tutte e 3 le queery vanno a buon fine
+            // le 3 operazioni (2 UPDATE e 1 INSERT) vengono salvate insieme solo se riescono tutte
+            connessione.setAutoCommit(false);
+
             try (PreparedStatement statementMissione = connessione.prepareStatement(queryMissione)) {
                 statementMissione.setInt(1, livelloSuccesso);
-                statementMissione.setString(2, commenti);
+                statementMissione.setString(2, rapporto);
                 statementMissione.setInt(3, idMissione);
-                statementMissione.executeUpdate(); //qui esegue la prima query, non la va a committare subito sul db, ma committa solo alla fine
-                                                   //  quando tutte e 3 le query sono state eseguite
+                if (statementMissione.executeUpdate() != 1) {
+                    // missione inesistente o gia' chiusa
+                    connessione.rollback();
+                    return false;
+                }
             }
 
             try (PreparedStatement statementRichiesta = connessione.prepareStatement(queryRichiesta)) {
-                statementRichiesta.setInt(1, idRichiesta);
+                statementRichiesta.setInt(1, idMissione);
                 statementRichiesta.executeUpdate();
             }
 
             try (PreparedStatement statementTimeline = connessione.prepareStatement(queryTimeline)) {
                 statementTimeline.setInt(1, idMissione);
                 statementTimeline.setInt(2, idAdminLoggato);
-                statementTimeline.setString(3, "CHIUSURA MISSIONE. Rapporto finale: " + commenti);
+                statementTimeline.setString(3, rapporto.isEmpty()
+                        ? "CHIUSURA MISSIONE."
+                        : "CHIUSURA MISSIONE. Rapporto finale: " + rapporto);
                 statementTimeline.executeUpdate();
             }
 
@@ -293,15 +334,15 @@ public class MissioneDAO_MySQL implements MissioneDAO {
             successo = true;
 
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "errore durante la chiusura della missione...", e);
+            LOGGER.log(Level.SEVERE, "errore durante la chiusura della missione", e);
             if (connessione != null) {
                 try {
-                    connessione.rollback(); // rollback parte quando anche 1 sola query fallisce e dice al DB, elimina tutte le modoficeh che stavi per fare date lealtre query gia eseguiti, ripulisce le modofiche che stavano per essere fatte falle query quando faccio connessione.commit();
-                } catch (Exception exRollback) { 
+                    connessione.rollback();
+                } catch (Exception exRollback) {
                     LOGGER.log(Level.SEVERE, "Errore imprevisto", exRollback);
                 }
             }
-        } finally { //ci entri sempre, sta fuori da try e catch
+        } finally {
             if (connessione != null) {
                 try {
                     connessione.setAutoCommit(true);
@@ -344,7 +385,7 @@ public class MissioneDAO_MySQL implements MissioneDAO {
 
         try (Connection connessione = DBManager.getConnection()) {
             
-            String queryBase = "SELECT obiettivo, posizione, stato, timestamp_inizio FROM missione WHERE id_missione = ?";
+            String queryBase = "SELECT obiettivo, posizione, stato, timestamp_inizio, timestamp_fine, livello_successo, commenti FROM missione WHERE id_missione = ?";
             try (PreparedStatement statementBase = connessione.prepareStatement(queryBase)) {
                 statementBase.setInt(1, idMissione);
                 try (ResultSet resultSetBase = statementBase.executeQuery()) {
@@ -356,6 +397,13 @@ public class MissioneDAO_MySQL implements MissioneDAO {
                         mappaDettagli.put("posizione", resultSetBase.getString("posizione"));
                         mappaDettagli.put("stato", statoDellaMissione); 
                         mappaDettagli.put("inizio", resultSetBase.getTimestamp("timestamp_inizio").toString());
+                        // dati di chiusura (restano vuoti finche' la missione e' in corso)
+                        mappaDettagli.put("fine", formattaData(resultSetBase.getTimestamp("timestamp_fine")));
+                        int livelloSuccesso = resultSetBase.getInt("livello_successo");
+                        if (!resultSetBase.wasNull()) {
+                            mappaDettagli.put("livello_successo", livelloSuccesso);
+                        }
+                        mappaDettagli.put("commenti", resultSetBase.getString("commenti"));
                     } else {
                         return mappaDettagli;
                     }
@@ -376,6 +424,24 @@ public class MissioneDAO_MySQL implements MissioneDAO {
                 }
             }
             mappaDettagli.put("caposquadra", nomeCaposquadra);
+
+            // squadra completa: caposquadra per primo, poi gli altri operatori
+            List<Map<String, Object>> squadra = new ArrayList<>();
+            String querySquadra = "SELECT u.nome, u.cognome, aom.is_caposquadra FROM utenti u "
+                    + "JOIN assegnazione_operatori_missione aom ON u.id_utente = aom.id_utente "
+                    + "WHERE aom.id_missione = ? ORDER BY aom.is_caposquadra DESC, u.cognome, u.nome";
+            try (PreparedStatement statementSquadra = connessione.prepareStatement(querySquadra)) {
+                statementSquadra.setInt(1, idMissione);
+                try (ResultSet resultSetSquadra = statementSquadra.executeQuery()) {
+                    while (resultSetSquadra.next()) {
+                        Map<String, Object> membro = new HashMap<>();
+                        membro.put("nome", resultSetSquadra.getString("nome") + " " + resultSetSquadra.getString("cognome"));
+                        membro.put("caposquadra", resultSetSquadra.getInt("is_caposquadra") == 1);
+                        squadra.add(membro);
+                    }
+                }
+            }
+            mappaDettagli.put("squadra", squadra);
             
             List<String> listaMezzi = new ArrayList<>();
             String queryMezzi = "SELECT m.nome, m.descrizione FROM mezzo m "
@@ -454,7 +520,7 @@ public class MissioneDAO_MySQL implements MissioneDAO {
         boolean successo = false;
         Connection connessione = null;
         
-        String queryMissione = "UPDATE missione SET obiettivo = ?, posizione = ? WHERE id_missione = ?";
+        String queryMissione = "UPDATE missione SET obiettivo = ?, posizione = ? WHERE id_missione = ? AND stato = 'IN_CORSO'";
         String queryOperatore = "INSERT IGNORE INTO assegnazione_operatori_missione (id_missione, id_utente, is_caposquadra) VALUES (?, ?, 0)";
         String queryMezzo = "INSERT IGNORE INTO assegnazione_mezzi_missione (id_missione, id_mezzo) VALUES (?, ?)";
         String queryMateriale = "INSERT IGNORE INTO assegnazione_materiale_missione (id_missione, id_materiale) VALUES (?, ?)";
@@ -467,14 +533,23 @@ public class MissioneDAO_MySQL implements MissioneDAO {
                 statementMissione.setString(1, nuovoObiettivo);
                 statementMissione.setString(2, nuovaPosizione);
                 statementMissione.setInt(3, idMissione);
-                statementMissione.executeUpdate();
+                // se la missione nel frattempo e' stata chiusa non si modifica piu' nulla
+                if (statementMissione.executeUpdate() != 1) {
+                    connessione.rollback();
+                    return false;
+                }
             }
 
             if (nuoviOperatori != null) {
                 try (PreparedStatement statementOperatori = connessione.prepareStatement(queryOperatore)) {
                     for (String operatore : nuoviOperatori) {
+                        int idOp = Integer.parseInt(operatore.trim());
+                        if (!operatoreLibero(connessione, idOp, idMissione)) {
+                            connessione.rollback();
+                            return false;
+                        }
                         statementOperatori.setInt(1, idMissione);
-                        statementOperatori.setInt(2, Integer.parseInt(operatore.trim()));
+                        statementOperatori.setInt(2, idOp);
                         statementOperatori.executeUpdate();
                     }
                 }
@@ -483,8 +558,13 @@ public class MissioneDAO_MySQL implements MissioneDAO {
             if (nuoviMezzi != null) {
                 try (PreparedStatement statementMezzi = connessione.prepareStatement(queryMezzo)) {
                     for (String mezzo : nuoviMezzi) {
+                        int idMezzo = Integer.parseInt(mezzo.trim());
+                        if (!mezzoLibero(connessione, idMezzo, idMissione)) {
+                            connessione.rollback();
+                            return false;
+                        }
                         statementMezzi.setInt(1, idMissione);
-                        statementMezzi.setInt(2, Integer.parseInt(mezzo.trim()));
+                        statementMezzi.setInt(2, idMezzo);
                         statementMezzi.executeUpdate();
                     }
                 }
@@ -493,8 +573,13 @@ public class MissioneDAO_MySQL implements MissioneDAO {
             if (nuoviMateriali != null) {
                 try (PreparedStatement statementMateriali = connessione.prepareStatement(queryMateriale)) {
                     for (String materiale : nuoviMateriali) {
+                        int idMateriale = Integer.parseInt(materiale.trim());
+                        if (!materialeLibero(connessione, idMateriale, idMissione)) {
+                            connessione.rollback();
+                            return false;
+                        }
                         statementMateriali.setInt(1, idMissione);
-                        statementMateriali.setInt(2, Integer.parseInt(materiale.trim()));
+                        statementMateriali.setInt(2, idMateriale);
                         statementMateriali.executeUpdate();
                     }
                 }
@@ -526,6 +611,137 @@ public class MissioneDAO_MySQL implements MissioneDAO {
         }
         
         return successo;
+    }
+
+    // ---- controlli di disponibilita' lato server -----------------------------------------
+    // Usano gli STESSI criteri delle liste "disponibili" mostrate all'admin (utente OPERATORE
+    // attivo, mezzo/materiale attivo, non impegnato in una missione IN_CORSO), ma vengono
+    // eseguiti dentro la transazione: non ci si puo' fidare solo di cio' che il form mostra,
+    // perche' una richiesta puo' essere costruita a mano o un'altra missione puo' aver
+    // preso la risorsa nel frattempo.
+    // idMissioneDaEscludere: la missione che stiamo creando/modificando, le cui assegnazioni
+    // non devono contare come "impegno".
+
+    private boolean operatoreLibero(Connection connessione, int idUtente, int idMissioneDaEscludere) throws SQLException {
+        String query = "SELECT COUNT(*) FROM utenti u WHERE u.id_utente = ? AND u.ruolo = 'OPERATORE' AND u.attivo = 1 "
+                + "AND NOT EXISTS (SELECT 1 FROM assegnazione_operatori_missione aom "
+                + "JOIN missione m ON aom.id_missione = m.id_missione "
+                + "WHERE aom.id_utente = u.id_utente AND m.stato = 'IN_CORSO' AND m.id_missione <> ?)";
+        return esisteAlmenoUno(connessione, query, idUtente, idMissioneDaEscludere);
+    }
+
+    private boolean mezzoLibero(Connection connessione, int idMezzo, int idMissioneDaEscludere) throws SQLException {
+        String query = "SELECT COUNT(*) FROM mezzo x WHERE x.id_mezzo = ? AND x.attivo = 1 "
+                + "AND NOT EXISTS (SELECT 1 FROM assegnazione_mezzi_missione amm "
+                + "JOIN missione m ON amm.id_missione = m.id_missione "
+                + "WHERE amm.id_mezzo = x.id_mezzo AND m.stato = 'IN_CORSO' AND m.id_missione <> ?)";
+        return esisteAlmenoUno(connessione, query, idMezzo, idMissioneDaEscludere);
+    }
+
+    private boolean materialeLibero(Connection connessione, int idMateriale, int idMissioneDaEscludere) throws SQLException {
+        String query = "SELECT COUNT(*) FROM materiale x WHERE x.id_materiale = ? AND x.attivo = 1 "
+                + "AND NOT EXISTS (SELECT 1 FROM assegnazione_materiale_missione ama "
+                + "JOIN missione m ON ama.id_missione = m.id_missione "
+                + "WHERE ama.id_materiale = x.id_materiale AND m.stato = 'IN_CORSO' AND m.id_missione <> ?)";
+        return esisteAlmenoUno(connessione, query, idMateriale, idMissioneDaEscludere);
+    }
+
+    private boolean esisteAlmenoUno(Connection connessione, String query, int primo, int secondo) throws SQLException {
+        try (PreparedStatement statement = connessione.prepareStatement(query)) {
+            statement.setInt(1, primo);
+            statement.setInt(2, secondo);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                return resultSet.next() && resultSet.getInt(1) > 0;
+            }
+        }
+    }
+
+    @Override
+    public boolean operatoreCoinvoltoInMissione(int idMissione, int idUtente) {
+        String query = "SELECT COUNT(*) FROM assegnazione_operatori_missione WHERE id_missione = ? AND id_utente = ?";
+        try (Connection connessione = DBManager.getConnection()) {
+            return esisteAlmenoUno(connessione, query, idMissione, idUtente);
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "errore nel controllo della partecipazione alla missione", e);
+        }
+        return false;
+    }
+
+    @Override
+    public List<Map<String, String>> estraiContattiOperatoriMissione(int idMissione) {
+        List<Map<String, String>> contatti = new ArrayList<>();
+        String query = "SELECT u.nome, u.cognome, u.email, aom.is_caposquadra FROM utenti u "
+                + "JOIN assegnazione_operatori_missione aom ON u.id_utente = aom.id_utente "
+                + "WHERE aom.id_missione = ? ORDER BY aom.is_caposquadra DESC, u.cognome, u.nome";
+
+        try (Connection connessione = DBManager.getConnection();
+             PreparedStatement statement = connessione.prepareStatement(query)) {
+            statement.setInt(1, idMissione);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    Map<String, String> contatto = new HashMap<>();
+                    contatto.put("nome", resultSet.getString("nome"));
+                    contatto.put("cognome", resultSet.getString("cognome"));
+                    contatto.put("email", resultSet.getString("email"));
+                    contatto.put("caposquadra", String.valueOf(resultSet.getInt("is_caposquadra") == 1));
+                    contatti.add(contatto);
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "errore nell'estrazione dei contatti degli operatori della missione", e);
+        }
+        return contatti;
+    }
+
+    @Override
+    public List<Map<String, String>> estraiStoricoOperatore(int idOperatore) {
+        return estraiStoricoRisorsa("assegnazione_operatori_missione", "id_utente", idOperatore);
+    }
+
+    @Override
+    public List<Map<String, String>> estraiStoricoMezzo(int idMezzo) {
+        return estraiStoricoRisorsa("assegnazione_mezzi_missione", "id_mezzo", idMezzo);
+    }
+
+    @Override
+    public List<Map<String, String>> estraiStoricoMateriale(int idMateriale) {
+        return estraiStoricoRisorsa("assegnazione_materiale_missione", "id_materiale", idMateriale);
+    }
+
+    // storico delle missioni in cui una risorsa (operatore, mezzo o materiale) e' stata coinvolta.
+    // tabella e colonna sono costanti scelte dal codice qui sopra, mai valori arrivati dall'utente
+    private List<Map<String, String>> estraiStoricoRisorsa(String tabellaAssegnazione, String colonnaRisorsa, int idRisorsa) {
+        List<Map<String, String>> storico = new ArrayList<>();
+        String query = "SELECT m.id_missione, m.obiettivo, m.posizione, m.stato, m.livello_successo, m.timestamp_inizio, m.timestamp_fine "
+                + "FROM missione m JOIN " + tabellaAssegnazione + " a ON m.id_missione = a.id_missione "
+                + "WHERE a." + colonnaRisorsa + " = ? "
+                + "ORDER BY m.timestamp_inizio DESC, m.id_missione DESC";
+
+        try (Connection connessione = DBManager.getConnection();
+             PreparedStatement statement = connessione.prepareStatement(query)) {
+            statement.setInt(1, idRisorsa);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    Map<String, String> riga = new HashMap<>();
+                    riga.put("id_missione", String.valueOf(resultSet.getInt("id_missione")));
+                    riga.put("obiettivo", resultSet.getString("obiettivo"));
+                    riga.put("posizione", resultSet.getString("posizione"));
+                    riga.put("stato", resultSet.getString("stato"));
+                    int livello = resultSet.getInt("livello_successo");
+                    riga.put("esito", resultSet.wasNull() ? "-" : livello + " / 5");
+                    riga.put("inizio", formattaData(resultSet.getTimestamp("timestamp_inizio")));
+                    riga.put("fine", formattaData(resultSet.getTimestamp("timestamp_fine")));
+                    storico.add(riga);
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "errore nell'estrazione dello storico della risorsa", e);
+        }
+        return storico;
+    }
+
+    private String formattaData(java.sql.Timestamp data) {
+        return data == null ? null : data.toLocalDateTime().format(FORMATO_DATA);
     }
 
 }

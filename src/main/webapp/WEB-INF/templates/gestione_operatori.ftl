@@ -35,7 +35,7 @@
                     </div>
                     <div>
                         <label for="campoPassword" class="form-label">Password:</label>
-                        <input type="password" id="campoPassword" name="password" class="form-control" required>
+                        <input type="password" id="campoPassword" name="password" class="form-control" minlength="8" placeholder="Lascia vuoto per generarla automaticamente">
                     </div>
                     <div>
                         <label for="sceltaRuolo" class="form-label">Ruolo:</label>

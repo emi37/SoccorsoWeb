@@ -131,5 +131,20 @@ public class MezzoDAO_MySQL implements MezzoDAO {
         
         return listaMezzi;
     }
-    
+
+    @Override
+    public boolean modificaMezzo(int id, String nome, String descrizione) {
+        String query = "UPDATE mezzo SET nome = ?, descrizione = ? WHERE id_mezzo = ? AND attivo = 1";
+        try (Connection connessione = DBManager.getConnection();
+             PreparedStatement statement = connessione.prepareStatement(query)) {
+            statement.setString(1, nome);
+            statement.setString(2, descrizione);
+            statement.setInt(3, id);
+            return statement.executeUpdate() > 0;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "errore durante la modifica (mezzo)", e);
+        }
+        return false;
+    }
+
 }
