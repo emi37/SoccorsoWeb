@@ -1,4 +1,8 @@
-package it.univaq.disim.webengineering.soccorsoweb.controller.DAO;
+package it.univaq.disim.webengineering.soccorsoweb.dao.impl;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import it.univaq.disim.webengineering.soccorsoweb.dao.MissioneDAO;
 
 import it.univaq.disim.webengineering.soccorsoweb.util.DBManager;
 import java.sql.Connection;
@@ -11,8 +15,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MissioneDAO {
+public class MissioneDAO_MySQL implements MissioneDAO {
 
+    private static final Logger LOGGER = Logger.getLogger(MissioneDAO_MySQL.class.getName());
+
+    @Override
     public List< Map<String, String> > estraiMissioniInCorso() {
         List< Map<String, String> > listaMissioni = new ArrayList<>();
         
@@ -50,12 +57,12 @@ public class MissioneDAO {
                 listaMissioni.add(mappaMissione);
             }
         } catch (Exception e) {
-            System.err.println("errore durante l'estrazione delle missioni in corso...");
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "errore durante l'estrazione delle missioni in corso...", e);
         }
         return listaMissioni;
     }
 
+    @Override
     public boolean creaMissioneInTransazione(int idRichiesta, String obiettivo, String posizione, int idCaposquadra, String[] idOperatori, String[] idMezzi, String[] idMateriali, int idAdminLoggato) {
         boolean successo = false;
         Connection connessione = null;
@@ -148,13 +155,12 @@ public class MissioneDAO {
             successo = true;
 
         } catch (Exception e) {
-            System.err.println("errore durante la creazione della missione");
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "errore durante la creazione della missione", e);
             if (connessione != null) {
                 try {
                     connessione.rollback();
                 } catch (Exception exRollback) {
-                    exRollback.printStackTrace();
+                    LOGGER.log(Level.SEVERE, "Errore imprevisto", exRollback);
                 }
             }
         } finally {
@@ -162,16 +168,17 @@ public class MissioneDAO {
                 try {
                     connessione.setAutoCommit(true);
                 } catch (Exception exAutoCommit) {
-                    exAutoCommit.printStackTrace();
+                    LOGGER.log(Level.SEVERE, "Errore imprevisto", exAutoCommit);
                 } finally {
                     // la connessione DEVE tornare al pool in ogni caso
-                    try { connessione.close(); } catch (Exception exClose) { exClose.printStackTrace(); }
+                    try { connessione.close(); } catch (Exception exClose) { LOGGER.log(Level.SEVERE, "Errore imprevisto", exClose); }
                 }
             }
         }
         return successo;
     }
 
+    @Override
     public List<Map<String, String>> estraiStoricoMissioni() {
         List<Map<String, String>> storicoTrovato = new ArrayList<>();
         
@@ -206,12 +213,12 @@ public class MissioneDAO {
                 storicoTrovato.add(mappaMissione);
             }
         } catch (Exception e) {
-            System.err.println("errore durante l'estrazione dello storico missioni...");
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "errore durante l'estrazione dello storico missioni...", e);
         }
         return storicoTrovato;
     }
 
+    @Override
     public List<Map<String, String>> estraiMissioniPerOperatore(int idOperatoreCercato) {
         List<Map<String, String>> missioniPersonali = new ArrayList<>();
         
@@ -243,13 +250,13 @@ public class MissioneDAO {
                 }
             }
         } catch (Exception e) {
-            System.err.println("errore durante l'estrazione delle missioni per l'operatore...");
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "errore durante l'estrazione delle missioni per l'operatore...", e);
         }
         return missioniPersonali;
     }
         //qua ancziche' passare i parametri modoficati tramite i java bean, li passo direttamente dal metodo questo perche' vado a modificare 3 tabelle diverse sul DB missione , richiesta_soccorso , aggiornamento_missione
         //quindi anziche fare new nella servlet di tre oggetti diversi per passare 5 parametri, li passo direttamente qui nel metodo per comodità e tenere il codice+pulito
+    @Override
     public boolean chiudiMissioneInTransazione(int idMissione, int idRichiesta, int livelloSuccesso, String commenti, int idAdminLoggato) {
         boolean successo = false; //diventa true solo se tutte e 3 le query vanno a buon fine
         Connection connessione = null;
@@ -286,13 +293,12 @@ public class MissioneDAO {
             successo = true;
 
         } catch (Exception e) {
-            System.err.println("errore durante la chiusura della missione...");
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "errore durante la chiusura della missione...", e);
             if (connessione != null) {
                 try {
                     connessione.rollback(); // rollback parte quando anche 1 sola query fallisce e dice al DB, elimina tutte le modoficeh che stavi per fare date lealtre query gia eseguiti, ripulisce le modofiche che stavano per essere fatte falle query quando faccio connessione.commit();
                 } catch (Exception exRollback) { 
-                    exRollback.printStackTrace();
+                    LOGGER.log(Level.SEVERE, "Errore imprevisto", exRollback);
                 }
             }
         } finally { //ci entri sempre, sta fuori da try e catch
@@ -300,16 +306,17 @@ public class MissioneDAO {
                 try {
                     connessione.setAutoCommit(true);
                 } catch (Exception exAutoCommit) {
-                    exAutoCommit.printStackTrace();
+                    LOGGER.log(Level.SEVERE, "Errore imprevisto", exAutoCommit);
                 } finally {
                     // la connessione DEVE tornare al pool in ogni caso
-                    try { connessione.close(); } catch (Exception exClose) { exClose.printStackTrace(); }
+                    try { connessione.close(); } catch (Exception exClose) { LOGGER.log(Level.SEVERE, "Errore imprevisto", exClose); }
                 }
             }
         }
         return successo;
     }
 
+    @Override
     public String estraiStatoMissione(int idMissione) {
         String statoAttuale = "";
         String query = "SELECT stato FROM missione WHERE id_missione = ?";
@@ -325,11 +332,12 @@ public class MissioneDAO {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Errore imprevisto", e);
         }
         return statoAttuale;
     }
 
+    @Override
     public Map<String, Object> estraiDettagliCompleti(int idMissione) {
         Map<String, Object> mappaDettagli = new HashMap<>();
         String statoDellaMissione = ""; 
@@ -400,13 +408,13 @@ public class MissioneDAO {
             mappaDettagli.put("materiali", listaMateriali);
 
         } catch (Exception e) {
-            System.err.println("errore durante l'estrazione dei dettagli completi della missione...");
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "errore durante l'estrazione dei dettagli completi della missione...", e);
         }
 
         return mappaDettagli;
     }
 
+    @Override
     public List<Map<String, String>> estraiMissioniAttivePerOperatore(long idOperatore) {
         List<Map<String, String>> listaMissioni = new ArrayList<>();
         
@@ -433,13 +441,13 @@ public class MissioneDAO {
                 }
             }
         } catch (Exception e) {
-            System.err.println("errore nell'estrazione delle missioni attive per l'operatore...");
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "errore nell'estrazione delle missioni attive per l'operatore...", e);
         }
         
         return listaMissioni;
     }
 
+    @Override
     public boolean modificaMissioneInCorso(int idMissione, String nuovoObiettivo, String nuovaPosizione,
                                            String[] nuoviOperatori, String[] nuoviMezzi, String[] nuoviMateriali) {
         
@@ -496,13 +504,12 @@ public class MissioneDAO {
             successo = true;
 
         } catch (Exception e) {
-            System.err.println("errore durante la modifica della missione.");
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "errore durante la modifica della missione.", e);
             if (connessione != null) {
                 try {
                     connessione.rollback();
                 } catch (Exception exRollback) {
-                    exRollback.printStackTrace();
+                    LOGGER.log(Level.SEVERE, "Errore imprevisto", exRollback);
                 }
             }
         } finally {
@@ -510,149 +517,15 @@ public class MissioneDAO {
                 try {
                     connessione.setAutoCommit(true);
                 } catch (Exception exAutoCommit) {
-                    exAutoCommit.printStackTrace();
+                    LOGGER.log(Level.SEVERE, "Errore imprevisto", exAutoCommit);
                 } finally {
                     // la connessione DEVE tornare al pool in ogni caso
-                    try { connessione.close(); } catch (Exception exClose) { exClose.printStackTrace(); }
+                    try { connessione.close(); } catch (Exception exClose) { LOGGER.log(Level.SEVERE, "Errore imprevisto", exClose); }
                 }
             }
         }
         
         return successo;
     }
-    
-    
-    public List<String> estraiPatentiOperatore(int idOperatore) {
-        List<String> miePatenti = new ArrayList<>();
-        String query = "SELECT p.codice FROM patente p " +
-                       "JOIN utente_patente up ON p.id_patente = up.id_patente " +
-                       "WHERE up.id_utente = ?";
 
-        try (Connection connessione = DBManager.getConnection();
-             PreparedStatement statement = connessione.prepareStatement(query)) {
-
-            statement.setInt(1, idOperatore);
-
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    miePatenti.add(resultSet.getString("codice"));
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return miePatenti;
-    }
-
-    public List<Map<String, String>> estraiPatentiMancanti(int idOperatore) {
-        List<Map<String, String>> listaPatenti = new ArrayList<>();
-        
-        String query = "SELECT id_patente, codice FROM patente " +
-                       "WHERE id_patente NOT IN (SELECT id_patente FROM utente_patente WHERE id_utente = ?) " +
-                       "ORDER BY codice ASC";
-
-        try (Connection connessione = DBManager.getConnection();
-             PreparedStatement statement = connessione.prepareStatement(query)) {
-
-            statement.setInt(1, idOperatore);
-
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    Map<String, String> mappaPatente = new HashMap<>();
-                    mappaPatente.put("id_patente", String.valueOf(resultSet.getInt("id_patente")));
-                    mappaPatente.put("codice", resultSet.getString("codice"));
-                    listaPatenti.add(mappaPatente);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return listaPatenti;
-    }
-
-    public boolean aggiungiPatenteOperatore(int idOperatore, int idPatente) {
-        String query = "INSERT IGNORE INTO utente_patente (id_utente, id_patente) VALUES (?, ?)";
-
-        try (Connection connessione = DBManager.getConnection();
-             PreparedStatement statement = connessione.prepareStatement(query)) {
-
-            statement.setInt(1, idOperatore);
-            statement.setInt(2, idPatente);
-            statement.executeUpdate();
-            return true;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-    
-    
-    
-    
-    public List<String> estraiAbilitaOperatore(int idOperatore) {
-        List<String> mieAbilita = new ArrayList<>();
-        String query = "SELECT a.nome FROM abilita a " +
-                       "JOIN utente_abilita ua ON a.id_abilita = ua.id_abilita " +
-                       "WHERE ua.id_utente = ?";
-
-        try (Connection connessione = DBManager.getConnection();
-             PreparedStatement statement = connessione.prepareStatement(query)) {
-
-            statement.setInt(1, idOperatore);
-
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    mieAbilita.add(resultSet.getString("nome"));
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return mieAbilita;
-    }
-
-    public List<Map<String, String>> estraiAbilitaMancanti(int idOperatore) {
-        List<Map<String, String>> listaAbilita = new ArrayList<>();
-        //estrae dal database SOLO le abilità che l'operatore NON possiede ancora 
-        String query = "SELECT id_abilita, nome FROM abilita " +
-                       "WHERE id_abilita NOT IN (SELECT id_abilita FROM utente_abilita WHERE id_utente = ?) " +
-                       "ORDER BY nome ASC";
-
-        try (Connection connessione = DBManager.getConnection();
-             PreparedStatement statement = connessione.prepareStatement(query)) {
-
-            statement.setInt(1, idOperatore);
-
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    Map<String, String> mappaAbilita = new HashMap<>();
-                    mappaAbilita.put("id_abilita", String.valueOf(resultSet.getInt("id_abilita")));
-                    mappaAbilita.put("nome", resultSet.getString("nome"));
-                    listaAbilita.add(mappaAbilita);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return listaAbilita;
-    }
-
-    public boolean aggiungiAbilitaOperatore(int idOperatore, int idAbilita) {
-        String query = "INSERT IGNORE INTO utente_abilita (id_utente, id_abilita) VALUES (?, ?)";
-
-        try (Connection connessione = DBManager.getConnection();
-             PreparedStatement statement = connessione.prepareStatement(query)) {
-
-            statement.setInt(1, idOperatore);
-            statement.setInt(2, idAbilita);
-            statement.executeUpdate();
-            return true;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-    
 }

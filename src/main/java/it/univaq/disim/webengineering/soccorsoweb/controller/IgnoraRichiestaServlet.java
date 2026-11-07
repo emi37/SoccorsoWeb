@@ -1,6 +1,9 @@
 package it.univaq.disim.webengineering.soccorsoweb.controller;
 
-import it.univaq.disim.webengineering.soccorsoweb.controller.DAO.RichiestaSoccorsoDAO;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import it.univaq.disim.webengineering.soccorsoweb.dao.SoccorsoDataLayer;
+import it.univaq.disim.webengineering.soccorsoweb.dao.RichiestaSoccorsoDAO;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -11,6 +14,8 @@ import jakarta.servlet.http.HttpSession;
 
 @WebServlet(name = "IgnoraRichiestaServlet", urlPatterns = {"/IgnoraRichiestaServlet"})
 public class IgnoraRichiestaServlet extends HttpServlet {
+
+    private static final Logger LOGGER = Logger.getLogger(IgnoraRichiestaServlet.class.getName());
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -33,12 +38,11 @@ public class IgnoraRichiestaServlet extends HttpServlet {
                 int idRichiesta = Integer.parseInt(idDaIgnorareStr);
 
                 //il dao fa la query di upadate
-                RichiestaSoccorsoDAO richiestaDao = new RichiestaSoccorsoDAO();
+                RichiestaSoccorsoDAO richiestaDao = SoccorsoDataLayer.getInstance().getRichiestaSoccorsoDAO();
                 richiestaDao.aggiornaStatoRichiestaInIgnorata(idRichiesta);
             }
         } catch (Exception e) {
-            System.err.println("errore durante lo scarto della richiesta...");
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "errore durante lo scarto della richiesta...", e);
         }
 
         response.sendRedirect(request.getContextPath() + "/DashboardServlet");

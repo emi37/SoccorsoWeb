@@ -1,9 +1,12 @@
 package it.univaq.disim.webengineering.soccorsoweb.controller;
 
-import it.univaq.disim.webengineering.soccorsoweb.controller.DAO.MaterialeDAO;
-import it.univaq.disim.webengineering.soccorsoweb.controller.DAO.MezzoDAO;
-import it.univaq.disim.webengineering.soccorsoweb.controller.DAO.MissioneDAO;
-import it.univaq.disim.webengineering.soccorsoweb.controller.DAO.UtenteDAO;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import it.univaq.disim.webengineering.soccorsoweb.dao.SoccorsoDataLayer;
+import it.univaq.disim.webengineering.soccorsoweb.dao.MaterialeDAO;
+import it.univaq.disim.webengineering.soccorsoweb.dao.MezzoDAO;
+import it.univaq.disim.webengineering.soccorsoweb.dao.MissioneDAO;
+import it.univaq.disim.webengineering.soccorsoweb.dao.UtenteDAO;
 import it.univaq.disim.webengineering.soccorsoweb.util.TemplateManager;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
@@ -17,6 +20,8 @@ import java.util.Map;
 
 @WebServlet(name = "DettaglioMissioneServlet", urlPatterns = {"/DettaglioMissioneServlet"})
 public class DettaglioMissioneServlet extends HttpServlet {
+
+    private static final Logger LOGGER = Logger.getLogger(DettaglioMissioneServlet.class.getName());
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -37,10 +42,10 @@ public class DettaglioMissioneServlet extends HttpServlet {
         try {
             int idDellaMissione = Integer.parseInt(request.getParameter("id_missione"));
 
-            MissioneDAO missioneDao = new MissioneDAO();
-            UtenteDAO utenteDao = new UtenteDAO();
-            MezzoDAO mezzoDao = new MezzoDAO();
-            MaterialeDAO materialeDao = new MaterialeDAO();
+            MissioneDAO missioneDao = SoccorsoDataLayer.getInstance().getMissioneDAO();
+            UtenteDAO utenteDao = SoccorsoDataLayer.getInstance().getUtenteDAO();
+            MezzoDAO mezzoDao = SoccorsoDataLayer.getInstance().getMezzoDAO();
+            MaterialeDAO materialeDao = SoccorsoDataLayer.getInstance().getMaterialeDAO();
 
             Map<String, Object> dettagliMissione = missioneDao.estraiDettagliCompleti(idDellaMissione);
 
@@ -59,7 +64,7 @@ public class DettaglioMissioneServlet extends HttpServlet {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Errore imprevisto", e);
             response.sendRedirect(request.getContextPath() + dashboardRitorno);
         }
     }
@@ -83,7 +88,7 @@ public class DettaglioMissioneServlet extends HttpServlet {
 
         try {
             int idDellaMissione = Integer.parseInt(idMissioneStringa);
-            MissioneDAO missioneDao = new MissioneDAO();
+            MissioneDAO missioneDao = SoccorsoDataLayer.getInstance().getMissioneDAO();
             String statoAttuale = missioneDao.estraiStatoMissione(idDellaMissione);
 
             if ("IN_CORSO".equals(statoAttuale) && "modifica_missione".equals(azione)) {
@@ -99,7 +104,7 @@ public class DettaglioMissioneServlet extends HttpServlet {
                 );
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Errore imprevisto", e);
         }
 
         response.sendRedirect(request.getContextPath() + "/DettaglioMissioneServlet?id_missione=" + idMissioneStringa);

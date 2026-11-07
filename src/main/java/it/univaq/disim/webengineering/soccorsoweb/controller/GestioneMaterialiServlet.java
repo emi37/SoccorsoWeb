@@ -1,6 +1,9 @@
 package it.univaq.disim.webengineering.soccorsoweb.controller;
 
-import it.univaq.disim.webengineering.soccorsoweb.controller.DAO.MaterialeDAO;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import it.univaq.disim.webengineering.soccorsoweb.dao.SoccorsoDataLayer;
+import it.univaq.disim.webengineering.soccorsoweb.dao.MaterialeDAO;
 import it.univaq.disim.webengineering.soccorsoweb.util.TemplateManager;
 import java.io.IOException;
 import java.util.HashMap;
@@ -16,6 +19,8 @@ import jakarta.servlet.http.HttpSession;
 @WebServlet(name = "GestioneMaterialiServlet", urlPatterns = {"/GestioneMateriali"})
 public class GestioneMaterialiServlet extends HttpServlet {
 
+    private static final Logger LOGGER = Logger.getLogger(GestioneMaterialiServlet.class.getName());
+
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -30,7 +35,7 @@ public class GestioneMaterialiServlet extends HttpServlet {
 
         try {
             // DAO
-            MaterialeDAO materialeDao = new MaterialeDAO();
+            MaterialeDAO materialeDao = SoccorsoDataLayer.getInstance().getMaterialeDAO();
 
             // 1. GESTIONE CANCELLAZIONE 
             String idDaEliminareStr = request.getParameter("elimina");
@@ -53,8 +58,7 @@ public class GestioneMaterialiServlet extends HttpServlet {
 
         } catch (Exception e) {
             
-            System.err.println("Errore della gestione materiali...");
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Errore della gestione materiali...", e);
         }
     }
 

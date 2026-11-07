@@ -1,7 +1,8 @@
 package it.univaq.disim.webengineering.soccorsoweb.controller;
 
-import it.univaq.disim.webengineering.soccorsoweb.controller.DAO.MissioneDAO;
-import it.univaq.disim.webengineering.soccorsoweb.controller.DAO.RichiestaSoccorsoDAO;
+import it.univaq.disim.webengineering.soccorsoweb.dao.SoccorsoDataLayer;
+import it.univaq.disim.webengineering.soccorsoweb.dao.MissioneDAO;
+import it.univaq.disim.webengineering.soccorsoweb.dao.RichiestaSoccorsoDAO;
 import it.univaq.disim.webengineering.soccorsoweb.util.TemplateManager;
 import java.io.IOException;
 import java.util.HashMap;
@@ -36,8 +37,8 @@ public class DashboardServlet extends HttpServlet {
         }
 
         // 2. Recupero dei dati tramite i DAO e li metto in una lista
-        RichiestaSoccorsoDAO richiestaDao = new RichiestaSoccorsoDAO();
-        MissioneDAO missioneDao = new MissioneDAO();
+        RichiestaSoccorsoDAO richiestaDao = SoccorsoDataLayer.getInstance().getRichiestaSoccorsoDAO();
+        MissioneDAO missioneDao = SoccorsoDataLayer.getInstance().getMissioneDAO();
 
         List<Map<String, String>> listaRichiesteAttive = richiestaDao.estraiRichiesteAttive();
         List<Map<String, String>> listaMissioniInCorso = missioneDao.estraiMissioniInCorso();

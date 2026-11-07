@@ -1,6 +1,9 @@
 package it.univaq.disim.webengineering.soccorsoweb.controller;
 
-import it.univaq.disim.webengineering.soccorsoweb.controller.DAO.MissioneDAO;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import it.univaq.disim.webengineering.soccorsoweb.dao.SoccorsoDataLayer;
+import it.univaq.disim.webengineering.soccorsoweb.dao.MissioneDAO;
 import it.univaq.disim.webengineering.soccorsoweb.util.TemplateManager;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
@@ -14,6 +17,8 @@ import java.util.Map;
 
 @WebServlet(name = "ConcludiMissioneServlet", urlPatterns = {"/ConcludiMissioneServlet"})
 public class ConcludiMissioneServlet extends HttpServlet {
+
+    private static final Logger LOGGER = Logger.getLogger(ConcludiMissioneServlet.class.getName());
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -29,7 +34,7 @@ public class ConcludiMissioneServlet extends HttpServlet {
             int idMissione = Integer.parseInt(request.getParameter("id_missione"));
             String idRichiesta = request.getParameter("id_richiesta");
             
-            MissioneDAO missioneDao = new MissioneDAO();
+            MissioneDAO missioneDao = SoccorsoDataLayer.getInstance().getMissioneDAO();
             Map<String, Object> missioneCorrente = missioneDao.estraiDettagliCompleti(idMissione);
             
             missioneCorrente.put("id_richiesta", idRichiesta);
@@ -41,8 +46,7 @@ public class ConcludiMissioneServlet extends HttpServlet {
             TemplateManager.process("concludi_missione.ftl", dataModel, response, getServletContext());
 
         } catch (Exception e) {
-            System.err.println("Errore nel caricamento del form di conclusione missione: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Errore nel caricamento del form di conclusione missione: " + e.getMessage(), e);
             response.sendRedirect(request.getContextPath() + "/DashboardServlet");
         }
     }
@@ -69,7 +73,7 @@ public class ConcludiMissioneServlet extends HttpServlet {
                 idAdminLoggato = Integer.parseInt(objId.toString());
             }
 
-            MissioneDAO missioneDao = new MissioneDAO();
+            MissioneDAO missioneDao = SoccorsoDataLayer.getInstance().getMissioneDAO();
             boolean terminataOk = missioneDao.chiudiMissioneInTransazione(idMissione, idRichiesta, livelloSuccesso, commenti, idAdminLoggato);
             
             if (terminataOk) {
@@ -79,8 +83,7 @@ public class ConcludiMissioneServlet extends HttpServlet {
             }
 
         } catch (Exception e) {
-            System.err.println("Errore durante l'elaborazione della chiusura missione: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Errore durante l'elaborazione della chiusura missione: " + e.getMessage(), e);
             response.sendRedirect(request.getContextPath() + "/DashboardServlet?errore=eccezione_chiusura");
         }
     }

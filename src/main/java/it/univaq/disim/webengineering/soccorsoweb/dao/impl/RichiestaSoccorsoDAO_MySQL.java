@@ -1,4 +1,8 @@
-package it.univaq.disim.webengineering.soccorsoweb.controller.DAO;
+package it.univaq.disim.webengineering.soccorsoweb.dao.impl;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import it.univaq.disim.webengineering.soccorsoweb.dao.RichiestaSoccorsoDAO;
 
 import it.univaq.disim.webengineering.soccorsoweb.model.RichiestaSoccorso;
 import it.univaq.disim.webengineering.soccorsoweb.util.DBManager;
@@ -10,9 +14,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class RichiestaSoccorsoDAO {
+public class RichiestaSoccorsoDAO_MySQL implements RichiestaSoccorsoDAO {
+
+    private static final Logger LOGGER = Logger.getLogger(RichiestaSoccorsoDAO_MySQL.class.getName());
 
     // inserisce una nuova richiesta in stato IN_ATTESA dal form di rchiesta
+    @Override
     public boolean salvaNuovaRichiesta(RichiestaSoccorso richiesta) {
         String query = "INSERT INTO richiesta_soccorso "
                 + "(nome_segnalante, email_segnalante, posizione, descrizione, ip_origine, token_convalida, stato, timestamp_creazione) "
@@ -31,13 +38,13 @@ public class RichiestaSoccorsoDAO {
             return statement.executeUpdate() > 0;
             
         } catch (Exception e) {
-            System.err.println("errore durante il salvataggio della richiesta : " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "errore durante il salvataggio della richiesta : " + e.getMessage(), e);
         }
         return false;
     }
 
     // anti-spam: true se la stessa email (o lo stesso IP) ha già inviato una richiesta negli ultimi N minuti
+    @Override
     public boolean esisteRichiestaRecente(String email, String ipOrigine, int minuti) {
         String query = "SELECT COUNT(*) FROM richiesta_soccorso "
                 + "WHERE (email_segnalante = ? OR ip_origine = ?) "
@@ -55,14 +62,14 @@ public class RichiestaSoccorsoDAO {
             }
 
         } catch (Exception e) {
-            System.err.println("errore durante il controllo anti-spam: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "errore durante il controllo anti-spam: " + e.getMessage(), e);
         }
         // se il controllo fallisce non blocchiamo una possibile vera emergenza
         return false;
     }
 
     // convalida il token via email e attiva la richiesta (se non convalidi entro 10 min la richiesta rimane in stato di attesa sul DB)
+    @Override
     public boolean svuotaTokenConvalida(String tokenUsato) {
         String query = "UPDATE richiesta_soccorso "
                 + "SET stato = 'ATTIVA', "
@@ -80,13 +87,13 @@ public class RichiestaSoccorsoDAO {
             return statement.executeUpdate() > 0;
             
         } catch (Exception e) {
-            System.err.println("errore db durante la convalida del token: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "errore db durante la convalida del token: " + e.getMessage(), e);
         }
         return false;
     }
 
     // estrae le richieste con lo stato "ATTIVA" (viene richiamato dalla dashboard dell'admin)
+    @Override
     public List< Map<String, String> > estraiRichiesteAttive() {
         List< Map<String, String> > listaRichieste = new ArrayList<>();
         
@@ -108,13 +115,13 @@ public class RichiestaSoccorsoDAO {
                 listaRichieste.add(mappaRichiesta);
             }
         } catch (Exception e) {
-            System.err.println("errore durante l'estrazione delle richieste attive: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "errore durante l'estrazione delle richieste attive: " + e.getMessage(), e);
         }
         return listaRichieste;
     }
 
     // scarta la richiesta impostandogli lo stato sul DB in "IGNORATA "
+    @Override
     public boolean aggiornaStatoRichiestaInIgnorata(int idRichiestaDaScartare) {
         String query = "UPDATE richiesta_soccorso SET stato = 'IGNORATA' WHERE id_richiesta = ?";
 
@@ -126,13 +133,13 @@ public class RichiestaSoccorsoDAO {
             return statement.executeUpdate() > 0;
             
         } catch (Exception e) {
-            System.err.println("errore durante l'aggiornamento dello stato ignorata: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "errore durante l'aggiornamento dello stato ignorata: " + e.getMessage(), e);
         }
         return false;
     }
 
     // estrae i dettagli di una richiesta(la richieta estratta è quella con id_richiesta = ?)
+    @Override
     public Map< String, String > estraiDettagliRichiesta(int idRichiesta) {
         Map< String, String > dettagli = new HashMap<>();
         
@@ -154,8 +161,7 @@ public class RichiestaSoccorsoDAO {
                 }
             }
         } catch (Exception e) {
-            System.err.println("errore durante l'estrazione dei dettagli della richiesta: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "errore durante l'estrazione dei dettagli della richiesta: " + e.getMessage(), e);
         }
         return dettagli;
     }

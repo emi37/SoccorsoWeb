@@ -1,6 +1,9 @@
 package it.univaq.disim.webengineering.soccorsoweb.controller;
 
-import it.univaq.disim.webengineering.soccorsoweb.controller.DAO.MezzoDAO;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import it.univaq.disim.webengineering.soccorsoweb.dao.SoccorsoDataLayer;
+import it.univaq.disim.webengineering.soccorsoweb.dao.MezzoDAO;
 import it.univaq.disim.webengineering.soccorsoweb.util.TemplateManager;
 import java.io.IOException;
 import java.util.HashMap;
@@ -16,6 +19,8 @@ import jakarta.servlet.http.HttpSession;
 @WebServlet(name = "GestioneMezziServlet", urlPatterns = {"/GestioneMezzi"}) //intercetta la richiesta qui
 public class GestioneMezziServlet extends HttpServlet {
 
+    private static final Logger LOGGER = Logger.getLogger(GestioneMezziServlet.class.getName());
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -28,7 +33,7 @@ public class GestioneMezziServlet extends HttpServlet {
         }
 
         try {
-            MezzoDAO mezzoDao = new MezzoDAO();
+            MezzoDAO mezzoDao = SoccorsoDataLayer.getInstance().getMezzoDAO();
 
             // 1. GESTIONE CANCELLAZIONE 
             String idDaEliminareStr = request.getParameter("elimina");
@@ -52,8 +57,7 @@ public class GestioneMezziServlet extends HttpServlet {
             TemplateManager.process("gestione_mezzi.ftl", dataModel, response, getServletContext()); //carica la risposta(la responde)i dati qui
 
         } catch (Exception e) {
-            System.err.println("Errore della gestione mezzi...");
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Errore della gestione mezzi...", e);
         }
     }
 

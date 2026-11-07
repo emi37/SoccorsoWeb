@@ -1,10 +1,13 @@
 package it.univaq.disim.webengineering.soccorsoweb.controller;
 
-import it.univaq.disim.webengineering.soccorsoweb.controller.DAO.MaterialeDAO;
-import it.univaq.disim.webengineering.soccorsoweb.controller.DAO.MezzoDAO;
-import it.univaq.disim.webengineering.soccorsoweb.controller.DAO.MissioneDAO;
-import it.univaq.disim.webengineering.soccorsoweb.controller.DAO.RichiestaSoccorsoDAO;
-import it.univaq.disim.webengineering.soccorsoweb.controller.DAO.UtenteDAO;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import it.univaq.disim.webengineering.soccorsoweb.dao.SoccorsoDataLayer;
+import it.univaq.disim.webengineering.soccorsoweb.dao.MaterialeDAO;
+import it.univaq.disim.webengineering.soccorsoweb.dao.MezzoDAO;
+import it.univaq.disim.webengineering.soccorsoweb.dao.MissioneDAO;
+import it.univaq.disim.webengineering.soccorsoweb.dao.RichiestaSoccorsoDAO;
+import it.univaq.disim.webengineering.soccorsoweb.dao.UtenteDAO;
 import it.univaq.disim.webengineering.soccorsoweb.util.TemplateManager;
 import java.io.IOException;
 import java.util.HashMap;
@@ -19,6 +22,8 @@ import jakarta.servlet.http.HttpSession;
 
 @WebServlet(name = "GestioneRichiestaServletDallAdmin", urlPatterns = {"/GestioneRichiestaServletDallAdmin"})
 public class GestioneRichiestaServletDallAdmin extends HttpServlet {
+
+    private static final Logger LOGGER = Logger.getLogger(GestioneRichiestaServletDallAdmin.class.getName());
      
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -35,10 +40,10 @@ public class GestioneRichiestaServletDallAdmin extends HttpServlet {
             // questo e' l'id della richiesta dove l utente ha cliccato, posso vedere questo id 
             // anche nella barra dell' URL in alto 
 
-            RichiestaSoccorsoDAO richiestaDao = new RichiestaSoccorsoDAO();
-            UtenteDAO utenteDao = new UtenteDAO();
-            MezzoDAO mezzoDao = new MezzoDAO();
-            MaterialeDAO materialeDao = new MaterialeDAO();
+            RichiestaSoccorsoDAO richiestaDao = SoccorsoDataLayer.getInstance().getRichiestaSoccorsoDAO();
+            UtenteDAO utenteDao = SoccorsoDataLayer.getInstance().getUtenteDAO();
+            MezzoDAO mezzoDao = SoccorsoDataLayer.getInstance().getMezzoDAO();
+            MaterialeDAO materialeDao = SoccorsoDataLayer.getInstance().getMaterialeDAO();
 
             Map<String, String> dettagliRichiesta = richiestaDao.estraiDettagliRichiesta(idRichiesta);
             List<Map<String, String>> operatoriLiberi = utenteDao.estraiOperatoriDisponibili();
@@ -57,8 +62,7 @@ public class GestioneRichiestaServletDallAdmin extends HttpServlet {
             TemplateManager.process("gestione_richiesta.ftl", dataModel, response, getServletContext());
 
         } catch (Exception e) {
-            System.err.println("Errore durante il caricamento della pagina ...");
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Errore durante il caricamento della pagina ...", e);
             response.sendRedirect(request.getContextPath() + "/DashboardServlet");
         }
     }
@@ -84,7 +88,7 @@ public class GestioneRichiestaServletDallAdmin extends HttpServlet {
             // devo selezionare il caposquadra
             if (caposquadraScelto != null && !caposquadraScelto.trim().isEmpty()) {
                 
-                RichiestaSoccorsoDAO richiestaDao = new RichiestaSoccorsoDAO();
+                RichiestaSoccorsoDAO richiestaDao = SoccorsoDataLayer.getInstance().getRichiestaSoccorsoDAO();
                 Map<String, String> dettagliRichiesta = richiestaDao.estraiDettagliRichiesta(idRichiesta);
                                                     //se trova la descrizione dentro la mappa mostra quella, altriement dice di default"Intervento di soccorso"                 
                 String obiettivo = dettagliRichiesta.getOrDefault("descrizione", "Intervento di soccorso");
@@ -97,7 +101,7 @@ public class GestioneRichiestaServletDallAdmin extends HttpServlet {
                     idAdmin = Integer.parseInt(objId.toString());
                 }
 
-                MissioneDAO missioneDao = new MissioneDAO();
+                MissioneDAO missioneDao = SoccorsoDataLayer.getInstance().getMissioneDAO();
                 boolean avvioOk = missioneDao.creaMissioneInTransazione(
                         idRichiesta, 
                         obiettivo, 
@@ -119,8 +123,7 @@ public class GestioneRichiestaServletDallAdmin extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/GestioneRichiestaServletDallAdmin?id_richiesta=" + idRichiesta + "&errore=dati_mancanti");
 
         } catch (Exception e) {
-            System.err.println("errore durante il POST per avviare la missione...");
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "errore durante il POST per avviare la missione...", e);
             response.sendRedirect(request.getContextPath() + "/DashboardServlet?errore=critico");
         }
     }

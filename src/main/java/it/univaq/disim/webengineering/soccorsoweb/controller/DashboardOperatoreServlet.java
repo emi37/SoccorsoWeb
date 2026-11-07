@@ -1,6 +1,10 @@
 package it.univaq.disim.webengineering.soccorsoweb.controller;
 
-import it.univaq.disim.webengineering.soccorsoweb.controller.DAO.MissioneDAO;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import it.univaq.disim.webengineering.soccorsoweb.dao.SoccorsoDataLayer;
+import it.univaq.disim.webengineering.soccorsoweb.dao.MissioneDAO;
+import it.univaq.disim.webengineering.soccorsoweb.dao.UtenteDAO;
 import it.univaq.disim.webengineering.soccorsoweb.util.TemplateManager;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
@@ -16,6 +20,8 @@ import java.util.Map;
 @WebServlet(name = "DashboardOperatoreServlet", urlPatterns = {"/DashboardOperatoreServlet"})
 public class DashboardOperatoreServlet extends HttpServlet {
 
+    private static final Logger LOGGER = Logger.getLogger(DashboardOperatoreServlet.class.getName());
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
@@ -30,7 +36,8 @@ public class DashboardOperatoreServlet extends HttpServlet {
             int idOperatore = Integer.parseInt(sessioneAttuale.getAttribute("id_utente").toString());
 
             // chiamo i DAO per recuperare le missioni
-            MissioneDAO missioneDao = new MissioneDAO();
+            MissioneDAO missioneDao = SoccorsoDataLayer.getInstance().getMissioneDAO();
+            UtenteDAO utenteDao = SoccorsoDataLayer.getInstance().getUtenteDAO();
             List<Map<String, String>> mieMissioni = missioneDao.estraiMissioniAttivePerOperatore(idOperatore);
             // Recupero anche lo storico completo dell'operatore
             List<Map<String,String>> mioStorico = missioneDao.estraiMissioniPerOperatore((int) idOperatore);
@@ -54,13 +61,13 @@ public class DashboardOperatoreServlet extends HttpServlet {
             dataModel.put("utente", datiUtente);
 
             //estare le patenti e le abilità dell'operatore + quelle disponibili per le 2 tendine
-            List<String> miePatenti = missioneDao.estraiPatentiOperatore(idOperatore);
-            List<Map<String, String>> tutteLePatenti = missioneDao.estraiPatentiMancanti(idOperatore);
+            List<String> miePatenti = utenteDao.estraiPatentiOperatore(idOperatore);
+            List<Map<String, String>> tutteLePatenti = utenteDao.estraiPatentiMancanti(idOperatore);
             dataModel.put("miePatenti", miePatenti);
             dataModel.put("tutteLePatenti", tutteLePatenti);
 
-            List<String> mieAbilita = missioneDao.estraiAbilitaOperatore(idOperatore);
-            List<Map<String, String>> tutteLeAbilita = missioneDao.estraiAbilitaMancanti(idOperatore);
+            List<String> mieAbilita = utenteDao.estraiAbilitaOperatore(idOperatore);
+            List<Map<String, String>> tutteLeAbilita = utenteDao.estraiAbilitaMancanti(idOperatore);
             dataModel.put("mieAbilita", mieAbilita);
             dataModel.put("tutteLeAbilita", tutteLeAbilita);
             
@@ -69,7 +76,7 @@ public class DashboardOperatoreServlet extends HttpServlet {
             TemplateManager.process("dashboard_operatore.ftl", dataModel, response, getServletContext());
 
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Errore imprevisto", e);
             response.sendRedirect(request.getContextPath() + "/login.html");
         }
     }
@@ -84,24 +91,24 @@ public class DashboardOperatoreServlet extends HttpServlet {
 
         try {
             int idOperatore = Integer.parseInt(sessioneAttuale.getAttribute("id_utente").toString());
-            MissioneDAO missioneDao = new MissioneDAO();
+            UtenteDAO utenteDao = SoccorsoDataLayer.getInstance().getUtenteDAO();
 
             // Se l'operatore ha inviato il form della patente
             String idPatenteStr = request.getParameter("id_patente");
             if (idPatenteStr != null && !idPatenteStr.isEmpty()) {
                 int idPatente = Integer.parseInt(idPatenteStr);
-                missioneDao.aggiungiPatenteOperatore(idOperatore, idPatente);
+                utenteDao.aggiungiPatenteOperatore(idOperatore, idPatente);
             }
 
             // Se l'operatore ha inviato il form dell'abilità
             String idAbilitaStr = request.getParameter("id_abilita"); //gli passo l'etichetta e gli dico estrai il valore con getParameter
             if (idAbilitaStr != null && !idAbilitaStr.isEmpty()) {
                 int idAbilita = Integer.parseInt(idAbilitaStr);
-                missioneDao.aggiungiAbilitaOperatore(idOperatore, idAbilita); //gli passo il valore
+                utenteDao.aggiungiAbilitaOperatore(idOperatore, idAbilita); //gli passo il valore
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Errore imprevisto", e);
         }
 
         response.sendRedirect(request.getContextPath() + "/DashboardOperatoreServlet");

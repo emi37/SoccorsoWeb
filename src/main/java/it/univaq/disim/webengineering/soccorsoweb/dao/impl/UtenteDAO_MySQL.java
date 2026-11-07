@@ -1,4 +1,8 @@
-package it.univaq.disim.webengineering.soccorsoweb.controller.DAO;
+package it.univaq.disim.webengineering.soccorsoweb.dao.impl;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import it.univaq.disim.webengineering.soccorsoweb.dao.UtenteDAO;
 
 import it.univaq.disim.webengineering.soccorsoweb.model.Utenti;
 import it.univaq.disim.webengineering.soccorsoweb.util.DBManager;
@@ -11,9 +15,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class UtenteDAO {
+public class UtenteDAO_MySQL implements UtenteDAO {
+
+    private static final Logger LOGGER = Logger.getLogger(UtenteDAO_MySQL.class.getName());
 
     // recupera i dati dell'utente per effettuare il login
+    @Override
     public Utenti estraiUtentePerEmail(String emailCercata) {
         Utenti utenteTrovato = null;
         
@@ -36,14 +43,14 @@ public class UtenteDAO {
                 }
             }
         } catch (Exception e) {
-            System.err.println("errore durante l'estrazione dell'utente tramite la mail: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "errore durante l'estrazione dell'utente tramite la mail: " + e.getMessage(), e);
         }
         
         return utenteTrovato;
     }
 
     // inserisce un nuovo utente e restituisce il suo id generato
+    @Override
     public long salvaNuovoUtente(Utenti nuovoUtente) {
         long idGenerato = -1;
         
@@ -66,13 +73,13 @@ public class UtenteDAO {
                 }
             }
         } catch (Exception e) {
-            System.err.println("errore durante il salvataggio del nuovo utente: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "errore durante il salvataggio del nuovo utente: " + e.getMessage(), e);
         }
         
         return idGenerato;
     }
 
+    @Override
     public void collegaAbilita(long idUtente, int idAbilita) {
         String query = "INSERT INTO utente_abilita (id_utente, id_abilita) VALUES (?, ?)";
         
@@ -84,11 +91,11 @@ public class UtenteDAO {
             statement.executeUpdate();
             
         } catch (Exception e) {
-            System.err.println("errore durante il collegamento dell'abilità all'utente: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "errore durante il collegamento dell'abilità all'utente: " + e.getMessage(), e);
         }
     }
 
+    @Override
     public void collegaPatente(long idUtente, int idPatente) {
         String query = "INSERT INTO utente_patente (id_utente, id_patente) VALUES (?, ?)";
         
@@ -100,12 +107,12 @@ public class UtenteDAO {
             statement.executeUpdate();
             
         } catch (Exception e) {
-            System.err.println("errore durante il collegamento della patente all'utente: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "errore durante il collegamento della patente all'utente: " + e.getMessage(), e);
         }
     }
 
     // estrae tutti gli operatori e mostra se sono liberi o impegnati
+    @Override
     public List<Map<String, String>> estraiTuttiGliOperatoriConStato() {
         List<Map<String, String>> listaOperatori = new ArrayList<>();
         
@@ -138,14 +145,14 @@ public class UtenteDAO {
                 listaOperatori.add(operatore);
             }
         } catch (Exception e) {
-            System.err.println("errore durante l'estrazione degli operatori con stato: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "errore durante l'estrazione degli operatori con stato: " + e.getMessage(), e);
         }
         
         return listaOperatori;
     }
 
     // estrae la lista degli operatori attualmente non assegnati a nessuna missione in corso
+    @Override
     public List< Map<String, String> > estraiOperatoriDisponibili() {
         List< Map<String, String> > listaOperatori = new ArrayList<>();
         
@@ -171,14 +178,14 @@ public class UtenteDAO {
                 listaOperatori.add(operatore);
             }
         } catch (Exception e) {
-            System.err.println("errore durante l'estrazione degli operatori disponibili: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "errore durante l'estrazione degli operatori disponibili: " + e.getMessage(), e);
         }
         
         return listaOperatori;
     }
 
     // 1 - i due metodi seguenti servono a popolare i menu a tendina dei form
+    @Override
     public List< Map<String, String> > estraiTutteLeAbilita() {
         List< Map<String, String> > lista = new ArrayList<>();
         String query = "SELECT id_abilita, nome FROM abilita";
@@ -194,13 +201,13 @@ public class UtenteDAO {
                 lista.add(mappaAbilita);
             }
         } catch (Exception e) { 
-            System.err.println("errore durante l'estrazione del catalogo abilità: " + e.getMessage());
-            e.printStackTrace(); 
+            LOGGER.log(Level.SEVERE, "errore durante l'estrazione del catalogo abilità: " + e.getMessage(), e); 
         }
         
         return lista;
     }
 // 2 - 
+    @Override
     public List< Map<String, String> > estraiTutteLePatenti() {
         List< Map<String, String> > lista = new ArrayList<>();
         String query = "SELECT id_patente, codice FROM patente";
@@ -216,10 +223,151 @@ public class UtenteDAO {
                 lista.add(mappaPatente);
             }
         } catch (Exception e) { 
-            System.err.println("errore durante l'estrazione del catalogo patenti: " + e.getMessage());
-            e.printStackTrace(); 
+            LOGGER.log(Level.SEVERE, "errore durante l'estrazione del catalogo patenti: " + e.getMessage(), e); 
         }
         
         return lista;
     }
+
+    // ---- patenti e abilita' dell'operatore (prima stavano per errore in MissioneDAO) ----
+
+    @Override
+    public List<String> estraiPatentiOperatore(int idOperatore) {
+        List<String> miePatenti = new ArrayList<>();
+        String query = "SELECT p.codice FROM patente p " +
+                       "JOIN utente_patente up ON p.id_patente = up.id_patente " +
+                       "WHERE up.id_utente = ?";
+
+        try (Connection connessione = DBManager.getConnection();
+             PreparedStatement statement = connessione.prepareStatement(query)) {
+
+            statement.setInt(1, idOperatore);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    miePatenti.add(resultSet.getString("codice"));
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Errore imprevisto", e);
+        }
+        return miePatenti;
+    }
+
+    @Override
+    public List<Map<String, String>> estraiPatentiMancanti(int idOperatore) {
+        List<Map<String, String>> listaPatenti = new ArrayList<>();
+        
+        String query = "SELECT id_patente, codice FROM patente " +
+                       "WHERE id_patente NOT IN (SELECT id_patente FROM utente_patente WHERE id_utente = ?) " +
+                       "ORDER BY codice ASC";
+
+        try (Connection connessione = DBManager.getConnection();
+             PreparedStatement statement = connessione.prepareStatement(query)) {
+
+            statement.setInt(1, idOperatore);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    Map<String, String> mappaPatente = new HashMap<>();
+                    mappaPatente.put("id_patente", String.valueOf(resultSet.getInt("id_patente")));
+                    mappaPatente.put("codice", resultSet.getString("codice"));
+                    listaPatenti.add(mappaPatente);
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Errore imprevisto", e);
+        }
+        return listaPatenti;
+    }
+
+    @Override
+    public boolean aggiungiPatenteOperatore(int idOperatore, int idPatente) {
+        String query = "INSERT IGNORE INTO utente_patente (id_utente, id_patente) VALUES (?, ?)";
+
+        try (Connection connessione = DBManager.getConnection();
+             PreparedStatement statement = connessione.prepareStatement(query)) {
+
+            statement.setInt(1, idOperatore);
+            statement.setInt(2, idPatente);
+            statement.executeUpdate();
+            return true;
+
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Errore imprevisto", e);
+            return false;
+        }
+    }
+    
+    
+    
+    
+    @Override
+    public List<String> estraiAbilitaOperatore(int idOperatore) {
+        List<String> mieAbilita = new ArrayList<>();
+        String query = "SELECT a.nome FROM abilita a " +
+                       "JOIN utente_abilita ua ON a.id_abilita = ua.id_abilita " +
+                       "WHERE ua.id_utente = ?";
+
+        try (Connection connessione = DBManager.getConnection();
+             PreparedStatement statement = connessione.prepareStatement(query)) {
+
+            statement.setInt(1, idOperatore);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    mieAbilita.add(resultSet.getString("nome"));
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Errore imprevisto", e);
+        }
+        return mieAbilita;
+    }
+
+    @Override
+    public List<Map<String, String>> estraiAbilitaMancanti(int idOperatore) {
+        List<Map<String, String>> listaAbilita = new ArrayList<>();
+        //estrae dal database SOLO le abilità che l'operatore NON possiede ancora 
+        String query = "SELECT id_abilita, nome FROM abilita " +
+                       "WHERE id_abilita NOT IN (SELECT id_abilita FROM utente_abilita WHERE id_utente = ?) " +
+                       "ORDER BY nome ASC";
+
+        try (Connection connessione = DBManager.getConnection();
+             PreparedStatement statement = connessione.prepareStatement(query)) {
+
+            statement.setInt(1, idOperatore);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    Map<String, String> mappaAbilita = new HashMap<>();
+                    mappaAbilita.put("id_abilita", String.valueOf(resultSet.getInt("id_abilita")));
+                    mappaAbilita.put("nome", resultSet.getString("nome"));
+                    listaAbilita.add(mappaAbilita);
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Errore imprevisto", e);
+        }
+        return listaAbilita;
+    }
+
+    @Override
+    public boolean aggiungiAbilitaOperatore(int idOperatore, int idAbilita) {
+        String query = "INSERT IGNORE INTO utente_abilita (id_utente, id_abilita) VALUES (?, ?)";
+
+        try (Connection connessione = DBManager.getConnection();
+             PreparedStatement statement = connessione.prepareStatement(query)) {
+
+            statement.setInt(1, idOperatore);
+            statement.setInt(2, idAbilita);
+            statement.executeUpdate();
+            return true;
+
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Errore imprevisto", e);
+            return false;
+        }
+    }
+
 }

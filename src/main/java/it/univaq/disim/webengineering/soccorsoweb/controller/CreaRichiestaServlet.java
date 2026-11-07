@@ -1,6 +1,9 @@
 package it.univaq.disim.webengineering.soccorsoweb.controller;
 
-import it.univaq.disim.webengineering.soccorsoweb.controller.DAO.RichiestaSoccorsoDAO;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import it.univaq.disim.webengineering.soccorsoweb.dao.SoccorsoDataLayer;
+import it.univaq.disim.webengineering.soccorsoweb.dao.RichiestaSoccorsoDAO;
 import it.univaq.disim.webengineering.soccorsoweb.model.RichiestaSoccorso;
 import it.univaq.disim.webengineering.soccorsoweb.util.TemplateManager; 
 import java.io.IOException;
@@ -17,6 +20,8 @@ import jakarta.servlet.http.HttpSession;
 
 @WebServlet(name = "CreaRichiestaServlet", urlPatterns = {"/CreaRichiestaServlet"})
 public class CreaRichiestaServlet extends HttpServlet {
+
+    private static final Logger LOGGER = Logger.getLogger(CreaRichiestaServlet.class.getName());
 
     // tempo minimo tra due richieste dalla stessa email o dallo stesso IP
     private static final int FINESTRA_ANTISPAM_MINUTI = 5;
@@ -97,7 +102,7 @@ public class CreaRichiestaServlet extends HttpServlet {
         }
 
         // anti-spam: niente richieste consecutive dalla stessa email o dallo stesso IP
-        RichiestaSoccorsoDAO controlloSpamDao = new RichiestaSoccorsoDAO();
+        RichiestaSoccorsoDAO controlloSpamDao = SoccorsoDataLayer.getInstance().getRichiestaSoccorsoDAO();
         if (controlloSpamDao.esisteRichiestaRecente(emailInserita, ipOrigine, FINESTRA_ANTISPAM_MINUTI)) {
             response.sendRedirect(request.getContextPath() + "/richiesta.html?errore=troppe_richieste");
             return;
@@ -120,11 +125,11 @@ public class CreaRichiestaServlet extends HttpServlet {
             nuovaRichiesta.setIpOrigine(ipOrigine);
             nuovaRichiesta.setTokenConvalida(tokenConvalida);
 
-            RichiestaSoccorsoDAO richiestaDao = new RichiestaSoccorsoDAO();
+            RichiestaSoccorsoDAO richiestaDao = SoccorsoDataLayer.getInstance().getRichiestaSoccorsoDAO();
             salvataggioRiuscito = richiestaDao.salvaNuovaRichiesta(nuovaRichiesta);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Errore imprevisto", e);
         }
 
         if (salvataggioRiuscito) {
@@ -147,7 +152,7 @@ public class CreaRichiestaServlet extends HttpServlet {
 
                 TemplateManager.process("richiesta_inviata.ftl", dataModel, response, getServletContext());
             } catch (Exception e) {
-                e.printStackTrace();
+                LOGGER.log(Level.SEVERE, "Errore imprevisto", e);
                 response.sendRedirect(request.getContextPath() + "/richiesta.html?errore=rendering");
             }
         } else {

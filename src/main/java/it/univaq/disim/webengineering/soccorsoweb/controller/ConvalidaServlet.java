@@ -1,6 +1,9 @@
 package it.univaq.disim.webengineering.soccorsoweb.controller;
 
-import it.univaq.disim.webengineering.soccorsoweb.controller.DAO.RichiestaSoccorsoDAO;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import it.univaq.disim.webengineering.soccorsoweb.dao.SoccorsoDataLayer;
+import it.univaq.disim.webengineering.soccorsoweb.dao.RichiestaSoccorsoDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -10,6 +13,8 @@ import java.io.IOException;
 
 @WebServlet(name = "ConvalidaServlet", urlPatterns = {"/ConvalidaServlet"})
 public class ConvalidaServlet extends HttpServlet {
+
+    private static final Logger LOGGER = Logger.getLogger(ConvalidaServlet.class.getName());
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -21,15 +26,14 @@ public class ConvalidaServlet extends HttpServlet {
         try {
             // verifico che il token esista e non sia una stringa vuota
             if (tokenRicevuto != null && !tokenRicevuto.trim().isEmpty()) {
-                RichiestaSoccorsoDAO richiestaDao = new RichiestaSoccorsoDAO();
+                RichiestaSoccorsoDAO richiestaDao = SoccorsoDataLayer.getInstance().getRichiestaSoccorsoDAO();
                 
                 // faccio la convalida del token tramite il DAO
                 convalidaOk = richiestaDao.svuotaTokenConvalida(tokenRicevuto);
             }
         } catch (Exception e) {
             // In caso di problemi col database o altro, stampo l'errore per il debug
-            System.err.println("Errore durante la convalida del token: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Errore durante la convalida del token: " + e.getMessage(), e);
         }
 
         //reindirizzo l'utente alla pagina corretta in base all'esito

@@ -1,5 +1,7 @@
 package it.univaq.disim.webengineering.soccorsoweb.controller;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.security.SecureRandom;
@@ -11,7 +13,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 // @WebServlet è uno standard di Java che serve per creare applicazioni web(fa parte di è di Jakarta EE)
 @WebServlet(name = "CaptchaServlet", urlPatterns = {"/CaptchaServlet"})// quando l utente riempie il captcha e preme invio, la richieta viene intercettata da questa classe qui
-public class CaptchaServlet extends HttpServlet {//l'estensione dice che quesat classe è ijn grado di ricevere richieste http e indirizzare dati sul browser
+public class CaptchaServlet extends HttpServlet {
+    private static final Logger LOGGER = Logger.getLogger(CaptchaServlet.class.getName());
+//l'estensione dice che quesat classe è ijn grado di ricevere richieste http e indirizzare dati sul browser
 
     // inizializzazione standard del generatore random all'interno della classe
     private final SecureRandom generatoreCasuale = new SecureRandom();
@@ -40,8 +44,7 @@ public class CaptchaServlet extends HttpServlet {//l'estensione dice che quesat 
 
         } catch (Exception e) {
             
-            System.err.println("errore durante la generazione del captcha : " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "errore durante la generazione del captcha : " + e.getMessage(), e);
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }

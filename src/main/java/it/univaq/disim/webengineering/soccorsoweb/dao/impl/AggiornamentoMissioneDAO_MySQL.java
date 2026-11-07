@@ -1,4 +1,8 @@
-package it.univaq.disim.webengineering.soccorsoweb.controller.DAO;
+package it.univaq.disim.webengineering.soccorsoweb.dao.impl;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import it.univaq.disim.webengineering.soccorsoweb.dao.AggiornamentoMissioneDAO;
 
 import it.univaq.disim.webengineering.soccorsoweb.util.DBManager;
 import java.sql.Connection;
@@ -9,8 +13,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class AggiornamentoMissioneDAO {
+public class AggiornamentoMissioneDAO_MySQL implements AggiornamentoMissioneDAO {
 
+    private static final Logger LOGGER = Logger.getLogger(AggiornamentoMissioneDAO_MySQL.class.getName());
+
+    @Override
     public boolean salvaNuovoAggiornamento(int idMissione, int idAdminLoggato, String messaggio) {
         String queryInserimento = "INSERT INTO aggiornamento_missione (id_missione, id_admin, testo_descrittivo) VALUES (?, ?, ?)";
 
@@ -25,13 +32,13 @@ public class AggiornamentoMissioneDAO {
             return statement.executeUpdate() > 0;
 
         } catch (Exception e) {
-            System.err.println("errore durante il salvataggio dell'aggiornamento: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "errore durante il salvataggio dell'aggiornamento: " + e.getMessage(), e);
         }
 
         return false;
     }
 
+    @Override
     public List<Map<String, String>> estraiCronistoria(int idMissione) {
         List<Map<String, String>> cronistoria = new ArrayList<>();
 
@@ -59,8 +66,7 @@ public class AggiornamentoMissioneDAO {
             }
 
         } catch (Exception e) {
-            System.err.println("errore durante la lettura della cronistoria: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "errore durante la lettura della cronistoria: " + e.getMessage(), e);
         }
 
         return cronistoria;

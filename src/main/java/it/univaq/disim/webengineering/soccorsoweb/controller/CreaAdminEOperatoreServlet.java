@@ -1,6 +1,9 @@
 package it.univaq.disim.webengineering.soccorsoweb.controller;
 
-import it.univaq.disim.webengineering.soccorsoweb.controller.DAO.UtenteDAO;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import it.univaq.disim.webengineering.soccorsoweb.dao.SoccorsoDataLayer;
+import it.univaq.disim.webengineering.soccorsoweb.dao.UtenteDAO;
 import it.univaq.disim.webengineering.soccorsoweb.model.Utenti;
 import org.mindrot.jbcrypt.BCrypt;
 import java.io.IOException;
@@ -13,6 +16,8 @@ import jakarta.servlet.http.HttpSession;
 
 @WebServlet(name = "CreaAdminEOperatoreServlet", urlPatterns = {"/CreaAdminEOperatoreServlet"})
 public class CreaAdminEOperatoreServlet extends HttpServlet {
+
+    private static final Logger LOGGER = Logger.getLogger(CreaAdminEOperatoreServlet.class.getName());
 
         @Override    // controllo classico per vedere se è admin
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -41,7 +46,7 @@ public class CreaAdminEOperatoreServlet extends HttpServlet {
                 nuovoUtente.setPassword(passwordCifrata);
                 nuovoUtente.setRuolo(ruoloScelto);
 
-                UtenteDAO utenteDao = new UtenteDAO();
+                UtenteDAO utenteDao = SoccorsoDataLayer.getInstance().getUtenteDAO();
                 long idNuovoUtente = utenteDao.salvaNuovoUtente(nuovoUtente);
 
                 if (idNuovoUtente > 0) {
@@ -66,7 +71,7 @@ public class CreaAdminEOperatoreServlet extends HttpServlet {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Errore imprevisto", e);
         }
 
         if (inserimentoRiuscito) {

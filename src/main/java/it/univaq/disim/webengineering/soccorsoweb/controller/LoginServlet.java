@@ -1,6 +1,9 @@
 package it.univaq.disim.webengineering.soccorsoweb.controller;
 
-import it.univaq.disim.webengineering.soccorsoweb.controller.DAO.UtenteDAO;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import it.univaq.disim.webengineering.soccorsoweb.dao.SoccorsoDataLayer;
+import it.univaq.disim.webengineering.soccorsoweb.dao.UtenteDAO;
 import it.univaq.disim.webengineering.soccorsoweb.model.Utenti;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
@@ -13,6 +16,8 @@ import org.mindrot.jbcrypt.BCrypt;
 
 @WebServlet(name = "LoginServlet", urlPatterns = {"/LoginServlet"})
 public class LoginServlet extends HttpServlet {
+
+    private static final Logger LOGGER = Logger.getLogger(LoginServlet.class.getName());
 
    
     @Override
@@ -35,7 +40,7 @@ public class LoginServlet extends HttpServlet {
         String ruoloUtente = "";
 
         try {
-            UtenteDAO utenteDao = new UtenteDAO();
+            UtenteDAO utenteDao = SoccorsoDataLayer.getInstance().getUtenteDAO();
             Utenti utenteTrovato = utenteDao.estraiUtentePerEmail(emailInserita);
 
             // Se il DAO ha trovato qualcuno con questa email, fa il check della password
@@ -65,8 +70,7 @@ public class LoginServlet extends HttpServlet {
                 }
             }
         } catch (Exception e) {
-            System.err.println("errore durante la fase di login...");
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "errore durante la fase di login...", e);
         }
 
         if (loginEffettuato) {

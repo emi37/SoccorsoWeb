@@ -7,8 +7,12 @@ import freemarker.template.TemplateExceptionHandler;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class TemplateManager {
+
+    private static final Logger LOGGER = Logger.getLogger(TemplateManager.class.getName());
 
     private static Configuration cfg;
 
@@ -23,7 +27,7 @@ public class TemplateManager {
                 java.io.File directoryTemplate = new java.io.File(context.getRealPath("/WEB-INF/templates"));
                 cfg.setDirectoryForTemplateLoading(directoryTemplate);
             } catch (Exception e) {
-                e.printStackTrace();
+                LOGGER.log(Level.SEVERE, "Impossibile impostare la cartella dei template", e);
             }
             
             // standard serve sempre di dafault
@@ -59,8 +63,7 @@ public class TemplateManager {
             template.process(data, response.getWriter());
             
         } catch (Exception e) {
-            System.err.println("Errore: " + templateName);
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Errore nel template " + templateName, e);
         }
     }
 }

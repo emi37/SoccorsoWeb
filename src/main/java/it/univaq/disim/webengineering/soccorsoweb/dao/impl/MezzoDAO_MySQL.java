@@ -1,4 +1,8 @@
-package it.univaq.disim.webengineering.soccorsoweb.controller.DAO;
+package it.univaq.disim.webengineering.soccorsoweb.dao.impl;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import it.univaq.disim.webengineering.soccorsoweb.dao.MezzoDAO;
 
 import it.univaq.disim.webengineering.soccorsoweb.model.Mezzo;
 import it.univaq.disim.webengineering.soccorsoweb.util.DBManager;
@@ -10,9 +14,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MezzoDAO {
+public class MezzoDAO_MySQL implements MezzoDAO {
+
+    private static final Logger LOGGER = Logger.getLogger(MezzoDAO_MySQL.class.getName());
 
     // inserisce un nuovo mezzo
+    @Override
     public boolean salvaNuovoMezzo(Mezzo nuovoMezzo) {
         String query = "INSERT INTO mezzo (nome, descrizione, attivo) VALUES (?, ?, 1)";
 
@@ -25,14 +32,14 @@ public class MezzoDAO {
             return statement.executeUpdate() > 0;
 
         } catch (Exception e) {
-            System.err.println("errore in inserimento del nuovo mezzo: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "errore in inserimento del nuovo mezzo: " + e.getMessage(), e);
         }
 
         return false;
     }
 
     // nasconde un mezzo solo se non è impegnato in missione
+    @Override
     public boolean rimuoviMezzoSeLibero(int idDaCancellare) {
                 // quando clicco " elimina " in GestioneMezziServlet , non elimino effettivamente il mezzo dal db, 
                 // ma non viene semplicemente piu mosrtato nei materiali disponibili nella tabella all'admin
@@ -51,14 +58,14 @@ public class MezzoDAO {
             return statement.executeUpdate() > 0;
 
         } catch (Exception e) {
-            System.err.println("errore durante l'eliminazione del mezzo: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "errore durante l'eliminazione del mezzo: " + e.getMessage(), e);
         }
 
         return false;
     }
 
     // estrae tutti i mezzi per la dashboard e mostra se sono IMPEGNATI o LIBERI
+    @Override
     public List<Map<String, String>> estraiTuttiIMezziConStato() {
         List<Map<String, String>> listaMezzi = new ArrayList<>();
 
@@ -85,14 +92,14 @@ public class MezzoDAO {
             }
 
         } catch (Exception e) {
-            System.err.println("Errore: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Errore: " + e.getMessage(), e);
         }
 
         return listaMezzi;
     }
 
     // trova i mezzi non assegnati a missioni(quindi attivi)
+    @Override
     public List<Map<String, String>> estraiMezziDisponibili() {
         List<Map<String, String>> listaMezzi = new ArrayList<>();
         
@@ -119,8 +126,7 @@ public class MezzoDAO {
             }
             
         } catch (Exception e) {
-            System.err.println("Errore durante la ricerca dei mezzi liberi: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Errore durante la ricerca dei mezzi liberi: " + e.getMessage(), e);
         }
         
         return listaMezzi;

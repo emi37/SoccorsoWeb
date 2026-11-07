@@ -1,6 +1,9 @@
 package it.univaq.disim.webengineering.soccorsoweb.controller;
 
-import it.univaq.disim.webengineering.soccorsoweb.controller.DAO.MaterialeDAO;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import it.univaq.disim.webengineering.soccorsoweb.dao.SoccorsoDataLayer;
+import it.univaq.disim.webengineering.soccorsoweb.dao.MaterialeDAO;
 import it.univaq.disim.webengineering.soccorsoweb.model.Materiale;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
@@ -12,6 +15,8 @@ import jakarta.servlet.http.HttpSession;
 
 @WebServlet("/AggiungiMateriale")
 public class AggiungiMaterialeServlet extends HttpServlet {
+
+    private static final Logger LOGGER = Logger.getLogger(AggiungiMaterialeServlet.class.getName());
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -39,12 +44,11 @@ public class AggiungiMaterialeServlet extends HttpServlet {
                 nuovoMateriale.setDescrizione(descrizioneInserita);
 
                 // prendo il nuovo materiale inserito e tramite il metodo salvaNuovoMateriale del DAO lo salvo nel db
-                MaterialeDAO materialeDao = new MaterialeDAO();
+                MaterialeDAO materialeDao = SoccorsoDataLayer.getInstance().getMaterialeDAO();
                 materialeDao.salvaNuovoMateriale(nuovoMateriale);
             }
         } catch (Exception e) {
-            System.err.println("Errore durante l'aggiunta del nuovo materiale, riprovare");
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Errore durante l'aggiunta del nuovo materiale, riprovare", e);
         }
         
         response.sendRedirect(request.getContextPath() + "/GestioneMateriali");

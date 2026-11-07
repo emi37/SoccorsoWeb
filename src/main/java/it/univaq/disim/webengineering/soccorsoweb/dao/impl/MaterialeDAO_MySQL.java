@@ -1,4 +1,8 @@
-package it.univaq.disim.webengineering.soccorsoweb.controller.DAO;
+package it.univaq.disim.webengineering.soccorsoweb.dao.impl;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import it.univaq.disim.webengineering.soccorsoweb.dao.MaterialeDAO;
 
 import it.univaq.disim.webengineering.soccorsoweb.model.Materiale;
 import it.univaq.disim.webengineering.soccorsoweb.util.DBManager;
@@ -10,8 +14,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MaterialeDAO {
+public class MaterialeDAO_MySQL implements MaterialeDAO {
 
+    private static final Logger LOGGER = Logger.getLogger(MaterialeDAO_MySQL.class.getName());
+
+    @Override
     public boolean salvaNuovoMateriale(Materiale nuovoMateriale) {
         String query = "INSERT INTO materiale (nome, descrizione, attivo) VALUES (?, ?, 1)";
 
@@ -24,13 +31,13 @@ public class MaterialeDAO {
             return statement.executeUpdate() > 0; // se nel db viene inserito 1 nuovo materiale(quindi ...> 0) torna true, altrimenti false
 
         } catch (Exception e) {
-            System.err.println("errore durante l'inserimento del nuovo materiale: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "errore durante l'inserimento del nuovo materiale: " + e.getMessage(), e);
         }
 
         return false;
     }
 
+    @Override
     public boolean nascondiMaterialeSeLibero(int idDaCancellare) {
         // quando clicco " elimina " in GestioneMaterialiServlet , non elimino effettivamente il materiale dal db,
         // ma non viene semplicemente piu mostrato nei materiali disponibili nella tabella all'admin
@@ -49,13 +56,13 @@ public class MaterialeDAO {
             return statement.executeUpdate() > 0;
 
         } catch (Exception e) {
-            System.err.println("errore durante l'eliminazione del materiale: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "errore durante l'eliminazione del materiale: " + e.getMessage(), e);
         }
 
         return false;
     }
 
+    @Override
     public List<Map<String, String>> estraiTuttiIMaterialiConStato() {
         List<Map<String, String>> listaMateriali = new ArrayList<>();
 
@@ -85,13 +92,13 @@ public class MaterialeDAO {
             }
 
         } catch (Exception e) {
-            System.err.println("errore durante l'estrazione della lista dei materiali: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "errore durante l'estrazione della lista dei materiali: " + e.getMessage(), e);
         }
 
         return listaMateriali;
     }
 
+    @Override
     public List<Map<String, String>> estraiMaterialiDisponibili() {
         List<Map<String, String>> listaMateriali = new ArrayList<>();
         
@@ -119,8 +126,7 @@ public class MaterialeDAO {
             }
             
         } catch (Exception e) {
-            System.err.println("Errore durante la ricerca dei materiali disponibili: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Errore durante la ricerca dei materiali disponibili: " + e.getMessage(), e);
         }
         
         return listaMateriali;

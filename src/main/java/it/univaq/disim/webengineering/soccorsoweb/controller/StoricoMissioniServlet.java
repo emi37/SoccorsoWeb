@@ -1,6 +1,9 @@
 package it.univaq.disim.webengineering.soccorsoweb.controller;
 
-import it.univaq.disim.webengineering.soccorsoweb.controller.DAO.MissioneDAO;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import it.univaq.disim.webengineering.soccorsoweb.dao.SoccorsoDataLayer;
+import it.univaq.disim.webengineering.soccorsoweb.dao.MissioneDAO;
 import it.univaq.disim.webengineering.soccorsoweb.util.TemplateManager;
 import java.io.IOException;
 import java.util.HashMap;
@@ -15,6 +18,8 @@ import jakarta.servlet.http.HttpSession;
 
 @WebServlet(name = "StoricoMissioniServlet", urlPatterns = {"/StoricoMissioni"})
 public class StoricoMissioniServlet extends HttpServlet {
+
+    private static final Logger LOGGER = Logger.getLogger(StoricoMissioniServlet.class.getName());
     // la logica è: controlla se sei Admin -> prende i dati dal DAO -> li passa al file .ftl cosi li mostriamo in front-end 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -29,7 +34,7 @@ public class StoricoMissioniServlet extends HttpServlet {
 
         try {
             // creo il  DAO
-            MissioneDAO missioneDao = new MissioneDAO(); // prendo i dati estratti dalla query del DAO
+            MissioneDAO missioneDao = SoccorsoDataLayer.getInstance().getMissioneDAO(); // prendo i dati estratti dalla query del DAO
 
             // prendo la lista di tutte di tutti i dati di tutte le missioni finite/concluse richiamando il metodo del DAO: estraiStoricoMissioni
             List<Map<String, String>> listaStorico = missioneDao.estraiStoricoMissioni();
@@ -41,8 +46,7 @@ public class StoricoMissioniServlet extends HttpServlet {
             TemplateManager.process("storico_missioni.ftl", dataModel, response, getServletContext());
         } catch (Exception e) {
             //sicurezza
-            System.err.println("erroree durante l'estrazione dello storico missioni...");
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "erroree durante l'estrazione dello storico missioni...", e);
             response.sendRedirect(request.getContextPath() + "/DashboardServlet");
         }
     }

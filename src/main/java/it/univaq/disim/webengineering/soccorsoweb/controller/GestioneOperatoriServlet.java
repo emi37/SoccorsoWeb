@@ -4,12 +4,15 @@
  */
 package it.univaq.disim.webengineering.soccorsoweb.controller;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import it.univaq.disim.webengineering.soccorsoweb.dao.SoccorsoDataLayer;
 /**
  *
  * @author Filippo
  */
 
-import it.univaq.disim.webengineering.soccorsoweb.controller.DAO.UtenteDAO;
+import it.univaq.disim.webengineering.soccorsoweb.dao.UtenteDAO;
 import it.univaq.disim.webengineering.soccorsoweb.util.TemplateManager;
 import java.io.IOException;
 import java.util.HashMap;
@@ -24,6 +27,8 @@ import jakarta.servlet.http.HttpSession;
 @WebServlet(name = "GestioneOperatoriServlet", urlPatterns = {"/GestioneOperatori"})
 public class GestioneOperatoriServlet extends HttpServlet {
 
+    private static final Logger LOGGER = Logger.getLogger(GestioneOperatoriServlet.class.getName());
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -37,7 +42,7 @@ public class GestioneOperatoriServlet extends HttpServlet {
         }
 
         try {
-            UtenteDAO utenteDao = new UtenteDAO();
+            UtenteDAO utenteDao = SoccorsoDataLayer.getInstance().getUtenteDAO();
             Map<String, Object> dataModel = new HashMap<>();
             
             // Passiamo a FreeMarker le 3 liste che servono per la pagina
@@ -49,8 +54,7 @@ public class GestioneOperatoriServlet extends HttpServlet {
             TemplateManager.process("gestione_operatori.ftl", dataModel, response, getServletContext());
 
         } catch (Exception e) {
-            System.err.println("Errore nel caricamento della dashboard operatori...");
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Errore nel caricamento della dashboard operatori...", e);
         }
     }
 }    
