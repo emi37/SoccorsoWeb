@@ -80,11 +80,12 @@ public class AbilitaDAO {
         } finally {
             if (connessioneDb != null) {
                 try {
-                    // ripristino lo stato originale della connessione
                     connessioneDb.setAutoCommit(true);
-                    connessioneDb.close();
-                } catch (Exception exClose) {
-                    exClose.printStackTrace();
+                } catch (Exception exAutoCommit) {
+                    exAutoCommit.printStackTrace();
+                } finally {
+                    // la connessione DEVE tornare al pool in ogni caso
+                    try { connessioneDb.close(); } catch (Exception exClose) { exClose.printStackTrace(); }
                 }
             }
         }

@@ -161,9 +161,11 @@ public class MissioneDAO {
             if (connessione != null) { 
                 try {
                     connessione.setAutoCommit(true);
-                    connessione.close();
-                } catch (Exception exClose) {
-                    exClose.printStackTrace();
+                } catch (Exception exAutoCommit) {
+                    exAutoCommit.printStackTrace();
+                } finally {
+                    // la connessione DEVE tornare al pool in ogni caso
+                    try { connessione.close(); } catch (Exception exClose) { exClose.printStackTrace(); }
                 }
             }
         }
@@ -297,9 +299,11 @@ public class MissioneDAO {
             if (connessione != null) {
                 try {
                     connessione.setAutoCommit(true);
-                    connessione.close();
-                } catch (Exception exClose) {
-                    exClose.printStackTrace();
+                } catch (Exception exAutoCommit) {
+                    exAutoCommit.printStackTrace();
+                } finally {
+                    // la connessione DEVE tornare al pool in ogni caso
+                    try { connessione.close(); } catch (Exception exClose) { exClose.printStackTrace(); }
                 }
             }
         }
@@ -505,9 +509,11 @@ public class MissioneDAO {
             if (connessione != null) {
                 try {
                     connessione.setAutoCommit(true);
-                    connessione.close();
-                } catch (Exception exClose) {
-                    exClose.printStackTrace();
+                } catch (Exception exAutoCommit) {
+                    exAutoCommit.printStackTrace();
+                } finally {
+                    // la connessione DEVE tornare al pool in ogni caso
+                    try { connessione.close(); } catch (Exception exClose) { exClose.printStackTrace(); }
                 }
             }
         }

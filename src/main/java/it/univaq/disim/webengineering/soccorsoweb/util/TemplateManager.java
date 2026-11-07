@@ -1,5 +1,6 @@
 package it.univaq.disim.webengineering.soccorsoweb.util;
 
+import freemarker.core.HTMLOutputFormat;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateExceptionHandler;
@@ -27,6 +28,12 @@ public class TemplateManager {
             
             // standard serve sempre di dafault
             cfg.setDefaultEncoding("UTF-8");
+
+            // ESCAPING AUTOMATICO HTML: ogni ${...} viene reso "innocuo" (< diventa &lt; ecc.).
+            // Serve contro l'XSS: nome, posizione e descrizione arrivano dal form pubblico
+            // e vengono mostrati agli admin nelle dashboard, quindi non devono mai poter
+            // inserire tag o script nella pagina.
+            cfg.setOutputFormat(HTMLOutputFormat.INSTANCE);
             
             // gestione errori
             cfg.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);

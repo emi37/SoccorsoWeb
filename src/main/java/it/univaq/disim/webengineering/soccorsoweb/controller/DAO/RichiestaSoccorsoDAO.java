@@ -37,6 +37,31 @@ public class RichiestaSoccorsoDAO {
         return false;
     }
 
+    // anti-spam: true se la stessa email (o lo stesso IP) ha già inviato una richiesta negli ultimi N minuti
+    public boolean esisteRichiestaRecente(String email, String ipOrigine, int minuti) {
+        String query = "SELECT COUNT(*) FROM richiesta_soccorso "
+                + "WHERE (email_segnalante = ? OR ip_origine = ?) "
+                + "  AND timestamp_creazione >= NOW() - INTERVAL ? MINUTE";
+
+        try (Connection connessione = DBManager.getConnection();
+             PreparedStatement statement = connessione.prepareStatement(query)) {
+
+            statement.setString(1, email);
+            statement.setString(2, ipOrigine);
+            statement.setInt(3, minuti);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                return resultSet.next() && resultSet.getInt(1) > 0;
+            }
+
+        } catch (Exception e) {
+            System.err.println("errore durante il controllo anti-spam: " + e.getMessage());
+            e.printStackTrace();
+        }
+        // se il controllo fallisce non blocchiamo una possibile vera emergenza
+        return false;
+    }
+
     // convalida il token via email e attiva la richiesta (se non convalidi entro 10 min la richiesta rimane in stato di attesa sul DB)
     public boolean svuotaTokenConvalida(String tokenUsato) {
         String query = "UPDATE richiesta_soccorso "

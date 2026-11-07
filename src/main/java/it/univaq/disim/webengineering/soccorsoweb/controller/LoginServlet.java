@@ -48,6 +48,13 @@ public class LoginServlet extends HttpServlet {
                     ruoloUtente = utenteTrovato.getRuolo();
 
                     // Crea la sessione e ci salvo dentro i dati 
+                    // anti session-fixation: se esisteva già una sessione anonima (ad esempio quella
+                    // creata dal captcha) la buttiamo via e ne creiamo una NUOVA con un id diverso,
+                    // così un id di sessione noto in anticipo da un attaccante non vale più dopo il login
+                    HttpSession sessioneVecchia = request.getSession(false);
+                    if (sessioneVecchia != null) {
+                        sessioneVecchia.invalidate();
+                    }
                     HttpSession sessioneAttuale = request.getSession(true);
                             //request.getSession(true); chiede la sessione dell utente al server, che viene inizializzata in questo file servlet e dice: 
                             //se non c'e' allora creala, metto true solo nella servlet del login perche se non esiste la devo creare, invece in tutte le altre servlet devo
