@@ -43,12 +43,27 @@ public class SicurezzaFilter implements Filter {
         // l'URL completo non viene mandato ad altri siti nel Referer
         response.setHeader("Referrer-Policy", "same-origin");
 
-        if (METODI_CHE_MODIFICANO.contains(request.getMethod()) && !provieneDalNostroSito(request)) {
+        if (modificaDati(request) && !provieneDalNostroSito(request)) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Richiesta da un altro sito non consentita");
             return;
         }
 
         chain.doFilter(req, res);
+    }
+
+    // alcuni link del sito modificano dati anche con una GET (Ignora richiesta, Elimina mezzo/materiale):
+    // per questi vale lo stesso controllo delle POST, cosi' una pagina esterna non puo' attivarli
+    private boolean modificaDati(HttpServletRequest request) {
+        if (METODI_CHE_MODIFICANO.contains(request.getMethod())) {
+            return true;
+        }
+        if (!"GET".equals(request.getMethod())) {
+            return false;
+        }
+        String percorso = request.getRequestURI().substring(request.getContextPath().length());
+        return "/IgnoraRichiestaServlet".equals(percorso)
+                || (("/GestioneMezzi".equals(percorso) || "/GestioneMateriali".equals(percorso))
+                && request.getParameter("elimina") != null);
     }
 
     private boolean provieneDalNostroSito(HttpServletRequest request) {

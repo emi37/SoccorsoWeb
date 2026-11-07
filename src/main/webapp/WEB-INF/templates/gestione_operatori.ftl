@@ -103,6 +103,7 @@
                                         <#else>
                                             <span class="status-badge-busy">IMPEGNATO</span>
                                         </#if>
+                                        <a href="StoricoRisorsa?tipo=operatore&id=${o.id_utente!}" class="btn">Storico</a>
                                     </td>
                                 </tr>
                             </#if>

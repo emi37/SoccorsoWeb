@@ -45,6 +45,17 @@
                 <td>${m.attivo!}</td>
                 <td>          
                     <a href="GestioneMateriali?elimina=${(m.id_materiale)!}" class="btn btn-danger" onclick="return confirm('Sei sicuro di voler eliminare definitivamente questo materiale?');">Elimina</a>
+                    <a href="StoricoRisorsa?tipo=materiale&id=${m.id_materiale!}" class="btn">Storico</a>
+                    <details>
+                        <summary>Modifica</summary>
+                        <form action="ModificaRisorsa" method="POST">
+                            <input type="hidden" name="tipo" value="materiale">
+                            <input type="hidden" name="id" value="${m.id_materiale!}">
+                            <input type="text" name="nome" value="${m.nome!""}" maxlength="100" required>
+                            <input type="text" name="descrizione" value="${m.descrizione!""}" maxlength="255">
+                            <button type="submit" class="btn btn-primary">Salva</button>
+                        </form>
+                    </details>
                 </td>
             </tr>
             <#else>

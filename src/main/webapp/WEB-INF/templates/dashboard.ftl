@@ -20,6 +20,7 @@
                 <a href="GestioneMezzi" class="btn">Gestione mezzi</a>
                 <a href="GestioneMateriali" class="btn">Gestione materiali</a>
                 <a href="StoricoMissioni" class="btn">Storico missioni</a>
+                <a href="Richieste" class="btn">Archivio richieste</a>
                 <a href="Logout" class="btn btn-danger">Logout</a>
             </nav>
         </header>
